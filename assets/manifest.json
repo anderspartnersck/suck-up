@@ -1,0 +1,444 @@
+{
+  "_comment": "Logical art names -> files, relative to assets/. The pixel build (a future PixelRenderer, see CLAUDE.md) resolves names through here so draw code never hardcodes paths. The terminal/curses front-end ignores this entirely. Masters for everything live in iCloud (GAMES/SUCK UP); the repo carries the curated, game-used frames only.",
+  "art": {
+    "title": {
+      "file": "title/title-screen-1.png",
+      "use": "boot / attract title card, logo baked in — the flat reference composite. Dave on the night farm, two saucers (P1 green + P2 cyan), the green abduction beam, the SUCK UP marquee.",
+      "source": "iCloud: GAMES/SUCK UP/TITLE/TITLE EXPORTS/TITLE SCREEN 1.png",
+      "size": "4417x4417"
+    },
+    "title_clean": {
+      "file": "title/title-screen-clean.png",
+      "use": "the title scene WITHOUT the logo — the background plate. Layer the logo over this so the pixel build can animate the marquee (drip / beam pulse) independently of the scene.",
+      "source": "iCloud: GAMES/SUCK UP/TITLE/TITLE SCREEN CLEAN.png",
+      "size": "4417x4417 (registered 1:1 with title + logo)"
+    },
+    "logo": {
+      "file": "logo/suck-up-logo.png",
+      "use": "the SUCK UP marquee — image-traced, BEAM-LESS, trimmed to content. The title projects an animated green beam SPRITE from its belly (so the beam breathes/extends on its own); composite over title_clean or any background.",
+      "source": "iCloud: GAMES/SUCK UP/TITLE/TITLE EXPORTS/TITLE UPDATED IMAGE TRACE.png",
+      "size": "trimmed to ~3110x1334, RGBA"
+    },
+    "ck_logo": {
+      "file": "logo/castle-killscreen-logo.png",
+      "use": "Castle Killscreen label mark (neon castle/ziggurat). The attract reel opens on a CK ident: this logo on near-black with a Stranger-Things red-neon bloom + the MYSTERY transition cue.",
+      "source": "iCloud: Anders & Partners .../CASTLE KILL SCREEN PR/CASTLE KILLSCREEN LOGO.png",
+      "size": "6400x4267, RGBA (transparent)"
+    },
+    "ck_tower": {
+      "file": "logo/ck-tower-plain.png",
+      "use": "CK castle tower (purple neon) for the load-up gag"
+    },
+    "ck_text": {
+      "file": "logo/ck-logo-new.png",
+      "use": "CASTLE KILLSCREEN text mark (orange neon)"
+    }
+  },
+  "cabs": {
+    "_comment": "The 'special cab' art for the boot cinematic (CAB_SKINS in suck_up_art.py). Every Castle Killscreen game gets the same boot: a 5s Ken Burns slow push on the full cab — the CK logo lit on its blank monitor — then a cut to the attract. `screen` is the monitor window (l,t,r,b) as fractions of the square art, measured off the PNG (the live feed / CK ident composites into it). FINAL = the arcade cab (cheats/coin-op features live here); ALT = the in-arcade beauty/feed shot, screen jailbroken (punched out).",
+    "final": {
+      "file": "cab/final-cab.png",
+      "screen": [
+        0.35,
+        0.262,
+        0.68,
+        0.505
+      ],
+      "use": "the default arcade cab: head-on, green P1 + blue P2 decks, MILITARY RESPONSE meter, TARGET PAYOFF file cards.",
+      "source": "iCloud: GAMES/SUCK UP/CAB/0609 FINAL CAB.png",
+      "size": "4417x4417"
+    },
+    "alt": {
+      "file": "cab/alt-cab-feed.png",
+      "screen": [
+        0.315,
+        0.262,
+        0.7,
+        0.482
+      ],
+      "use": "the ALT 'feed' cab: the cabinet in a blacklight arcade (PRIZES neon, alien neon, 'THEY ARE NOT RANDOM'). Screen jailbroken so the CK ident / a live feed shows through. Select with --cab alt.",
+      "source": "iCloud: GAMES/SUCK UP/CAB/0609 ALT CAB FINAL.png",
+      "size": "4417x4417"
+    }
+  },
+  "interviews": {
+    "_comment": "Talking-head frames the attract pods cycle (THE SUCK UP FILES). The _attract_head pod flips frames every ~12 ticks; 4 frames reads as a lively cut.",
+    "drl": {
+      "use": "Dr. L. (HOST) interview pod — cycles under the 12 HOST_QUOTES.",
+      "frames": [
+        "interviews/drl/drl-1-explain.png",
+        "interviews/drl/drl-2-intense.png",
+        "interviews/drl/drl-3-aside.png",
+        "interviews/drl/drl-4-evidence.png"
+      ],
+      "source": "iCloud: GAMES/SUCK UP/POD 1 (20 masters; these 4 curated)"
+    },
+    "dave": {
+      "use": "Dave interview pod — cycles under the 8 DAVE_QUOTES. Backyard at dusk (smoker + brisket + string lights), consistent setting so the frames cut together.",
+      "frames": [
+        "interviews/dave/dave-1-gesture.png",
+        "interviews/dave/dave-2-listen.png",
+        "interviews/dave/dave-3-explain.png"
+      ],
+      "source": "iCloud: GAMES/SUCK UP/POD ALTS (curated)"
+    },
+    "drwolfe": {
+      "use": "Dr. H. Wolfe — the occult Roman historian / gnome-army expert. The on-camera authority for THE GNOMEAN FILES (jailbroken-only tail pod). 7 talking-head frames.",
+      "frames": [
+        "broll/dr wolfe 1.png",
+        "broll/dr wolfe 2.png",
+        "broll/DR WOLFE 3.png",
+        "broll/DR WOLFE 4.png",
+        "broll/DR WOLFE 5.png",
+        "broll/DR WOLFE 6.png",
+        "broll/DR WOLFE 7.png"
+      ]
+    }
+  },
+  "broll": {
+    "_comment": "Documentary cutaway inserts — texture beats the attract reel cuts to over narration / the Dave spotlight.",
+    "dave_family_photo": {
+      "file": "broll/dave-family-photo.png",
+      "use": "emotional beat — Dave at dusk looking at a framed family photo. Pairs with the DAVE_MONOLOGUE family lines ('His castle. His wife. His boys. Scraps the dog.')."
+    },
+    "family_portrait": {
+      "file": "broll/family-portrait.png",
+      "use": "the family, given faces — Dave, wife Brenda, the two boys, and Ol' Scraps the golden retriever at the red barn (sunset). Lore card / Scraps reference (Scraps appears in DAVE'S BACKYARD)."
+    },
+    "ancient_sighting": {
+      "file": "broll/ancient-sighting.png",
+      "use": "cold-open HOOK plate — vintage UFO over the Sphinx/pyramids ('for decades we counted sightings'). The conspiracy stretches back centuries.",
+      "source": "iCloud: GAMES/SUCK UP/POD BROLL"
+    },
+    "cosmic_ledger": {
+      "file": "broll/cosmic-ledger.png",
+      "use": "the 'keeping score' cosmic beat — floating clocks + ancient ledgers over a galaxy. Backs the hook turn and Dr. L's 'how does it KNOW' / 'keeping count'.",
+      "source": "iCloud: GAMES/SUCK UP/POD BROLL"
+    },
+    "cosmic_hive": {
+      "file": "broll/cosmic-hive.png",
+      "use": "magnetar / neutron star firing twin jets — Dr. L's 'two saucers, one meter... that is a HIVE.'",
+      "source": "iCloud: GAMES/SUCK UP/POD BROLL"
+    },
+    "top_secret": {
+      "file": "broll/top-secret.png",
+      "use": "redacted DoD TOP SECRET file with a recovered entity photo — Dr. L conspiracy beat ('ask who PROFITS', 'they take what is NAMED').",
+      "source": "iCloud: GAMES/SUCK UP/POD BROLL"
+    },
+    "the_accord": {
+      "file": "broll/the-accord.png",
+      "use": "vintage 'first handshake' — government men greeting greys on a military field. Dr. L conspiracy texture.",
+      "source": "iCloud: GAMES/SUCK UP/POD BROLL"
+    },
+    "taught_flight": {
+      "file": "broll/taught-flight.png",
+      "use": "a grey at the drafting table with period aviators + flight-principles chalkboard — 'did a HUMAN write this?'.",
+      "source": "iCloud: GAMES/SUCK UP/POD BROLL"
+    },
+    "taught_fire": {
+      "file": "broll/taught-fire.png",
+      "use": "CONSPIRACY MONTAGE — a grey lighting the first fire for cavemen in a painted cave. 'FIRE.'",
+      "source": "iCloud: GAMES/SUCK UP/POD BROLL"
+    },
+    "taught_wings": {
+      "file": "broll/taught-wings.png",
+      "use": "CONSPIRACY MONTAGE — a grey showing period aviators a laptop by a biplane. 'FLIGHT.'",
+      "source": "iCloud: GAMES/SUCK UP/POD BROLL"
+    },
+    "taught_math": {
+      "file": "broll/taught-math.png",
+      "use": "CONSPIRACY MONTAGE — a grey at a chalkboard of relativity with Einstein. 'THE MATH.'",
+      "source": "iCloud: GAMES/SUCK UP/POD BROLL"
+    },
+    "taught_build": {
+      "file": "broll/taught-build.png",
+      "use": "CONSPIRACY MONTAGE — a grey showing monks a rocket blueprint by candlelight. 'THE MACHINE.'",
+      "source": "iCloud: GAMES/SUCK UP/POD BROLL"
+    },
+    "tonight_on": {
+      "file": "broll/tonight-on.png",
+      "use": "channel-guide BUMPER (self-contained designed card, shown full-bleed via the 'plate' kind) — TONIGHT ON TRUTHJUNKET TV, with THE SUCK UP FILES 'ON NOW'. Frames the whole reel as a late-night conspiracy broadcast.",
+      "source": "iCloud: GAMES/SUCK UP/POD BROLL/TONIGHT ON.png"
+    },
+    "tj_bug": {
+      "file": "broll/tj-bug.png",
+      "use": "the TJTV channel 'bug' (transparent logo watermark) drawn top-right over the reel footage + cards, like a live broadcast. Replaces the old top-right show-name text.",
+      "source": "iCloud: GAMES/SUCK UP/POD BROLL/BUG FINAL.png"
+    },
+    "tj_glitch": {
+      "file": "broll/tj-glitch.png",
+      "use": "horizontal signal-tear glitch band (transparent) — the DIGITAL TRANSITION into each TJTV bumper: scans down and fades, clearing to the channel ident.",
+      "source": "iCloud: GAMES/SUCK UP/POD BROLL"
+    },
+    "pax_gnomania": {
+      "file": "broll/GNOMANIA 2.png",
+      "use": "TJTV promo (attract plate): PAX GNOMANIA — the secret gnome army documentary, ties the gnome lore into the conspiracy. Dr. H. Wolfe. Square 1024 export (fills the attract plate cleanly)."
+    },
+    "hadrian_legion": {
+      "file": "broll/GNOMANIA 1.png",
+      "use": "TJTV promo (attract plate): HADRIANS SECRET GNOMEAN LEGION — SPQG, the Roman gnome legion. Square 1024 export (fills the attract plate cleanly)."
+    }
+  },
+  "establishing": {
+    "two_saucers": {
+      "file": "establishing/two-saucers.png",
+      "use": "the reusable 'always two' b-roll plate (green = P1, blue = P2 over a Maryland field, barn+silo on the horizon) — backs the cold-open HOOK, the narration outro, and transitions. SQUARE 4417x4417 so it covers the square window edge-to-edge with both orbs in frame (the old 16:9 version cropped one orb out).",
+      "source": "iCloud: GAMES/SUCK UP/POD ALTS/DUALBINARY FINAL.png",
+      "size": "4417x4417"
+    },
+    "beltway_traffic": {
+      "file": "broll/beltway_traffic.png",
+      "use": "THE BELTWAY (I-695) establishing shot — bumper-to-bumper night traffic under the BELTWAY EXIT ONLY sign. Backs the investigation cutaway; the source plate for the planned Beltway stage backdrop.",
+      "source": "iCloud: GAMES/SUCK UP/SPRITES/SPRITE CUT UP/BELTWAY FRAME SPRITE.png (cropped to content)",
+      "size": "4153x2204"
+    }
+  },
+  "bonus": {
+    "claw_and_order": {
+      "file": "bonus/claw-and-order.png",
+      "use": "CLAW & ORDER bonus-stage establishing still — the Maryland crab feast (steamed Old Bay crabs, mallets, Browies, the giant #1 jimmy = THE BULL). Mirrors the DAVE'S BACKYARD smoker shot.",
+      "source": "iCloud: GAMES/SUCK UP/POD ALTS"
+    }
+  },
+  "sprites": {
+    "_comment": "In-game gameplay sprites (transparent cut-outs, trimmed) for the future PixelRenderer. Curated + recolored from the SPRITES master folder by tools/ingest_sprites.py — re-run it to re-pick when new renders land. Saucers are beam-OFF idles (the beam is its own sprite, composited under the saucer when beaming). The SUPER BEAM / impact are generated white and tinted per player.",
+    "p1_saucer": "sprites/p1-saucer.png",
+    "p2_saucer": "sprites/p2-saucer.png",
+    "scraps_nap_a": "sprites/scraps/scraps_nap_00.png",
+    "scraps_nap_b": "sprites/scraps/scraps_nap_02.png",
+    "scraps_sit": "sprites/scraps/scraps_sit_00.png",
+    "beltway_traffic_row": "broll/beltway_traffic_row.png",
+    "county_police_row": "broll/county_police_row.png",
+    "outskirts_row": "broll/outskirts_row.png",
+    "dave_truck": "sprites/dave_truck.png",
+    "smoker_a": "sprites/smoker_a.png",
+    "smoker_b": "sprites/smoker_b.png",
+    "smoker_c": "sprites/smoker_c.png",
+    "super_saucer": "sprites/super-saucer.png",
+    "beam_p1": "sprites/beam-green.png",
+    "beam_p2": "sprites/beam-blue.png",
+    "beam_super": "sprites/beam-super.png",
+    "beam_super_p1": "sprites/beam-super-green.png",
+    "beam_super_p2": "sprites/beam-super-blue.png",
+    "impact": "sprites/impact-super.png",
+    "impact_p1": "sprites/impact-super-green.png",
+    "impact_p2": "sprites/impact-super-blue.png",
+    "ground_ring": "sprites/ground-ring.png",
+    "beam_title_green": "sprites/beam-title-green.png",
+    "_warble_comment": "WARBLE/bonk spin frames (yaw turntable, 6 frames) sliced from the traced strips; played by index off the engine's WARBLE_SPIN cycle.",
+    "p1_warble_0": "sprites/p1-warble-0.png",
+    "p1_warble_1": "sprites/p1-warble-1.png",
+    "p1_warble_2": "sprites/p1-warble-2.png",
+    "p1_warble_3": "sprites/p1-warble-3.png",
+    "p1_warble_4": "sprites/p1-warble-4.png",
+    "p1_warble_5": "sprites/p1-warble-5.png",
+    "p2_warble_0": "sprites/p2-warble-0.png",
+    "p2_warble_1": "sprites/p2-warble-1.png",
+    "p2_warble_2": "sprites/p2-warble-2.png",
+    "p2_warble_3": "sprites/p2-warble-3.png",
+    "p2_warble_4": "sprites/p2-warble-4.png",
+    "p2_warble_5": "sprites/p2-warble-5.png",
+    "cow": "sprites/art/cow.png",
+    "cow_lift": "sprites/art/cow_lift.png",
+    "dave": "sprites/art/dave.png",
+    "tank": "sprites/art/tank.png",
+    "jet": "sprites/art/jet.png",
+    "barn": "sprites/art/barn.png",
+    "silo": "sprites/art/silo.png",
+    "person": "sprites/art/person.png",
+    "farmer": "sprites/art/farmer.png",
+    "water_tower": "sprites/art/water_tower.png",
+    "windmill": "sprites/art/windmill.png",
+    "house": "sprites/art/house.png",
+    "tree": "sprites/art/tree.png",
+    "bush": "sprites/art/bush.png",
+    "moon": "sprites/art/moon.png",
+    "brisket": "sprites/art/brisket.png",
+    "powerup": "sprites/art/powerup.png",
+    "repair": "sprites/art/repair.png",
+    "gnome": "sprites/art/gnome.png",
+    "flamingo": "sprites/art/flamingo.png",
+    "dog": "sprites/art/dog.png",
+    "crab": "sprites/art/crab.png",
+    "the_bull": "sprites/art/the_bull.png",
+    "bunker": "sprites/art/bunker.png",
+    "radar": "sprites/art/radar.png",
+    "corn": "sprites/art/corn.png",
+    "haybale": "sprites/art/haybale.png",
+    "grill": "sprites/art/grill.png",
+    "cooler": "sprites/art/cooler.png",
+    "panel_base": "sprites/panel/panel_base.png",
+    "p1_stick_c": "sprites/panel/p1_stick_c.png",
+    "p1_stick_n": "sprites/panel/p1_stick_n.png",
+    "p1_stick_ne": "sprites/panel/p1_stick_ne.png",
+    "p1_stick_e": "sprites/panel/p1_stick_e.png",
+    "p1_stick_se": "sprites/panel/p1_stick_se.png",
+    "p1_stick_s": "sprites/panel/p1_stick_s.png",
+    "p1_stick_sw": "sprites/panel/p1_stick_sw.png",
+    "p1_stick_w": "sprites/panel/p1_stick_w.png",
+    "p1_stick_nw": "sprites/panel/p1_stick_nw.png",
+    "p2_stick_c": "sprites/panel/p2_stick_c.png",
+    "p2_stick_n": "sprites/panel/p2_stick_n.png",
+    "p2_stick_ne": "sprites/panel/p2_stick_ne.png",
+    "p2_stick_e": "sprites/panel/p2_stick_e.png",
+    "p2_stick_se": "sprites/panel/p2_stick_se.png",
+    "p2_stick_s": "sprites/panel/p2_stick_s.png",
+    "p2_stick_sw": "sprites/panel/p2_stick_sw.png",
+    "p2_stick_w": "sprites/panel/p2_stick_w.png",
+    "p2_stick_nw": "sprites/panel/p2_stick_nw.png",
+    "gp_aa_gun": "sprites/art/gp_aa_gun.png",
+    "gp_vehicle": "sprites/art/gp_vehicle.png",
+    "gp_wall": "sprites/art/gp_wall.png",
+    "gp_wall_2": "sprites/art/gp_wall_2.png",
+    "gp_soldier_a": "sprites/art/gp_soldier_a.png",
+    "gp_soldier_b": "sprites/art/gp_soldier_b.png",
+    "gp_soldier_c": "sprites/art/gp_soldier_c.png",
+    "gp_bradley": "sprites/art/gp_bradley.png",
+    "gp_banner": "sprites/art/gp_banner.png",
+    "gnome_knife": "sprites/art/gnome_knife.png",
+    "gnome_pistol": "sprites/art/gnome_pistol.png",
+    "gnome_smg": "sprites/art/gnome_smg.png",
+    "gnome_heavy": "sprites/art/gnome_heavy.png",
+    "cart": "sprites/art/cart.png",
+    "mower": "sprites/art/mower.png",
+    "drl": "sprites/art/drl.png",
+    "lawn_chair": "sprites/art/lawn_chair.png",
+    "kiddie_pool": "sprites/art/kiddie_pool.png",
+    "beach_ball": "sprites/art/beach_ball.png",
+    "old_bay": "sprites/art/old_bay.png",
+    "mallet": "sprites/art/mallet.png",
+    "bushel": "sprites/art/bushel.png",
+    "cow_b": "sprites/art/cow_b.png",
+    "cow_c": "sprites/art/cow_c.png",
+    "person_b": "sprites/art/person_b.png",
+    "person_c": "sprites/art/person_c.png",
+    "office": "sprites/art/office.png",
+    "storefront": "sprites/art/storefront.png",
+    "car": "sprites/art/car.png",
+    "restaurant": "sprites/art/restaurant.png",
+    "barracks": "sprites/art/barracks.png",
+    "tower_a": "sprites/art/tower_a.png",
+    "tower_b": "sprites/art/tower_b.png",
+    "tower_c": "sprites/art/tower_c.png",
+    "highrise": "sprites/art/highrise.png",
+    "kid_bike": "sprites/outskirts/kid_bike.png",
+    "mailbox": "sprites/outskirts/mailbox.png",
+    "mailbox_double": "sprites/outskirts/mailbox_double.png",
+    "pickup": "sprites/outskirts/pickup.png",
+    "work_van": "sprites/outskirts/work_van.png"
+  },
+  "palette": "palette.md",
+  "audio": {
+    "_comment": "Logical audio name -> path (relative to assets/), resolved by the Audio manager in suck_up_art.py. A list = a random-variant pool. 'music' = looping beds (crossfaded); 'sfx' = one-shots. The terminal game ignores this entirely (zero-dependency, no audio). Masters live in iCloud / Desktop FED; the repo carries the game-used mp3s.",
+    "music": {
+      "attract_pod_1": "audio/attract-pod-1.mp3",
+      "attract_pod_2": "audio/attract-pod-2.mp3",
+      "attract_pod_3": "audio/attract-pod-3.mp3",
+      "attract_questions": "audio/attract-questions.mp3",
+      "demo_leaderboard": "audio/demo-leaderboard.mp3",
+      "continue_screen": "audio/continue-screen.mp3",
+      "highscore_entry": "audio/highscore-entry.mp3",
+      "stage_theme_1": "audio/stage-theme-1.mp3",
+      "stage_theme_2": "audio/stage-theme-2.mp3",
+      "stage_theme_3": "audio/stage-theme-3.mp3",
+      "dairy_flats_1": "audio/dairy-flats-1.mp3",
+      "dairy_flats_2": "audio/dairy-flats-2.mp3",
+      "stage_beltway": "audio/stage-beltway.mp3",
+      "stage_outskirts": "audio/stage-outskirts.mp3",
+      "stage_near_towson": "audio/stage-near-towson.mp3",
+      "stage_base_1": "audio/stage-base-1.mp3",
+      "stage_base_2": "audio/stage-base-2.mp3",
+      "stage_base_3": "audio/stage-base-3.mp3",
+      "stage_backyard": "audio/stage-backyard.mp3",
+      "stage_backyard_2": "audio/stage-backyard-2.mp3",
+      "bonus_stage": "audio/bonus-stage.mp3",
+      "claw_and_order": "audio/claw-and-order.mp3",
+      "challenge_loop": "audio/challenge-loop.mp3",
+      "stage_obx": "audio/stage-obx.mp3",
+      "interstitial_stage": "audio/interstitial-stage.mp3",
+      "interstitial_military": "audio/interstitial-military.mp3",
+      "interstitial_wind": "audio/interstitial-wind.mp3",
+      "escalation_run": "audio/escalation-run.mp3",
+      "mystery_transition": "audio/mystery-transition.mp3",
+      "heavy_alien": "audio/heavy-alien.mp3",
+      "voice_juno": "audio/voice-juno.mp3",
+      "voice_obx": "audio/voice-obx.mp3",
+      "warble_bed": "audio/warble-bed.mp3"
+    },
+    "sfx": {
+      "beam": [
+        "audio/beam.wav",
+        "audio/beam-1.mp3"
+      ],
+      "beam_2": "audio/beam-2.wav",
+      "beam_down": "audio/beam-down.wav",
+      "energy": "audio/energy.mp3",
+      "energy_long": "audio/energy-long.mp3",
+      "cow_moo": [
+        "audio/cow-moo-1.mp3",
+        "audio/cow-moo-2.mp3",
+        "audio/cow-moo-3.mp3",
+        "audio/cow-moo-4.mp3",
+        "audio/cow-moo-5.mp3"
+      ],
+      "warble": "audio/warble-snip.wav",
+      "super_beam": "audio/super-beam.mp3",
+      "super_beam_under": "audio/super-beam-under.mp3",
+      "brisket_pickup": "audio/brisket-pickup.mp3",
+      "power_up": "audio/power-up.mp3",
+      "pickup_bad": "audio/pickup-bad.mp3",
+      "bonk": [
+        "audio/bonk-1.mp3",
+        "audio/bonk-2.mp3"
+      ],
+      "bonk_complain": [
+        "audio/bonk-complain-1.mp3",
+        "audio/bonk-complain-2.mp3"
+      ],
+      "danger_bonk": "audio/danger-bonk.mp3",
+      "womp": "audio/womp.mp3",
+      "missile_shot": "audio/missile-shot.mp3",
+      "missile_impact": "audio/missile-impact.mp3",
+      "missile_hit": [
+        "audio/missile-hit-1.mp3",
+        "audio/missile-hit-2.mp3"
+      ],
+      "jets": "audio/jets.mp3",
+      "volley": "audio/volley.mp3",
+      "machine_volley": [
+        "audio/machine-volley-1.mp3",
+        "audio/machine-volley-2.mp3"
+      ],
+      "small_arm": "audio/small-arm.mp3",
+      "heavy_drone": "audio/heavy-drone.mp3",
+      "ricochet": "audio/ricochet.mp3",
+      "deflect": "audio/puff-slap.mp3",
+      "plane_disabled": "audio/puff-slap-3.mp3",
+      "falling_impact": "audio/falling-impact.mp3",
+      "zap": "audio/zap.mp3",
+      "zap_alien": [
+        "audio/zap-alien-1.mp3",
+        "audio/zap-alien-2.mp3",
+        "audio/zap-alien-3.mp3",
+        "audio/zap-alien-4.mp3"
+      ],
+      "denied": "audio/denied.mp3",
+      "cant_beam": "audio/cant-beam.mp3",
+      "stall": "audio/stall.mp3",
+      "select": [
+        "audio/select-1.mp3",
+        "audio/select-2.mp3"
+      ],
+      "bloop": "audio/bloop.mp3",
+      "sonar": "audio/sonar.mp3",
+      "noise": "audio/noise.mp3",
+      "transition": [
+        "audio/transition-1.mp3",
+        "audio/transition-2.mp3"
+      ],
+      "scramble": "audio/scramble.mp3",
+      "beam_down_silent": "audio/beam-down-silent.wav",
+      "warble_juxtapose": "audio/warble.mp3"
+    }
+  }
+}
