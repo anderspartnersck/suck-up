@@ -30,6 +30,23 @@
   #c{position:fixed;inset:0;display:block}
   #hint{display:none}   /* control readout retired — it blocked the attract text (controls live on the panel / rules card) */
   #hint b{color:#9c89c4} kbd{background:#13301f;border:1px solid #28543a;border-radius:4px;padding:0 5px;color:#bdf2cf;font-size:11px}
+  /* MIX PANEL — the player's two volume faders, parked off the action on the right edge.
+     Hidden entirely in the ARCADE/STICK cab builds (a real cab has a pot inside the cabinet,
+     not a widget on the glass). Idles at low opacity; wakes when the pointer comes near. */
+  /* Bottom-RIGHT, deliberately: the ships fly in band() (20%..70% of H) and ground targets anchor
+     at 84%, so a right-edge panel at mid-height would sit in the flight path. Down here it's over
+     dead ground plane, clear of the centred MILITARY RESPONSE meter. Slim row, not a stack. */
+  #mix{position:fixed;right:0;bottom:30px;z-index:5;display:flex;align-items:center;gap:12px;
+    padding:6px 12px;background:rgba(4,12,10,0.82);border:1px solid #28543a;border-right:0;border-radius:6px 0 0 6px;
+    cursor:auto;opacity:0.14;transition:opacity .28s;backdrop-filter:blur(2px)}
+  #mix.wake{opacity:1}
+  #mix .row{display:flex;align-items:center;gap:7px;font-size:10px;letter-spacing:.09em;color:#bdf2cf}
+  #mix .row b{font-weight:700;color:#9affc0}
+  #mix .row i{width:24px;font-style:normal;text-align:right;color:#7fe9ff}
+  #mix input[type=range]{width:78px;accent-color:#39ff14;cursor:pointer}
+  #mix button{font:inherit;font-size:10px;letter-spacing:.09em;padding:3px 8px;cursor:pointer;
+    background:#13301f;border:1px solid #28543a;border-radius:4px;color:#bdf2cf}
+  #mix button.off{background:#3a1414;border-color:#7a2a2a;color:#ff9d9d}
 </style>
 <!--@BUILD@--><!-- tools/build_editions.py replaces this marker with `<script>window.__SUCKUP_BUILD='mouse'|'stick'</script>` to BAKE a distributable edition (no URL param needed). Left as an inert comment in the master/dev build. -->
 </head>
@@ -38,6 +55,14 @@
 <!-- THE SUCK UP FILES — the REAL pre-airy reel, baked from the Python build (suck_up_art.py) to mp4. Played verbatim as the attract; no JS reimplementation. -->
 <video id="reel" src="assets/attract-reel.mp4" loop muted playsinline preload="auto" style="position:absolute;left:-9999px;width:8px;height:8px"></video>
 <div id="hint"><b>P1</b> <kbd>WASD</kbd> fly (hold combos = 8-way) · <kbd>Z</kbd> BEAM · <kbd>X</kbd> WARBLE &nbsp;·&nbsp; <b>P2</b> <kbd>IJKL</kbd> · <kbd>M</kbd> BEAM · <kbd>,</kbd> WARBLE &nbsp;·&nbsp; <kbd>SPACE</kbd> start/coin · <kbd>M</kbd> mute · <b id="hintbuild">SUCK UP — STANDALONE</b></div>
+
+<!-- MIX PANEL — player volume faders (music / sfx). Shown only in the desktop + blacksite builds;
+     the JS removes it outright for ?arcade and the STICK edition. M still mutes everything. -->
+<div id="mix" hidden>
+  <div class="row"><b>MUSIC</b><input id="volmus" type="range" min="0" max="100" step="1" value="100" aria-label="Music volume"><i id="volmusv">100</i></div>
+  <div class="row"><b>SFX</b><input id="volsfx" type="range" min="0" max="100" step="1" value="100" aria-label="Sound effects volume"><i id="volsfxv">100</i></div>
+  <button id="volmute" type="button">SOUND ON &nbsp;·&nbsp; M</button>
+</div>
 
 <script src="lib/ghost.js?v=1"></script>
 <script>
@@ -60,12 +85,13 @@ load('p2',A+'p2-saucer.png'); load('beam2',A+'beam-blue.png');                  
 for(var i=0;i<6;i++) load('rw'+i,A+'p2-warble-'+i+'.png');
 load('impact_g',A+'impact-super-green.png'); load('impact_b',A+'impact-super-blue.png');   // beam ground-contact rings (was the plain ground-ring)
 ['cow','cow_b','cow_c','cow_lift','person','person_b','person_c','farmer','dave','brisket','jet','tank','moon','repair',
+ 'dave_lift','dave_lift_b','dave_hat',                           // DAVE'S ABDUCTION: he rides up shouting -> arms-up, and his ball cap tumbles off (tools/pick_frame.py, --beamkey)
  'barn','silo','tree','water_tower','windmill','haybale','corn','powerup','bush',
  'bunker','radar','barracks','tower_a','tower_b','tower_c','highrise','office','storefront','restaurant','house',
  'gp_soldier_a','gp_soldier_b','gp_soldier_c',                   // URBAN levels: soldiers on foot (the ground military response) instead of cows
  'gp_bradley','gp_aa_gun','gp_vehicle','gp_wall','gp_banner',    // GUNPOWDER painterly hardware (were cut for the Python build, unused in web): gnome-captured Bradley, AA gun, humvee, wall/cover, PAX banner
  'gn_knife','gn_pistol','gn_smg','gn_heavy',                     // GUNPOWDER foot-gnome army — real painterly weapon sprites (cut from the labeled ChatGPT strips via whitekey+cut_sheet), one per weapon class, replacing the crude placeholder
- // staged (cut, on disk in assets/sprites/art/, not yet wired to gameplay): gn_rpg, gn_cart (golf cart), gn_mower, gn_flag (cheer gnome) — for a future vehicle-wave / morale pass
+ 'gn_rpg','gn_cart','gn_mower','gn_flag',                        // the motor pool + RPG heavy + PAX cheer squad. These four were WIRED as live GNOME_UNITS but never loaded, so they drew as nothing and the cart/mower/RPG dealt damage from thin air. tools/web_check.mjs now fails on that class.
  // 0710 IT BUILDINGS — painterly night Towson set (offices/shops/burgers/landmarks/skyline) + 6 homestead houses. Cut from SPRITES/0710 BUILDINGS/IT (alpha-trimmed).
  'it_office','it_highrise','it_brick','it_bldg6','it_shops','it_penalty_box','it_morale_corp','it_skyline_a','it_skyline_b',
  'it_house_1','it_house_2','it_house_3','it_house_4','it_house_5','it_house_6',
@@ -75,6 +101,7 @@ load('impact_g',A+'impact-super-green.png'); load('impact_b',A+'impact-super-blu
 ].forEach(function(n){ load(n,AR+n+'.png'); });
 load('ck_logo',LG+'castle-killscreen-logo.png'); load('ck_text',LG+'ck-logo-new.png'); load('suck_logo',LG+'suck-up-logo.png');
 for(var i=0;i<4;i++) load('scraps'+i,A+'scraps/scraps_nap_0'+i+'.png');     // Ol' Scraps napping through the CK ident
+load('drl_g',AR+'drl.png');                                              // Dr. L as a GROUND target (the #1 CHAMPION LAP boss). Own key because IMG['drl'] is his attract-reel interview photo.
 load('dave_truck',A+'dave_truck.png');                                   // Dave's rocket pickup (the chase rounds)
 for(var i=0;i<6;i++) load('emp'+i,'assets/sprites/fx/emp'+i+'.png');     // EMP shockwave — 6-frame electric burst (plane disabled by beam/warble)
 var BR='assets/broll/';                                                  // per-zone scrolling bottom bands (traffic / police)
@@ -214,6 +241,7 @@ var TWOP_BARKS=["THERE'S THE OTHER ONE!","TWO OF 'EM NOW?!","THEY BROUGHT A FRIE
 var DAVE_OUTRAGE_BARKS=['HOW DARE YOU!','...MY DELICIOUS BEEF!','NOT MY DAILY BRISKET!','WHAT, YA WANT ME EATIN\' LEAVES?!','THAT WAS GONNA BE DINNER!','SIXTEEN-HOUR COOK — GONE!'];
 var DAVE_CAMEO_SPAWN_BARKS=['YOU\'LL NEVER TAKE ME!','C\'MON THEN, YA LIGHTS!','I GOT SOMETHIN\' FOR YA!'];
 var DAVE_CAUGHT_BARKS=['NOT LIKE THIIIS—','TELL BRENDA I—','MY BRISKEEET—'];
+var DRL_CAUGHT_BARKS=['DR. L: I KNEW IT! I KNEW IT—','DR. L: TAKE ME, I HAVE QUESTIONS—','DR. L: THE LEDGER WAS RIGHT—'];   // he is DELIGHTED to be abducted (the champion-lap crown)
 var EXPLOSION_BARKS=['HOOAH!','SCRATCH ONE SAUCER!','THAT\'S FOR MO!'];   // Dave cheers a shootdown
 var BACKYARD_START_BARKS=['GET OFFA MY LAWN!','NOT THE GRILL! ANYTHING BUT THE GRILL!','THAT\'S MY DOG, YA VARMINTS!'];
 var CRAB_FEAST_BARKS=['HON, THEY\'RE TAKIN\' THE CRABS!','NOT THE BROWIES, YOU SAVAGES!','THAT\'S A NUMBER-ONE JIMMY, PUT \'IM BACK!'];
@@ -258,6 +286,21 @@ var STAGE_PARAM=(location.search.match(/[?&]stage=([a-z]+)/)||[])[1]||null;
 var BGONLY=/[?&]bgonly\b/.test(location.search);
 var STAGE_ELAPSED=parseFloat((location.search.match(/[?&]elapsed=([0-9.]+)/)||[])[1]||'0');
 var STAGE_SIM=parseFloat((location.search.match(/[?&]sim=([0-9.]+)/)||[])[1]||'0');   // dev: step update() this many seconds at boot (deterministic fast-forward, immune to virtual-time stalls)
+// dev: &lift=0..1 stages an ABDUCTION at that lock progress and freezes it, so the lift art
+// (cow_lift, Dave's two poses + the tumbling cap) is reviewable in a headless shot instead of
+// hunting for the frame where the CPU happens to be mid-beam. Picks the boss/Dave if present.
+var STAGE_LIFT=parseFloat((location.search.match(/[?&]lift=([0-9.]+)/)||[])[1]||'-1');
+var FREEZE=/[?&]freeze\b/.test(location.search);   // dev: hold the staged frame (skip update) so art review is deterministic — the sim would otherwise run on past whatever &lift staged
+function devStageLift(k){
+  var best=null;
+  for(var i=0;i<targets.length;i++){ var c=targets[i]; if(c.gone||c.protect) continue;
+    var rank=(c.def&&c.def.dave)||c.sprite==='dave'?3:c.isBoss?2:c.isMo?2:1;
+    if(!best||rank>best.r) best={c:c,r:rank}; }
+  if(!best) return; var c=best.c;
+  c.lifting=true; c.lock=clamp(k,0,0.999); c.owner=1; P.lock=c;
+  P.x=P.tx=c.x; P.y=P.ty=band().top+(band().bot-band().top)*0.35; planting=true;
+  c.y=groundY()-(groundY()-(P.y+SAUCER_W()*0.18))*c.lock;   // same lift math as the beam resolve
+}
 var BOTPLAY=/[?&]bot\b/.test(location.search);   // dev: best-case auto-player during sim — targets the gnome CLOSEST to a defender, beams it (measures winnability)
 var _botTgt=null;
 function devBot(){ if(mode!=='gunpowder'||!P) return;   // COMMIT to one gnome (the most-threatening) until it's beamed, then re-pick — beams complete instead of thrashing
@@ -362,7 +405,9 @@ var superT=0, briskN=0, SUPER_SECS=8, SUPER_EVERY=2;       // SUPER BEAM (briske
 var runActive=false, daveSpawned=false, moTele=false, moSpawned=false, moTarget=null, moEscapeAt=0;
 // STAGE-CLEAR interstitial (campaign only): the "where you're at" beat between segments (the original build had it).
 var resT=0, resBonus=0, resKind='round', resPerfect=false, resLast=false, RESULT_HOLD=5.5;   // captured at each clear site, shown by drawResult, then proceedSegment()
-var jetTimer=2, aaTimer=2, truck=null, bandScroll=0;
+var jetTimer=2, aaTimer=2, truck=null, bandScroll=0, roadScroll=0;   // bandScroll = the CARS (world push + their own 58px/s); roadScroll = the ROAD SURFACE (world push only).
+// Two clocks, because one made the traffic look painted on: dashes and cars advanced together,
+// so the cars never moved RELATIVE to the asphalt they were supposedly driving on.
 // JAILBREAK CAB — STAGE SELECT (the level select) + soloStage gate (single-stage vs the full run)
 var soloStage=false, sel=0;
 var MENU=[
@@ -459,9 +504,9 @@ function pickSpawnKind(){ var L=LEVELS[level], urban=(mode==='campaign'&&L&&L.ur
 function spawnTarget(kind){
   if(targets.length>8) return;
   kind = kind || pickSpawnKind();
-  var def=TARGETKINDS[kind], sp=def.sprites[(Math.random()*def.sprites.length)|0];
-  targets.push({ kind:kind, def:def, sprite:sp, x:W*rnd(0.08,0.92), y:groundY(), vx:0,vy:0,
-    dir:chance(.5)?1:-1, lock:0, lifting:false, gone:false, fireCd:rnd(1.5,3.5), isMo:false });
+  var def=TARGETKINDS[kind], sp=def.sprites[(Math.random()*def.sprites.length)|0], sx=W*rnd(0.08,0.92);
+  targets.push({ kind:kind, def:def, sprite:sp, x:sx, y:groundY(), vx:0,vy:0,
+    dir:chance(.5)?1:-1, lock:0, lifting:false, gone:false, fireCd:rnd(1.5,3.5), isMo:false, zd:zdepth(sx)*0.6 });   // gentler than the gnome horde — the field is sparse
   // HIDE & EMERGE — on the MILITARY (AA) levels only, some civilians spawn in cover and cycle out
   var t=targets[targets.length-1];
   if(mode==='campaign' && LEVELS[level] && LEVELS[level].aa && (kind==='cow'||kind==='person') && Math.random()<0.28){ t.hidden=true; t.hideT=rnd(1.5,3); }
@@ -469,7 +514,7 @@ function spawnTarget(kind){
 function spawnMo(){ var mo={ kind:'cow', def:{val:MO_BONUS,sprites:['cow'],wander:9*0.45,lock:1.0,meter:6}, sprite:'cow',
   x:W*rnd(0.2,0.8), y:groundY(), vx:0,vy:0, dir:chance(.5)?1:-1, lock:0, lifting:false, gone:false, isMo:true };
   targets.push(mo); moTarget=mo; moEscapeAt=clock+20;     // ungrabbed, she drifts off after ~20s
-  flash('>>> MO IS IN THE PASTURE — SUCK HER UP <<<','#ffd23f',1.8); sfx('mo',0.7); }
+  flash('>>> MO IS IN THE PASTURE — SUCK HER UP <<<','#ffd23f',1.8); sfx('mo',0.5); }
 function spawnDave(){ if(daveSpawned) return; daveSpawned=true;
   if(chance(LEVELS[level]?LEVELS[level].daveChance:0)){ spawnTarget('dave'); flash(pick(DAVE_CAMEO_SPAWN_BARKS),'#ffd23f',1.6); } }
 
@@ -517,7 +562,7 @@ function endRun(){ state='ending'; endT=0; SAVE.beat=true;
 /* ---------- CHEATS VAULT — level select (earned by a DEFCON-1 clear, or always open in COLEMAN'S ORIGINAL) ---------- */
 function enterCheats(){ state='select'; idleT=0; sel=0; mode='campaign'; level=0;
   buildScenery(LEVELS[0].props, 0.05, 0.14);          // Dairy Flats behind the CHEATS menu (depth-authored props)
-  targets=[]; jets=[]; shots=[]; fx=[]; truck=null; bandScroll=0; planting=false; held={};
+  targets=[]; jets=[]; shots=[]; fx=[]; truck=null; bandScroll=0; roadScroll=0; planting=false; held={};
 }
 function enterSelect(){ enterCheats(); }                 // legacy alias — any old "go to the menu" call lands in the vault
 function enterFront(){ OG?enterCheats():enterAttract(); } // blacksite front door: OG -> vault, otherwise the arcade-style attract
@@ -525,7 +570,7 @@ function backToFront(){ if(soloStage) enterCheats(); else enterFront(); }   // a
 function startRun(){ held={}; held2={}; planting=false; planting2=false; ARCADE?startCampaign():startStory(); }
 function enterLockin(){ state='lockin'; lockinT=0; twoP=false; held={}; held2={}; planting=false; planting2=false; idleT=0; }   // "DO YOU THINK YOU ARE ALONE?"
 function launchSel(){ var m=MENU[sel]; held={}; planting=false;
-  if(m.kind==='locked'||m.kind==='header'){ if(m.kind==='locked'){ sfx('denied',0.7); flash(m.hint||'LOCKED','#ff5d6c',1.0); } return; }
+  if(m.kind==='locked'||m.kind==='header'){ if(m.kind==='locked'){ sfx('denied',0.45); flash(m.hint||'LOCKED','#ff5d6c',1.0); } return; }
   if(m.kind==='god'){ GOD=!GOD; sfx(GOD?'pickup':'denied',0.6); flash('THEORISTS SAY '+(GOD?'YES':'NO'), GOD?'#39ff14':'#ff9d3a',0.9); return; }
   if(m.kind==='code'){ var on=toggleCode(m.code), cd=null; for(var ci=0;ci<CODES.length;ci++) if(CODES[ci].c===m.code) cd=CODES[ci];
     sfx(on?'snatch':'denied',0.6); flash(m.code+' — '+(on?'ON · '+cd.eff:'OFF'), on?'#ffd23f':'#ff9d3a',1.3); return; }
@@ -622,7 +667,7 @@ function updateAttract(dt){ var _W=W,_H=H; W=H=Math.min(_W,_H);     // square sp
     if(!sh.harmless){ var u=(Math.hypot(sh.x-demo.x,sh.y-demo.y)<=Math.hypot(sh.x-demo2.x,sh.y-demo2.y))?demo:demo2;
       if(Math.hypot(sh.x-u.x,sh.y-u.y)<SAUCER_W()*0.5){ u.warbleU=t+0.55;   // t advances during attract (clock does not)
         var dxx=sh.x-u.x,dyy=sh.y-u.y,LL=Math.hypot(dxx,dyy)||1,spd=Math.hypot(sh.vx,sh.vy)||320;
-        sh.vx=dxx/LL*spd*1.1; sh.vy=dyy/LL*spd*1.1-40; sh.harmless=true; sh.ricochet=true; sfxT('deflect',0.3,0.4); addFx(sh.x,sh.y,'snatch','#9affc0',0.3); } }
+        sh.vx=dxx/LL*spd*1.1; sh.vy=dyy/LL*spd*1.1-40; sh.harmless=true; sh.ricochet=true; sfxT('deflect',0.3,0.95); addFx(sh.x,sh.y,'snatch','#9affc0',0.3); } }
     if(sh.ricochet){ for(var jj=jets.length-1;jj>=0;jj--){ var jt=jets[jj]; if(jt.disabled||jt.horizon)continue; if(Math.hypot(sh.x-jt.x,sh.y-jt.y)<SAUCER_W()*0.4){ disableJet(jt); shots.splice(s,1); break; } } if(!shots[s])continue; }
     if(sh.x<-60||sh.x>W+60||sh.y<-60||sh.y>H+60||sh.t>4) shots.splice(s,1); }
   for(var f=fx.length-1;f>=0;f--){ fx[f].t+=dt; if(fx[f].t>fx[f].life) fx.splice(f,1); }
@@ -632,7 +677,7 @@ function startLevel(idx){
   level=idx; mode='campaign'; var L=LEVELS[idx];
   P=newPlayer(); R=newRival(); targets=[]; jets=[]; shots=[]; fx=[]; shake=0;
   meter=L.meter0||0; stageClock=L.clock; levelLen=L.clock; jetTimer=L.aa?0.6:2; aaTimer=L.aa?0.8:1.8;
-  runActive=false; daveSpawned=false; moTele=false; moSpawned=false; moTarget=null; moEscapeAt=0; bandScroll=0; superT=0;   // fresh round: drop any active super (brisket charge carries the run)
+  runActive=false; daveSpawned=false; moTele=false; moSpawned=false; moTarget=null; moEscapeAt=0; bandScroll=0; roadScroll=0; superT=0;   // fresh round: drop any active super (brisket charge carries the run)
   truck = L.truck ? truckRespawn({gapCd:0}) : null;   // Dave's rocket truck this round (enters from a random side, faces its travel direction)
   buildScenery(L.props, 0.03, L.props.length>7?0.128:0.135);
   for(var k=0;k<5;k++) spawnTarget();
@@ -644,7 +689,7 @@ function startLevel(idx){
 function startBase(fresh){
   mode='base'; clock=0; if(fresh){ score=0; hp=maxHP; }            // fresh = standalone (B key); woven-in keeps score+hull
   P=newPlayer(); R=null; targets=[]; jets=[]; shots=[]; fx=[]; shake=0; bonusKind=null;   // base = solo dodge, no rival
-  meter=100; stageClock=30; levelLen=30; jetTimer=1.0; aaTimer=1.2; runActive=false; daveSpawned=true; moSpawned=true; truck=null; bandScroll=0; superT=0;
+  meter=100; stageClock=30; levelLen=30; jetTimer=1.0; aaTimer=1.2; runActive=false; daveSpawned=true; moSpawned=true; truck=null; bandScroll=0; roadScroll=0; superT=0;
   // MILITARY BASE — layered: distant lit base-city skyline + deep admin/HQ office blocks (silhouette) →
   // mid radar dishes + water tower → near barracks/commissary + bunkers on the flightline. Depth spread
   // so it reads as a real installation, not a flat prop row.
@@ -659,8 +704,15 @@ function startBase(fresh){
    advance on the defenders (hardware forward, soldiers + civilians in the center) and strike in melee.
    A defender overrun blinks out. No player death here — the objective is to SAVE as many as you can;
    save them all = PERFECT. A SET, bounded force (waves cap out, + a Bradley climax) so it stays performant. */
-var GUNPOWDER_SECS=48, GNOME_WAVE_EVERY=4.6, GNOME_WAVES_STOP=9.0, GNOME_WAVE_SIZE=3, GNOME_FOOT_CAP=13, GNOME_OPENING=8;
-var GNOME_SAVE_BONUS=200, GNOME_VANISH=0.5, GNOME_BRADLEY_AT=2/3;
+var GUNPOWDER_SECS=48, GNOME_WAVE_EVERY=4.6, GNOME_WAVES_STOP=9.0, GNOME_WAVE_SIZE=3, GNOME_FOOT_CAP=13, GNOME_OPENING=5;
+// OPENING was 8. Measured idle attrition with the old value: 6/8 defenders by t=4, 4/8 by t=8,
+// 1/8 by t=14 — so an un-played base fell at ~15s of a 48s mission (the comment below claimed
+// mid-clock), and gpFell then ends the stage on the spot. That meant a merely-decent player
+// never saw the motor pool (16s) or the Bradley climax (32s) at all: two thirds of the level
+// was unreachable. Smaller opening swarm + one more hit on the forward hardware pushes the
+// idle fall back toward mid-clock so the set pieces actually land, without touching the
+// per-unit threat numbers that give each weapon class its character.
+var GNOME_SAVE_BONUS=200, GNOME_VANISH=0.5, GNOME_BRADLEY_AT=0.45;   // Bradleys WAS 2/3 (t=32) — see GNOME_VEH_AT below
 // unit: reach + advance are FRACTIONS OF W; dmg = hits dealt; cd = seconds between strikes; pts = beam payout; lockT = beam time
 var GNOME_UNITS={   // adv/reach as fractions of W; tuned so an idle base falls ~mid-clock (a beaming player can hold it)
   knife:  {reach:0.030, adv:0.030, dmg:1, cd:1.5, pts:150, lockT:0.55,sprite:'gn_knife'},
@@ -674,7 +726,13 @@ var GNOME_UNITS={   // adv/reach as fractions of W; tuned so an idle base falls 
   bradley:{reach:0.05,  adv:0.014, dmg:2, cd:2.4, pts:400, lockT:1.3, sprite:'gp_bradley', big:2.4, armor:1}   // the painterly gnome-captured Bradley (red-hat gnomes + PAX flag)
 };
 var GNOME_UPRISING_BARKS=['THE GNOMES ARE REVOLTING! …no, REALLY revolting!','SUCK UP THE LAWN GNOMES — HELP THE ARMY, JUST THIS ONCE!','POINTY HATS ON THE WIRE! HOLD THE LINE!','DR. L: the little ones came for Gunpowder. i warned them.'];
-var GNOME_VEH_AT=1/3;                        // the gnome MOTOR POOL (golf cart + mower) rolls in a third of the way — lighter escalation before the Bradley climax
+var GNOME_VEH_AT=0.25;                       // the gnome MOTOR POOL (golf cart + mower) — WAS 1/3 (t=16)
+// Set-piece timing is driven by WHEN THE MISSION ACTUALLY ENDS, not by the 48s clock. Measured:
+// an idle base is overrun by ~15s and gpFell ends the stage on the spot, and even after softening
+// the opening it is gone by ~16s. The escalations sat at 16s and 32s, so anyone short of expert
+// play never saw either one — the motor pool, the cheer squad and the Bradley climax were content
+// nobody could reach. Pulled to 12s and ~22s so a typical run gets all three beats. (The 48s clock
+// still stands for a player good enough to hold the line; this only decides how early the show starts.)
 var gpWaveT=0, gpBradley=false, gpVeh=false, gpFell=false, gpTotal=8;
 function gnomeFootUnit(){ var prog=1-stageClock/GUNPOWDER_SECS;      // ramp: melee rushers early -> shooters + heavies late
   var pool=[]; function add(k,n){ for(var i=0;i<n;i++) pool.push(k); }
@@ -684,10 +742,13 @@ function gnomeFootUnit(){ var prog=1-stageClock/GUNPOWDER_SECS;      // ramp: me
 function mkGnome(unit,x){ var u=GNOME_UNITS[unit];
   return { kind:'gnome', unit:unit, def:{val:u.pts,meter:0,lock:u.lockT,wander:0}, sprite:u.sprite,
     reach:u.reach, adv:u.adv, dmg:u.dmg, atkCd:u.cd, big:u.big||1, armor:!!u.armor, veh:!!u.veh, cheer:!!u.cheer,
-    x:x, homeX:x, y:groundY(), vx:0,vy:0, dir:x<W*0.5?1:-1, lock:0, lifting:false, gone:false, fireCd:rnd(0.4,1.4) }; }
+    x:x, homeX:x, y:groundY(), vx:0,vy:0, dir:x<W*0.5?1:-1, lock:0, lifting:false, gone:false, fireCd:rnd(0.4,1.4), zd:zdepth(x) }; }   // zd = render-only crowd depth
 function mkDefender(sprite,x,hp,kind){
+  // the defence is authored in depth (hardware forward, soldiers mid, civilians safe in the
+  // centre) — give that layout a matching DRAW depth so the line reads as a line, not a row
+  var zd = kind==='hardware'?0.85 : kind==='soldier'?0.45 : kind==='civilian'?0.15 : 0.0;
   return { kind:'defender', dkind:kind, protect:true, def:{val:0,meter:0,lock:1,wander:0}, sprite:sprite,
-    x:x, y:groundY(), vx:0,vy:0, dir:1, lock:0, lifting:false, gone:false, hp:hp, maxHp:hp, vanish:0 }; }
+    x:x, y:groundY(), vx:0,vy:0, dir:1, lock:0, lifting:false, gone:false, hp:hp, maxHp:hp, vanish:0, zd:zd }; }
 function spawnGnomeWave(n){
   var live=0; for(var i=0;i<targets.length;i++){ var c=targets[i]; if(!c.gone && c.kind==='gnome' && !c.armor && !c.veh && !c.cheer) live++; }   // cap counts FOOT gnomes only (vehicles/cheer are separate)
   for(var k=0;k<n;k++){ if(live>=GNOME_FOOT_CAP) break;
@@ -697,7 +758,7 @@ function spawnGnomeWave(n){
 function startGunpowder(fresh){
   mode='gunpowder'; clock=0; if(fresh!==false){ score=0; hp=maxHP; }
   P=newPlayer(); R=null; targets=[]; jets=[]; shots=[]; fx=[]; shake=0; bonusKind=null;
-  meter=0; stageClock=GUNPOWDER_SECS; levelLen=GUNPOWDER_SECS; runActive=false; daveSpawned=true; moSpawned=true; truck=null; bandScroll=0; superT=0;
+  meter=0; stageClock=GUNPOWDER_SECS; levelLen=GUNPOWDER_SECS; runActive=false; daveSpawned=true; moSpawned=true; truck=null; bandScroll=0; roadScroll=0; superT=0;
   gpWaveT=0; gpBradley=false; gpVeh=false; gpFell=false;
   // FORT GUNPOWDER backdrop — the base at night (reuse the military installation dressing)
   buildScenery([ {s:'radar',d:0.5}, {s:'water_tower',d:0.56}, {s:'it_brick',d:0.82,sc:0.85}, {s:'bunker',d:0.92},
@@ -705,10 +766,10 @@ function startGunpowder(fresh){
   // DEFENDERS — DEFENSE IN DEPTH from the edges inward: a forward HARDWARE line (3 hits each) soaks the
   // first contact and buys time, armed SOLDIERS (2 hits) hold the middle, CIVILIANS (1 hit) safe in the
   // dead center = the thing to save. Gnomes attack the NEAREST, so the line is chewed front-to-back.
-  targets.push(mkDefender('gp_aa_gun', W*0.13, 3,'hardware'));   // real painterly AA guns + humvees on the forward line
-  targets.push(mkDefender('gp_aa_gun', W*0.87, 3,'hardware'));
-  targets.push(mkDefender('gp_vehicle', W*0.28, 3,'hardware'));
-  targets.push(mkDefender('gp_vehicle', W*0.72, 3,'hardware'));
+  targets.push(mkDefender('gp_aa_gun', W*0.13, 4,'hardware'));   // real painterly AA guns + humvees on the forward line (4 hits: they are meant to SOAK first contact and buy time)
+  targets.push(mkDefender('gp_aa_gun', W*0.87, 4,'hardware'));
+  targets.push(mkDefender('gp_vehicle', W*0.28, 4,'hardware'));
+  targets.push(mkDefender('gp_vehicle', W*0.72, 4,'hardware'));
   targets.push(mkDefender(pick(['gp_soldier_a','gp_soldier_b','gp_soldier_c']), W*0.39, 2,'soldier'));
   targets.push(mkDefender(pick(['gp_soldier_a','gp_soldier_b','gp_soldier_c']), W*0.61, 2,'soldier'));
   targets.push(mkDefender('person', W*0.47, 1,'civilian'));
@@ -755,7 +816,7 @@ function gunpowderStep(dt){
 function startBonus(bi){
   if(bi===2){ startChampionLap(); return; }               // #1 CHAMPION LAP (CHEATS vault only — not in the arcade schedule)
   var crab=(bi%2===1); mode='bonus'; bonusKind=crab?'crab':'backyard'; clock=0;
-  P=newPlayer(); R=newRival(); targets=[]; jets=[]; shots=[]; fx=[]; shake=0; truck=null; bandScroll=0;
+  P=newPlayer(); R=newRival(); targets=[]; jets=[]; shots=[]; fx=[]; shake=0; truck=null; bandScroll=0; roadScroll=0;
   meter=0; stageClock=BONUS_SECONDS; levelLen=BONUS_SECONDS; runActive=false; daveSpawned=true; moSpawned=true; superT=0;
   // CLAW & ORDER (crab feast, waterfront) vs DAVE'S BACKYARD (homestead) — layered w/ a deep house behind
   var bp = crab? [ {s:'it_house_11',d:0.5,sc:0.8}, {s:'water_tower',d:0.55}, {s:'it_bldg6',d:1.0}, {s:'tree',d:0.95} ]
@@ -769,21 +830,31 @@ function startBonus(bi){
 }
 // #1 CHAMPION LAP — the calm victory pasture: a sparse peaceful field, no army, high-value herd + Dave hands over the crown.
 function startChampionLap(){ mode='bonus'; bonusKind='champ'; clock=0;   // 'champ' -> HUD reads CHAMPION LAP; music falls through to the calm backyard bed
-  P=newPlayer(); R=newRival(); targets=[]; jets=[]; shots=[]; fx=[]; shake=0; truck=null; bandScroll=0;
+  P=newPlayer(); R=newRival(); targets=[]; jets=[]; shots=[]; fx=[]; shake=0; truck=null; bandScroll=0; roadScroll=0;
   meter=0; stageClock=BONUS_SECONDS; levelLen=BONUS_SECONDS; runActive=false; daveSpawned=true; moSpawned=true; superT=0;
   // #1 CHAMPION LAP — calm victory pasture, layered homesteads (deep house → near house + barn + trees)
   buildScenery([ {s:'it_house_2',d:0.5,sc:0.82}, {s:'tree',d:0.62}, {s:'it_house_10',d:1.0}, {s:'barn',d:0.92}, {s:'tree',d:1.0} ], 0.06, 0.205);
   for(var i=0;i<6;i++) targets.push(lootTarget('cow',300,0.95, W*(0.1+0.8*(i+0.5)/6), false));
-  targets.push(lootTarget('dave',2000,1.15, W*0.5, true));
+  targets.push(lootTarget('drl_g',2000,1.15, W*0.5, true));       // DR. L hands over the crown (matches the bark below + the Python canon); Dave is the BACKYARD boss, not this one
   state='play'; flash('#1 CHAMPION LAP — TAKE THE CROWN','#ffd23f',2.2);
   sayLater('DR. L: the crown is yours. history remembers the count.','#7fe9ff',2.4);
 }
+// who a bonus-stage boss IS — one table, so the floating label and the catch flash agree
+function bossName(sp){ return sp==='the_bull'?'THE BULL' : sp==='drl_g'?'DR. L' : 'DAVE'; }
 function lootTarget(sp,val,h,x,isBoss){
   return { kind:'loot', def:{ val:val, meter:0, lock:isBoss?1.3:0.8, wander:0 }, sprite:sp, lootH:h,
     x:x, y:groundY(), vx:0,vy:0, dir:1, lock:0, lifting:false, gone:false, isMo:false, isBoss:!!isBoss }; }
 
 /* ---------- audio (standalone — HTMLAudio crossfade beds + edge-fired one-shots; no manifest fetch so it works off file://) ---------- */
 var AUDIO_ON=true;
+// PLAYER MIX — two buses (music bed / sfx one-shots) on top of the per-file AGAIN normalization.
+// The authored mix (the vol argument at each call site) is the reference: 1.0 here = exactly what
+// tools/mixcheck.py measures. Persisted per browser; the cab builds don't expose the sliders.
+var MIX={mus:1,sfx:1};
+try{ var _mx=JSON.parse(localStorage.getItem('suckupMix')||'{}');
+  if(_mx && typeof _mx.mus==='number') MIX.mus=clamp(_mx.mus,0,1);
+  if(_mx && typeof _mx.sfx==='number') MIX.sfx=clamp(_mx.sfx,0,1); }catch(e){}
+function saveMix(){ try{ localStorage.setItem('suckupMix',JSON.stringify(MIX)); }catch(e){} }
 var MUS={ menu:'audio/attract-questions.mp3', attract:'audio/attract-pod-1.mp3', ident:'audio/mystery-transition.mp3',
   zones:['audio/dairy-flats-1.mp3','audio/stage-theme-1.mp3','audio/stage-theme-2.mp3','audio/stage-theme-3.mp3','audio/stage-beltway.mp3','audio/stage-outskirts.mp3'],
   base:'audio/stage-base-1.mp3', backyard:'audio/stage-backyard.mp3', crab:'audio/claw-and-order.mp3',
@@ -798,13 +869,14 @@ var SFX={ select:['audio/select-1.mp3','audio/select-2.mp3'], launch:'audio/bloo
 var AGAIN={'attract-pod-1.mp3':0.88,'attract-questions.mp3':0.89,'bloop.mp3':0.92,'brisket-pickup.mp3':0.49,'claw-and-order.mp3':0.92,'continue-screen.mp3':0.93,'cow-moo-1.mp3':0.91,'cow-moo-2.mp3':0.76,'cow-moo-3.mp3':0.62,'cow-moo-4.mp3':0.84,'cow-moo-5.mp3':0.89,'dairy-flats-1.mp3':0.84,'demo-leaderboard.mp3':0.84,'denied.mp3':0.61,'energy.mp3':0.91,'missile-impact.mp3':0.79,'missile-shot.mp3':0.83,'mystery-transition.mp3':0.76,'scramble.mp3':0.91,'select-1.mp3':0.78,'select-2.mp3':0.91,'sonar.mp3':0.62,'stage-backyard.mp3':0.93,'stage-base-1.mp3':0.82,'stage-beltway.mp3':0.9,'stage-outskirts.mp3':1.39,'stage-theme-1.mp3':0.92,'stage-theme-2.mp3':0.91,'stage-theme-3.mp3':0.87,'transition-1.mp3':0.94,'warble-snip.wav':1.06};
 function again(p){ return AGAIN[p.split('/').pop()]||1; }
 function sfx(key,vol){ if(!AUDIO_ON) return; var p=SFX[key]; if(!p) return; if(Array.isArray(p)) p=p[(Math.random()*p.length)|0];
-  try{ var a=new Audio('assets/'+p); a.volume=clamp((vol==null?0.85:vol)*again(p),0,1); a.play().catch(function(){}); }catch(e){} }
+  if(MIX.sfx<=0) return;
+  try{ var a=new Audio('assets/'+p); a.volume=clamp((vol==null?0.85:vol)*again(p)*MIX.sfx,0,1); a.play().catch(function(){}); }catch(e){} }
 var sfxCd={}; function sfxT(key,gap,vol){ if((sfxCd[key]||0)>t) return; sfxCd[key]=t+(gap||0.25); sfx(key,vol); }
 var mA=new Audio(), mB=new Audio(); mA.loop=mB.loop=true; var mCur=mA, mOther=mB, mKey=null, mTargetVol=0.5;
 function playMusic(path,vol){ if(!path||path===mKey) return; mKey=path; mTargetVol=clamp((vol==null?0.5:vol)*again(path),0,1);
   var nx=mOther; try{ nx.src='assets/'+path; nx.volume=0; nx.currentTime=0; nx.play().catch(function(){}); }catch(e){}
   mOther=mCur; mCur=nx; }
-function updateAudio(dt){ var tv=AUDIO_ON?mTargetVol:0, r=Math.min(1,dt*2.4);
+function updateAudio(dt){ var tv=AUDIO_ON?mTargetVol*MIX.mus:0, r=Math.min(1,dt*2.4);   // MIX.mus applied HERE (not at playMusic) so a slider move takes effect on the bed already playing
   mCur.volume=clamp(mCur.volume+(tv-mCur.volume)*r,0,1);
   if(mOther!==mCur){ mOther.volume=clamp(mOther.volume+(0-mOther.volume)*r,0,1); if(mOther.volume<0.02 && !mOther.paused){ try{mOther.pause();}catch(e){} } } }
 function audioDirector(){ var path=null,vol=0.5;
@@ -823,6 +895,36 @@ function audioDirector(){ var path=null,vol=0.5;
   if(path) playMusic(path,vol);
   else if(state==='attract' && attractMute){ mTargetVol=0; mKey=null; }   // fade the bed out for the silent arcade loop
 }
+
+/* ---------- MIX PANEL (desktop / blacksite only) ----------
+   Two faders on the right edge, outside the action. Kept deliberately dumb: it only writes MIX.mus /
+   MIX.sfx and the AUDIO_ON flag, so the authored per-call mix stays the reference (1.00 = the mix
+   tools/mixcheck.py measures). Pointer events land on the panel, so the canvas never sees them —
+   and cv's own mouseleave clears MOUSE.on, so the DESKTOP fly-to-cursor parks while you adjust. */
+var mixEl=document.getElementById('mix'), mixWakeT=0;
+(function(){
+  if(!mixEl) return;
+  if(ARCADE||STICK){ mixEl.remove(); mixEl=null; return; }        // real cab: no widget on the glass
+  var mus=document.getElementById('volmus'), sfxS=document.getElementById('volsfx'),
+      musV=document.getElementById('volmusv'), sfxV=document.getElementById('volsfxv'),
+      mute=document.getElementById('volmute');
+  mixEl.hidden=false;
+  function paint(){ mus.value=Math.round(MIX.mus*100); sfxS.value=Math.round(MIX.sfx*100);
+    musV.textContent=mus.value; sfxV.textContent=sfxS.value;
+    mute.textContent=AUDIO_ON?'SOUND ON  ·  M':'MUTED  ·  M'; mute.className=AUDIO_ON?'':'off'; }
+  function wake(){ mixWakeT=2.6; mixEl.classList.add('wake'); }
+  mus.addEventListener('input',function(){ MIX.mus=clamp(mus.value/100,0,1); musV.textContent=mus.value; saveMix(); wake(); });
+  sfxS.addEventListener('input',function(){ MIX.sfx=clamp(sfxS.value/100,0,1); sfxV.textContent=sfxS.value; saveMix(); wake(); });
+  sfxS.addEventListener('change',function(){ sfx('select',0.5); });               // audition the new SFX level on release
+  mute.addEventListener('click',function(){ AUDIO_ON=!AUDIO_ON; paint(); wake(); });
+  mixEl.addEventListener('mouseenter',wake);
+  mixEl.addEventListener('mousemove',wake);
+  addEventListener('mousemove',function(e){ if(e.clientX>innerWidth-230 && e.clientY>innerHeight-90) wake(); });   // reaching for the corner wakes it
+  addEventListener('keydown',function(){ if(mixEl) paint(); });                        // keep the MUTE button honest when M is pressed
+  paint();
+})();
+function updateMixPanel(dt){ if(!mixEl||mixWakeT<=0) return;                            // fade back to idle when the pointer wanders off
+  mixWakeT-=dt; if(mixWakeT<=0) mixEl.classList.remove('wake'); }
 
 /* ---------- input ---------- */
 var held={}, nf={left:0,right:0,up:0,down:0}, planting=false;
@@ -851,7 +953,7 @@ addEventListener('keydown',function(e){
   // LOCK-IN — the "ARE YOU ALONE?" prompt: P2 BEAM (;) joins · P1 BEAM/ENTER goes solo · WARBLE/ESC stands down
   if(state==='lockin'){ idleT=0;
     if(k==='escape'||k==='f'||k==='x'||k==="'"){ enterAttract(); e.preventDefault(); return; }   // WARBLE (X/F) or ESC = stand down
-    if(k===';'){ twoP=true; sfx('snatch',0.8); flash('PLAYER 2 IS IN','#3cc8ff',1.2); startRun(); e.preventDefault(); return; }
+    if(k===';'){ twoP=true; sfx('snatch',0.5); flash('PLAYER 2 IS IN','#3cc8ff',1.2); startRun(); e.preventDefault(); return; }
     if(e.key===' '||e.key==='Enter'){ twoP=false; sfx('launch',0.5); startRun(); e.preventDefault(); return; }
     e.preventDefault(); return; }
   // game over / cleared
@@ -957,7 +1059,7 @@ function gpPoll(){
   var pad2=null,seen=0; for(var pi=0;pi<pads.length;pi++){ if(pads[pi]&&pads[pi].connected!==false){ if(seen===1){ pad2=pads[pi]; break; } seen++; } }
   if(pad2){ var b2=pad2.buttons||[], m2=(pad2.mapping==='standard')?{}:gpMap(); var beam2=(m2.beam!=null?b2[m2.beam]:b2[0])&&(m2.beam!=null?b2[m2.beam]:b2[0]).pressed;
     var war2=(m2.warble!=null?b2[m2.warble]:b2[1])&&(m2.warble!=null?b2[m2.warble]:b2[1]).pressed;
-    if(state==='lockin'){ if(beam2 && !GP2beam){ twoP=true; try{sfx('snatch',0.8);}catch(e){} flash('PLAYER 2 IS IN','#3cc8ff',1.2); startRun(); } }
+    if(state==='lockin'){ if(beam2 && !GP2beam){ twoP=true; try{sfx('snatch',0.5);}catch(e){} flash('PLAYER 2 IS IN','#3cc8ff',1.2); startRun(); } }
     else if(twoP){ var g2=Ghost.read(pad2); held2.left=g2.x<0; held2.right=g2.x>0; held2.up=g2.y<0; held2.down=g2.y>0; planting2=!!beam2;
       if(war2 && !GP2war && R && clock>R.warbleCd){ R.warbleU=clock+0.60; R.warbleCd=clock+2.0; planting2=false; } }
     GP2war=war2; GP2beam=beam2;
@@ -1040,11 +1142,11 @@ function addFx(x,y,kind,col,n){ if(fx.length>=MAX_FX) fx.shift(); fx.push({x:x,y
 // tumbling back into the DISTANCE (recedes up + shrinks) and bursts in a puff — never crashes on the
 // foreground. (Real crash/shoot-down systems belong to PAX GNOMANIA.)
 function disableJet(je){ if(!je || je.disabled || je.horizon) return; je.disabled=true; je.spinT=0; je.scale=1;
-  je.vy=-70; je.vx*=0.45; je.fireCd=1e9; addFx(je.x,je.y,'emp','#bfefff',0.5); sfxT('planedown',0.25,0.5); }   // EMP shockwave on the disabled plane
+  je.vy=-70; je.vx*=0.45; je.fireCd=1e9; addFx(je.x,je.y,'emp','#bfefff',0.5); sfxT('planedown',0.25,0.95); }   // EMP shockwave on the disabled plane
 function hitPlayer(){
   if(GOD){ addFx(P.x,P.y,'spark','#39ff14',0.3); return; }                 // THEORISTS SAY YES — invincible + infinite lives (cheat)
   if(warbling()||P.invuln>0) { addFx(P.x,P.y,'spark','#9affc0',0.3); return; }
-  hp-=34; P.stun=1.1; P.invuln=2.0; shake=18; addFx(P.x,P.y,'boom','#ff7a3a',0.6); sfx('hit',0.9);
+  hp-=34; P.stun=1.1; P.invuln=2.0; shake=18; addFx(P.x,P.y,'boom','#ff7a3a',0.6); sfx('hit',0.5);
   if(hp<=0){ lives--;
     if(lives>0){ hp=maxHP; P.invuln=2.4; P.stun=0.6; addFx(P.x,P.y,'snatch','#7fe9ff',0.6); flash('SHIP DOWN — '+lives+' LEFT','#ff9d3a',1.4); if(level>=1) sayLater(pick(EXPLOSION_BARKS),'#ffd23f',0.7); }   // Dave cheers the shootdown (later zones)
     else { hp=0; state='over'; flash('SOMETHING HAPPENED…','#ff5d6c',99); }
@@ -1066,20 +1168,22 @@ function hitShip(sh,who){
 }
 function abduct(tg,who){
   who=who||1; var isR=(who===2&&R), sh=isR?R:P;
-  if(tg.def.hazardGrab){ if(!isR){ flash('THAT WAS HARDWARE!','#ff5d6c',1.0); sfx('denied',0.8); } hitShip(sh,who); tg.gone=true; tg.respawn=rnd(2,3.5); tg.lock=0; tg.lifting=false; tg.owner=0; return; }
-  if(tg.def.repair){ if(!isR){ hp=maxHP; P.invuln=Math.max(P.invuln,1.0); flash('HULL RESTORED','#39ff14',1.0); } addFx(sh.x,sh.y,'snatch','#39ff14',0.6); sfx('pickup',0.7); tg.gone=true; tg.respawn=rnd(4,7); tg.lock=0; tg.lifting=false; tg.owner=0; return; }
+  if(tg.def.hazardGrab){ if(!isR){ flash('THAT WAS HARDWARE!','#ff5d6c',1.0); sfx('denied',0.5); } hitShip(sh,who); tg.gone=true; tg.respawn=rnd(2,3.5); tg.lock=0; tg.lifting=false; tg.owner=0; return; }
+  if(tg.def.repair){ if(!isR){ hp=maxHP; P.invuln=Math.max(P.invuln,1.0); flash('HULL RESTORED','#39ff14',1.0); } addFx(sh.x,sh.y,'snatch','#39ff14',0.6); sfx('pickup',0.45); tg.gone=true; tg.respawn=rnd(4,7); tg.lock=0; tg.lifting=false; tg.owner=0; return; }
   if(isR) rivalScore+=tg.def.val; else score+=tg.def.val;
   if(tg.def.val>0){ if(fx.length>=MAX_FX)fx.shift(); fx.push({x:sh.x,y:sh.y+SAUCER_W()*0.1,kind:'pts',col:isR?'#7fb0ff':'#ffe23a',t:0,life:0.95,val:tg.def.val,big:tg.def.val>=1000}); }   // floating +POINTS so each grab's value READS (cow 100 / person 300 / farmer 250 / Dave 2000 / Mo 3000)
   meter=clamp(meter+tg.def.meter,0,100); addFx(sh.x,sh.y,'snatch', isR?'#7fb0ff':'#7fe9ff',0.5);
   sfx(tg.def.meter<0?'brisket':(tg.kind==='cow'||tg.isMo)?'cow':'pickup', isR?0.4:0.7);
   if(tg.isMo){ flash(isR?'RIVAL SNATCHED MO!':MO_CAUGHT_BARK, isR?'#7fb0ff':'#ffd23f',1.6); sayLater(pick(DAVE_MO_BARKS),'#ffd23f',1.5); }   // Dave's one Dairy Flats beat: he reacts to Mo
-  else if(tg.def.val>=2000){ flash(isR?'RIVAL GOT DAVE':'DAVE! +'+tg.def.val, isR?'#7fb0ff':'#ffd23f',1.4); if(!isR) sayLater(pick(DAVE_CAUGHT_BARKS),'#ffd23f',0.9); }
+  else if(tg.def.val>=2000){ var who=bossName(tg.sprite);                                  // wild Dave (2000) AND the champion-lap Dr. L come through here — name the right one
+    flash(isR?'RIVAL GOT '+who:who+'! +'+tg.def.val, isR?'#7fb0ff':'#ffd23f',1.4);
+    if(!isR) sayLater(pick(tg.sprite==='drl_g'?DRL_CAUGHT_BARKS:DAVE_CAUGHT_BARKS),'#ffd23f',0.9); }
   else if(!isR && tg.def.meter<0){                                  // BRISKET: cools the meter AND charges the SUPER BEAM
-    if(++briskN>=SUPER_EVERY){ briskN=0; superT=SUPER_SECS; flash('★ SUPER BEAM ★','#ffd23f',1.5); sfx('brisket',1.0); }
+    if(++briskN>=SUPER_EVERY){ briskN=0; superT=SUPER_SECS; flash('★ SUPER BEAM ★','#ffd23f',1.5); sfx('brisket',0.55); }
     else flash(level>=1?pick(DAVE_OUTRAGE_BARKS):'BRISKET — COOLED', level>=1?'#ffd23f':'#9affc0',1.0);
   }
   if(tg.def.selfstun){ sh.stun=Math.max(sh.stun,0.5); if(!isR) flash((tg.kind==='soldier'?'SOLDIER':'FARMER')+' GOT YOU','#ff9d3a',0.8); }
-  if(tg.kind==='loot' && !isR){ flash((tg.isBoss?(tg.sprite==='the_bull'?'THE BULL':'DAVE')+'!  +':'+')+tg.def.val, tg.isBoss?'#ffd23f':'#9affc0', tg.isBoss?1.2:0.6); }
+  if(tg.kind==='loot' && !isR){ flash((tg.isBoss?bossName(tg.sprite)+'!  +':'+')+tg.def.val, tg.isBoss?'#ffd23f':'#9affc0', tg.isBoss?1.2:0.6); }
   if(tg.isMo || tg.kind==='loot' || tg.kind==='gnome'){ tg.gone=true; tg.respawn=1e9; }   // Mo + bonus loot + gnomes are one-and-done (no cow respawn)
   else { tg.gone=true; tg.respawn=rnd(1.6,3.2); }
   tg.lock=0; tg.lifting=false; tg.owner=0;
@@ -1107,7 +1211,7 @@ function update(dt){
   if(state==='result'){ resT+=dt; if(msgT>0)msgT-=dt; if(shake>0)shake*=0.9; if(resT>=RESULT_HOLD) proceedSegment(); return; }   // tally auto-advances (BEAM skips it)
   if(state!=='play'){ if(state==='select'||state==='over'||state==='clear')idleT+=dt; if(msgT>0)msgT-=dt; if(shake>0)shake*=0.9; return; }
   idleT=0;   // playing — reset the attract idle timer (so it counts from the game-over screen)
-  while(score>=nextExtra && lives<99){ lives++; nextExtra+=EXTRA_LIFE; flash('★ EXTRA SHIP ★','#39ff14',1.5); sfx('pickup',0.95); }   // arcade extra-life reward
+  while(score>=nextExtra && lives<99){ lives++; nextExtra+=EXTRA_LIFE; flash('★ EXTRA SHIP ★','#39ff14',1.5); sfx('pickup',0.55); }   // arcade extra-life reward
   clock+=dt; stageClock-=dt; if(msgT>0)msgT-=dt; if(shake>0)shake-=dt*40;
   if(pendBarkAt>0 && clock>=pendBarkAt){ pendBarkAt=0; flash(pendBark,pendBarkCol,1.8); }   // deferred barks (Dave answers, round-start hollers)
   if(P.stun>0)P.stun-=dt; if(P.invuln>0)P.invuln-=dt; if(superT>0)superT-=dt;
@@ -1125,7 +1229,7 @@ function update(dt){
   // THE RUN — once past the zone's scroll_start the world drags you back; beaming anchors you
   var worldSpeed = 0;   // HOLD the area — work one spot for the calm part of the clock; it only moves on THE RUN
   if(mode==='campaign' && elapsed>=L.scrollStart){
-    if(!runActive){ runActive=true; flash('>>> THE RUN <<<','#ff9d3a',1.4); sfx('run',0.6); }
+    if(!runActive){ runActive=true; flash('>>> THE RUN <<<','#ff9d3a',1.4); sfx('run',0.5); }
     var ramp=clamp((elapsed-L.scrollStart)/Math.max(1,levelLen-L.scrollStart),0,1);
     worldSpeed = 10 + 52*ramp;                                                     // gentler push (was 16 + 90)
     if(!planting && P.stun<=0) P.tx=clamp(P.tx-(14+40*ramp)*dt, W*0.05, W*0.95);   // softer drag toward the back edge
@@ -1133,6 +1237,7 @@ function update(dt){
   // scenery scrolls left (the world comes at you), wrapping
   for(var i=0;i<scenery.length;i++){ scenery[i].x-=worldSpeed*dt; if(scenery[i].x<-W*0.12) scenery[i].x+=W*1.24; }
   bandScroll += (worldSpeed + 58)*dt;                           // traffic ALWAYS drives (base 58px/s) + the world push during THE RUN
+  roadScroll += worldSpeed*dt;                                 // the asphalt only moves as fast as the world does — so the cars now drive ALONG it
 
   // MO (Dairy Flats only)
   if(mode==='campaign' && L.mo){
@@ -1243,7 +1348,7 @@ function update(dt){
       if(stg>=3 && (mode==='base'||level>=2) && chance(0.3)){ shoot(je.x,je.y+10,je.vx*0.3,60,'missile','#ff5d6c'); shots[shots.length-1].tgt=fireTarget(); addFx(je.x,je.y,'spark','#ff9d3a',0.2); sfxT('rocket',0.5,0.3); }   // missiles: RED-only, rarer, NOT the first two zones — home on EITHER invader
       else { var ft=fireTarget(), dx=ft.x-je.x, dy=ft.y-je.y, L3=Math.hypot(dx,dy)||1; shoot(je.x,je.y,dx/L3*560,dy/L3*560,'tracer','#fff2a0'); } } }
     if(Math.hypot(je.x-P.x,je.y-P.y) < SAUCER_W()*0.42){
-      if(warbling()){ if(!je.phased){ je.phased=true; je.base += (je.y<P.y?-1:1)*SAUCER_W()*0.5; sfxT('warble',0.4,0.4); } addFx(P.x,P.y,'snatch','#9affc0',0.35); }  // PHASE-THRU: warble shoves the jet aside, no damage
+      if(warbling()){ if(!je.phased){ je.phased=true; je.base += (je.y<P.y?-1:1)*SAUCER_W()*0.5; sfxT('warble',0.4,0.7); } addFx(P.x,P.y,'snatch','#9affc0',0.35); }  // PHASE-THRU: warble shoves the jet aside, no damage
       else hitPlayer();
     }
     if(R && Math.hypot(je.x-R.x,je.y-R.y) < SAUCER_W()*0.42){                  // jets clip the rival too (so its dodging matters)
@@ -1275,7 +1380,7 @@ function update(dt){
     var radH = warbling()? SAUCER_W()*0.52 : SAUCER_W()*0.36;
     if(!sh.harmless && Math.hypot(sh.x-P.x,sh.y-P.y) < radH){
       if(warbling()){ var dxx=sh.x-P.x, dyy=sh.y-P.y, LL=Math.hypot(dxx,dyy)||1, spd=Math.hypot(sh.vx,sh.vy)||320;
-        sh.vx=dxx/LL*spd*1.15+rnd(-50,50); sh.vy=dyy/LL*spd*1.15-50; sh.harmless=true; sh.ricochet=true; sh.by=1; sfxT('deflect',0.2,0.5); if(fx.length>=MAX_FX)fx.shift(); fx.push({x:sh.x,y:sh.y,kind:'ric',col:'#bfffe0',t:0,life:0.32,dx:sh.vx,dy:sh.vy}); }   // WARBLE DEFLECT -> ricochet spark (can shoo a plane off)
+        sh.vx=dxx/LL*spd*1.15+rnd(-50,50); sh.vy=dyy/LL*spd*1.15-50; sh.harmless=true; sh.ricochet=true; sh.by=1; sfxT('deflect',0.2,0.95); if(fx.length>=MAX_FX)fx.shift(); fx.push({x:sh.x,y:sh.y,kind:'ric',col:'#bfffe0',t:0,life:0.32,dx:sh.vx,dy:sh.vy}); }   // WARBLE DEFLECT -> ricochet spark (can shoo a plane off)
       else if(P.invuln>0){ shots.splice(s,1); }
       else { hitPlayer(); shots.splice(s,1); }
       continue;
@@ -1347,7 +1452,16 @@ function drawBand(){
   var im=IMG[L.band]; if(!im||!im.ok) return;
   var bh=H*0.085, bw=bh*(im.naturalWidth/im.naturalHeight), off=((bandScroll%bw)+bw)%bw;
   var cy=(roadCarY||groundY()+6);                                   // cars ride ON the asphalt drawGround() laid down (was floating at the bare horizon)
-  ctx.globalAlpha=0.94; for(var x=-off; x<W+bw; x+=bw) ctx.drawImage(im, x, cy, bw, bh); ctx.globalAlpha=1;
+  // ALTERNATE TILES ARE MIRRORED: the strip is narrower than the window, so an un-flipped tile
+  // repeats the same cars a screen-width apart and reads as a clone. Mirroring every other tile
+  // breaks that AND gives the road two directions of traffic, which is what a road looks like.
+  ctx.globalAlpha=0.94;
+  var i0=Math.floor(-off/bw);
+  for(var x=-off, ti=i0; x<W+bw; x+=bw, ti++){
+    if(((ti%2)+2)%2){ ctx.save(); ctx.translate(x+bw/2, 0); ctx.scale(-1,1); ctx.drawImage(im, -bw/2, cy, bw, bh); ctx.restore(); }
+    else ctx.drawImage(im, x, cy, bw, bh);
+  }
+  ctx.globalAlpha=1;
 }
 // GROUND PLANE — replaces the old flat foreground fill. A far-dark → near-light gradient reads as ground
 // receding in Z; road zones (a scrolling vehicle row = a street) get a grass verge + asphalt the traffic
@@ -1382,7 +1496,7 @@ function drawGround(){
     ctx.fillStyle=asf; ctx.fillRect(0,roadTop,W,roadH);                                     // asphalt
     ctx.strokeStyle='rgba(228,226,205,0.30)'; ctx.lineWidth=2;
     ctx.beginPath(); ctx.moveTo(0,roadTop+1); ctx.lineTo(W,roadTop+1); ctx.stroke();        // painted shoulder edge
-    var seg=W*0.10, off=((bandScroll%seg)+seg)%seg;                                          // scrolling centre-lane dashes = a real moving road
+    var seg=W*0.10, off=((roadScroll%seg)+seg)%seg;                                          // scrolling centre-lane dashes = a real moving road
     ctx.fillStyle='rgba(240,220,120,0.45)'; for(var x=-off;x<W;x+=seg) ctx.fillRect(x, roadTop+roadH*0.5-2, seg*0.5, 4);
     roadCarY=roadTop;                                                                        // hand the car row its road surface
   } else {
@@ -1663,10 +1777,37 @@ function drawBG(){
   drawGround();
   drawBand();
 }
+// LIFT POSE — what a subject looks like riding the beam. One rule, called by BOTH draw paths
+// (drawTargets for the pre-lift frame, drawLifted for the in-front-of-the-beam frame) so they
+// can never disagree. Cows flip upside-down; DAVE has real abduction art: he goes up shouting
+// with the rifle still in his hand, then throws his arms up as the lock completes.
+function isDave(c){ return c.sprite==='dave' || (c.def && c.def.dave); }
+function liftSprite(c){
+  if(c.kind==='cow') return 'cow_lift';
+  if(isDave(c)) return c.lock>0.55?'dave_lift_b':'dave_lift';
+  return c.sprite; }
+// Dave's CAP: once he is properly off the ground it separates and tumbles up behind him,
+// drifting and spinning. Pure render off c.lock — no state, no RNG, nothing for the engine.
+function drawDaveHat(c,h){
+  if(!isDave(c) || c.lock<0.30) return;
+  var k=(c.lock-0.30)/0.70, hw=h*0.30;
+  drawImg('dave_hat', c.x+Math.sin(c.lock*7.5)*h*0.16, c.y-h*0.62-k*h*0.75, hw, c.lock*5.2, clamp(1.15-k*0.35,0,1)); }
+// GROUND DEPTH (render-only). Every ground unit anchors to the SAME groundY()+6 line, so a
+// Gunpowder horde drew as a chorus line: one rank, one scale, and the depth sort at the top of
+// drawTargets compared identical y values. zd (0 = back at the horizon line, 1 = forward toward
+// the viewer) nudges the DRAWN position down the ground plane and scales with it, so a crowd
+// reads as a crowd. Derived from x, NOT from Math.random(): it consumes no RNG, so wiring it in
+// cannot shift the spawn sequence — the house rule that decoration never touches gameplay.
+// Nothing reads zd but the draw calls; c.y (which the beam's overhead test and the farmer muzzle
+// use) is untouched.
+function zdepth(x){ var v=Math.abs(Math.sin(x*0.0173))*1.0; return v-Math.floor(v); }
+var ZD_DROP=0.030, ZD_GROW=0.14;                  // fraction of H forward · scale gain at zd 1
+function zdY(c){ return (c.zd||0)*H*ZD_DROP*(1-(c.lifting?c.lock:0)); }   // fades out as it leaves the ground
+function zdS(c){ return 1+(c.zd||0)*ZD_GROW; }
 function drawTargets(skipLift){
   // depth sort: vehicles (tanks) draw BEHIND, then everyone by ground-y (lower = nearer = on top)
   var order=[]; for(var i=0;i<targets.length;i++) if(!targets[i].gone) order.push(i);
-  order.sort(function(a,b){ var ca=targets[a], cb=targets[b], la=ca.kind==='tank'?0:1, lb=cb.kind==='tank'?0:1; return la!==lb? la-lb : ca.y-cb.y; });
+  order.sort(function(a,b){ var ca=targets[a], cb=targets[b], la=ca.kind==='tank'?0:1, lb=cb.kind==='tank'?0:1; return la!==lb? la-lb : (ca.y-cb.y)||((ca.zd||0)-(cb.zd||0)); });   // tie-break on DEPTH: every ground unit shares one y, so without this the sort was arbitrary
   var S=sz();
   for(var o=0;o<order.length;o++){ var c=targets[order[o]];
     if(skipLift && c.lifting && c.lock>0.05) continue;   // risen abductees are re-drawn IN FRONT of the beam by drawLifted()
@@ -1676,22 +1817,28 @@ function drawTargets(skipLift){
            : c.kind==='defender'?(c.dkind==='hardware'?S.tank:c.dkind==='banner'?S.tank*1.7:S.people)
            : S.people;
     if(c.isMo) hT*=1.18;
-    var sp = c.lifting && c.lock>0.05 ? (c.kind==='cow'?'cow_lift':c.sprite) : c.sprite;
+    hT *= zdS(c);                                            // nearer units draw bigger
+    var sp = c.lifting && c.lock>0.05 ? liftSprite(c) : c.sprite;
     var rot = c.lifting? Math.sin(clock*8)*0.18*c.lock : 0;
     var im=IMG[sp], ar=(im&&im.ok)? im.naturalWidth/im.naturalHeight : 1.4, h=hT, w=h*ar;
-    var cy = c.lifting? c.y : (groundY()+6 - h/2);            // height-keyed + bottom-anchored (no float)
+    var cy = c.lifting? c.y : (groundY()+6 + zdY(c) - h/2);   // height-keyed + bottom-anchored (no float), stepped forward by its depth
     var al = c.vanish>0 ? (Math.floor(clock*22)%2?0.2:0.75) : (c.lifting?0.94:1);   // GUNPOWDER: an overrun defender blinks out
     var noflip = c.kind==='tank' || (c.kind==='gnome'&&c.armor) || c.kind==='defender';
     if(!c.hidden && c.vanish<=0 && c.kind!=='loot'){                         // ground-contact shadow: root the unit into the plane; fades out as it lifts up the beam
       var shA=(c.lifting? 0.20*(1-clamp(c.lock*1.6,0,1)) : 0.22);
-      if(shA>0.01) groundShadow(c.x, groundY()+9, w*(c.kind==='tank'?0.8:0.78), shA); }
-    drawImg(sp, c.x, cy, w, rot, al, c.dir<0 && c.kind!=='cow' && !noflip, !noflip);
-    // foot gnomes now carry their own painted red pointy hat (real painterly weapon sprites) — no procedural marker needed
+      if(shA>0.01) groundShadow(c.x, groundY()+9+zdY(c), w*(c.kind==='tank'?0.8:0.78), shA); }   // the shadow travels with it
+    // FALLBACK IS LOAD-BEARING: an unloaded/typo'd sprite name used to draw as NOTHING, so a unit
+    // could attack from thin air (the rpg/cart/mower/cheer gnomes shipped that way). Anything that
+    // can't resolve now paints a red-hat silhouette — ugly on purpose, so it gets noticed in a frame.
+    if(!drawImg(sp, c.x, cy, w, rot, al, c.dir<0 && c.kind!=='cow' && !noflip, !noflip)){
+      ctx.globalAlpha=al; ctx.fillStyle='#2b2f3a'; ctx.fillRect(c.x-w*0.28, cy-h*0.30, w*0.56, h*0.80);   // body
+      ctx.fillStyle='#c0392b'; ctx.beginPath(); ctx.moveTo(c.x, cy-h*0.62);                               // pointy hat
+      ctx.lineTo(c.x+w*0.26, cy-h*0.26); ctx.lineTo(c.x-w*0.26, cy-h*0.26); ctx.fill(); ctx.globalAlpha=1; }
     if(c.kind==='defender' && c.maxHp>1 && c.hp>0 && c.vanish<=0){                    // hardware HP pips
       var pw=6, pg=3, tot=c.maxHp*pw+(c.maxHp-1)*pg, px0=c.x-tot/2, py=cy-h/2-8;
       for(var pi=0;pi<c.maxHp;pi++){ ctx.fillStyle=pi<c.hp?'#39ff14':'#5a1c1c'; ctx.fillRect(px0+pi*(pw+pg),py,pw,4); } }
     if(!c.lifting && (c.isMo || (c.def.val>=2000 && c.kind!=='gnome') || c.isBoss)){ ctx.fillStyle='#ffd23f'; ctx.font='800 11px system-ui'; ctx.textAlign='center';
-      ctx.fillText(c.isMo?'★ MO ★':c.isBoss?(c.sprite==='the_bull'?'THE BULL':'DAVE'):'DAVE', c.x, cy-h/2-6); }
+      ctx.fillText(c.isMo?'★ MO ★':c.isBoss?bossName(c.sprite):'DAVE', c.x, cy-h/2-6); }
   }
 }
 // The tractor beam is a CONE — narrow at the saucer emitter, wide at the ground contact ring.
@@ -1712,8 +1859,9 @@ function drawLifted(){
            : c.kind==='defender'?(c.dkind==='hardware'?S.tank:c.dkind==='banner'?S.tank*1.7:S.people)
            : S.people;
     if(c.isMo) hT*=1.18;
+    hT *= zdS(c);
     hT *= 1.0 + 0.28*c.lock;                                        // "a little bigger" as it rides up so the catch reads
-    var sp = c.kind==='cow'?'cow_lift':c.sprite, im=IMG[sp], ar=(im&&im.ok)?im.naturalWidth/im.naturalHeight:1.4;
+    var sp = liftSprite(c), im=IMG[sp], ar=(im&&im.ok)?im.naturalWidth/im.naturalHeight:1.4;
     var h=hT, w=h*ar, maxHalf=funnelHalf(own, c.y - h*0.38);        // clamp at the sprite's TOP edge (narrowest cone point over it)
     if(w*0.5>maxHalf){ var k=maxHalf/(w*0.5); w*=k; h*=k; }
     var col=(own===R)?'#8fdcff':'#b6ffb0', gr=Math.max(w,h)*0.62;   // cyan rival / green player abduction light
@@ -1722,6 +1870,7 @@ function drawLifted(){
     ctx.fillStyle=g; ctx.beginPath(); ctx.arc(c.x,c.y,gr,0,6.28); ctx.fill(); ctx.restore();
     var rot=Math.sin(clock*8)*0.18*c.lock, noflip=c.kind==='tank'||(c.kind==='gnome'&&c.armor)||c.kind==='defender';
     drawImg(sp,c.x,c.y,w,rot,1,c.dir<0&&c.kind!=='cow'&&!noflip,!noflip);
+    drawDaveHat(c,h);                                               // his cap comes off on the way up
   }
 }
 // one saucer — body sprite `pre` (p1/p2), warble strip `wpre` (w/rw), beam sprite `beamSp`; fallback glyph `gcol`
@@ -1923,13 +2072,14 @@ function frame(ts){
     else { _devStageBooted=false; }
     if(_devStageBooted){ state='play'; if(STAGE_ELAPSED>0){ stageClock=Math.max(1,stageClock-STAGE_ELAPSED); }
       if(STAGE_SIM>0){ for(var _s=0; _s<STAGE_SIM*60 && state==='play'; _s++){ if(BOTPLAY) devBot(); update(1/60); } }   // deterministic fast-forward into live combat (BOTPLAY = best-case auto-player, for winnability tests)
+      if(STAGE_LIFT>=0) devStageLift(STAGE_LIFT);                    // stage a frozen abduction for the lift-art review
     }
   }
-  if(state==='boot'){ bootT+=dt; drawBoot(); audioDirector(); updateAudio(dt); if(bootT>3.6){ bootT=0; state='cabboot'; } requestAnimationFrame(frame); return; }
-  if(state==='cabboot'){ bootT+=dt; drawCabBoot(); audioDirector(); updateAudio(dt); if(bootT>3.0){ ARCADE?enterAttract():enterFront(); } requestAnimationFrame(frame); return; }
+  if(state==='boot'){ bootT+=dt; drawBoot(); audioDirector(); updateAudio(dt); updateMixPanel(dt); if(bootT>3.6){ bootT=0; state='cabboot'; } requestAnimationFrame(frame); return; }
+  if(state==='cabboot'){ bootT+=dt; drawCabBoot(); audioDirector(); updateAudio(dt); updateMixPanel(dt); if(bootT>3.0){ ARCADE?enterAttract():enterFront(); } requestAnimationFrame(frame); return; }
   clock+=dt;
-  update(dt);
-  audioDirector(); updateAudio(dt);                                 // bed per state/zone + crossfade
+  if(!(DEV&&FREEZE)) update(dt);
+  audioDirector(); updateAudio(dt); updateMixPanel(dt);             // bed per state/zone + crossfade
   if(state==='select' && idleT>22) enterAttract();                  // attract kicks in after idle on the menu
   if(state==='over' && idleT>12) finishRun();                        // idle on game-over -> leaderboard (or vault for solo stages)
   if(state==='clear' && idleT>12) backToFront();
