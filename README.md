@@ -82,6 +82,8 @@ almost always that setting rather than the game. A is beam, B is warble.
 Created by **Joseph Coleman**, with Claude and ChatGPT.
 A Castle Killscreen game by Anders & Partners LLC.
 
+Music & SFX by **Joseph Coleman**.
+
 *For the Daves I know.*
 
 ---
