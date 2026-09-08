@@ -409,7 +409,7 @@ var superT=0, briskN=0, SUPER_SECS=8, SUPER_EVERY=2;       // SUPER BEAM (briske
 var runActive=false, daveSpawned=false, moTele=false, moSpawned=false, moTarget=null, moEscapeAt=0;
 // STAGE-CLEAR interstitial (campaign only): the "where you're at" beat between segments (the original build had it).
 var resT=0, resBonus=0, resKind='round', resPerfect=false, resLast=false, RESULT_HOLD=5.5;   // captured at each clear site, shown by drawResult, then proceedSegment()
-var jetTimer=2, aaTimer=2, truck=null, bandScroll=0, roadScroll=0;   // bandScroll = the CARS (world push + their own 58px/s); roadScroll = the ROAD SURFACE (world push only).
+var jetTimer=2, aaTimer=2, truck=null, bandScroll=0, roadScroll=0, bandScroll2=0, roadCarH=0;   // bandScroll = the CARS (world push + their own 58px/s); roadScroll = the ROAD SURFACE (world push only).
 // Two clocks, because one made the traffic look painted on: dashes and cars advanced together,
 // so the cars never moved RELATIVE to the asphalt they were supposedly driving on.
 // JAILBREAK CAB — STAGE SELECT (the level select) + soloStage gate (single-stage vs the full run)
@@ -566,7 +566,7 @@ function endRun(){ state='ending'; endT=0; SAVE.beat=true;
 /* ---------- CHEATS VAULT — level select (earned by a DEFCON-1 clear, or always open in COLEMAN'S ORIGINAL) ---------- */
 function enterCheats(){ state='select'; idleT=0; sel=0; mode='campaign'; level=0;
   buildScenery(LEVELS[0].props, 0.05, 0.14);          // Dairy Flats behind the CHEATS menu (depth-authored props)
-  targets=[]; jets=[]; shots=[]; fx=[]; truck=null; bandScroll=0; roadScroll=0; planting=false; held={};
+  targets=[]; jets=[]; shots=[]; fx=[]; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0; planting=false; held={};
 }
 function enterSelect(){ enterCheats(); }                 // legacy alias — any old "go to the menu" call lands in the vault
 function enterFront(){ OG?enterCheats():enterAttract(); } // blacksite front door: OG -> vault, otherwise the arcade-style attract
@@ -681,7 +681,7 @@ function startLevel(idx){
   level=idx; mode='campaign'; var L=LEVELS[idx];
   P=newPlayer(); R=newRival(); targets=[]; jets=[]; shots=[]; fx=[]; shake=0;
   meter=L.meter0||0; stageClock=L.clock; levelLen=L.clock; jetTimer=L.aa?0.6:2; aaTimer=L.aa?0.8:1.8;
-  runActive=false; daveSpawned=false; moTele=false; moSpawned=false; moTarget=null; moEscapeAt=0; bandScroll=0; roadScroll=0; superT=0;   // fresh round: drop any active super (brisket charge carries the run)
+  runActive=false; daveSpawned=false; moTele=false; moSpawned=false; moTarget=null; moEscapeAt=0; bandScroll=0; bandScroll2=0; roadScroll=0; superT=0;   // fresh round: drop any active super (brisket charge carries the run)
   truck = L.truck ? truckRespawn({gapCd:0}) : null;   // Dave's rocket truck this round (enters from a random side, faces its travel direction)
   buildScenery(L.props, 0.03, L.props.length>7?0.128:0.135);
   for(var k=0;k<5;k++) spawnTarget();
@@ -693,7 +693,7 @@ function startLevel(idx){
 function startBase(fresh){
   mode='base'; clock=0; if(fresh){ score=0; hp=maxHP; }            // fresh = standalone (B key); woven-in keeps score+hull
   P=newPlayer(); R=null; targets=[]; jets=[]; shots=[]; fx=[]; shake=0; bonusKind=null;   // base = solo dodge, no rival
-  meter=100; stageClock=30; levelLen=30; jetTimer=1.0; aaTimer=1.2; runActive=false; daveSpawned=true; moSpawned=true; truck=null; bandScroll=0; roadScroll=0; superT=0;
+  meter=100; stageClock=30; levelLen=30; jetTimer=1.0; aaTimer=1.2; runActive=false; daveSpawned=true; moSpawned=true; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0; superT=0;
   // MILITARY BASE — layered: distant lit base-city skyline + deep admin/HQ office blocks (silhouette) →
   // mid radar dishes + water tower → near barracks/commissary + bunkers on the flightline. Depth spread
   // so it reads as a real installation, not a flat prop row.
@@ -762,7 +762,7 @@ function spawnGnomeWave(n){
 function startGunpowder(fresh){
   mode='gunpowder'; clock=0; if(fresh!==false){ score=0; hp=maxHP; }
   P=newPlayer(); R=null; targets=[]; jets=[]; shots=[]; fx=[]; shake=0; bonusKind=null;
-  meter=0; stageClock=GUNPOWDER_SECS; levelLen=GUNPOWDER_SECS; runActive=false; daveSpawned=true; moSpawned=true; truck=null; bandScroll=0; roadScroll=0; superT=0;
+  meter=0; stageClock=GUNPOWDER_SECS; levelLen=GUNPOWDER_SECS; runActive=false; daveSpawned=true; moSpawned=true; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0; superT=0;
   gpWaveT=0; gpBradley=false; gpVeh=false; gpFell=false;
   // FORT GUNPOWDER backdrop — the base at night (reuse the military installation dressing)
   buildScenery([ {s:'radar',d:0.5}, {s:'water_tower',d:0.56}, {s:'it_brick',d:0.82,sc:0.85}, {s:'bunker',d:0.92},
@@ -820,7 +820,7 @@ function gunpowderStep(dt){
 function startBonus(bi){
   if(bi===2){ startChampionLap(); return; }               // #1 CHAMPION LAP (CHEATS vault only — not in the arcade schedule)
   var crab=(bi%2===1); mode='bonus'; bonusKind=crab?'crab':'backyard'; clock=0;
-  P=newPlayer(); R=newRival(); targets=[]; jets=[]; shots=[]; fx=[]; shake=0; truck=null; bandScroll=0; roadScroll=0;
+  P=newPlayer(); R=newRival(); targets=[]; jets=[]; shots=[]; fx=[]; shake=0; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0;
   meter=0; stageClock=BONUS_SECONDS; levelLen=BONUS_SECONDS; runActive=false; daveSpawned=true; moSpawned=true; superT=0;
   // CLAW & ORDER (crab feast, waterfront) vs DAVE'S BACKYARD (homestead) — layered w/ a deep house behind
   var bp = crab? [ {s:'it_house_11',d:0.5,sc:0.8}, {s:'water_tower',d:0.55}, {s:'it_bldg6',d:1.0}, {s:'tree',d:0.95} ]
@@ -834,7 +834,7 @@ function startBonus(bi){
 }
 // #1 CHAMPION LAP — the calm victory pasture: a sparse peaceful field, no army, high-value herd + Dave hands over the crown.
 function startChampionLap(){ mode='bonus'; bonusKind='champ'; clock=0;   // 'champ' -> HUD reads CHAMPION LAP; music falls through to the calm backyard bed
-  P=newPlayer(); R=newRival(); targets=[]; jets=[]; shots=[]; fx=[]; shake=0; truck=null; bandScroll=0; roadScroll=0;
+  P=newPlayer(); R=newRival(); targets=[]; jets=[]; shots=[]; fx=[]; shake=0; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0;
   meter=0; stageClock=BONUS_SECONDS; levelLen=BONUS_SECONDS; runActive=false; daveSpawned=true; moSpawned=true; superT=0;
   // #1 CHAMPION LAP — calm victory pasture, layered homesteads (deep house → near house + barn + trees)
   buildScenery([ {s:'it_house_2',d:0.5,sc:0.82}, {s:'tree',d:0.62}, {s:'it_house_10',d:1.0}, {s:'barn',d:0.92}, {s:'tree',d:1.0} ], 0.06, 0.205);
@@ -1103,6 +1103,7 @@ function pumpRival(dt){   // 2-PLAYER: P2 flies the blue rival (mirror of pumpPl
   R.beamOn = planting2 && R.stun<=0 && mode!=='base';
   spring(R,R.tx,R.ty,dt);
 }
+function ease01(v){ return v*v*(3-2*v); }   // smoothstep, for traffic that eases in and out of a crawl
 function warblingS(s){ return s && clock<s.warbleU; }
 function warbling(){ return warblingS(P); }
 
@@ -1258,7 +1259,12 @@ function update(dt){
   }
   // scenery scrolls left (the world comes at you), wrapping
   for(var i=0;i<scenery.length;i++){ scenery[i].x-=worldSpeed*dt; if(scenery[i].x<-W*0.12) scenery[i].x+=W*1.24; }
-  bandScroll += (worldSpeed + 58)*dt;                           // traffic ALWAYS drives (base 58px/s) + the world push during THE RUN
+  // STOP-AND-GO, and the two lanes are out of phase so the road is never uniform. Both keep a floor of
+  // 0.3 so neither ever freezes (a frozen band was a real bug once) -- they crawl, then surge.
+  var flowA=0.30+0.70*ease01(Math.sin(clock*0.23)*0.5+0.5);
+  var flowB=0.30+0.70*ease01(Math.sin(clock*0.19+2.4)*0.5+0.5);
+  bandScroll  += (worldSpeed + 58)*flowA*dt;                    // FAR lane: with the world push during THE RUN
+  bandScroll2 += 52*flowB*dt;                                   // NEAR lane: oncoming, its own pace
   roadScroll += worldSpeed*dt;                                 // the asphalt only moves as fast as the world does — so the cars now drive ALONG it
 
   // MO (Dairy Flats only)
@@ -1489,16 +1495,39 @@ function drawTruck(){
 function drawBand(){
   var L=LEVELS[level]; if(mode!=='campaign'||!L||!L.band) return;
   var im=IMG[L.band]; if(!im||!im.ok) return;
-  var bh=H*0.085, bw=bh*(im.naturalWidth/im.naturalHeight), off=((bandScroll%bw)+bw)%bw;
-  var cy=(roadCarY||groundY()+6);                                   // cars ride ON the asphalt drawGround() laid down (was floating at the bare horizon)
-  // ALTERNATE TILES ARE MIRRORED: the strip is narrower than the window, so an un-flipped tile
-  // repeats the same cars a screen-width apart and reads as a clone. Mirroring every other tile
-  // breaks that AND gives the road two directions of traffic, which is what a road looks like.
-  ctx.globalAlpha=0.94;
-  var i0=Math.floor(-off/bw);
-  for(var x=-off, ti=i0; x<W+bw; x+=bw, ti++){
-    if(((ti%2)+2)%2){ ctx.save(); ctx.translate(x+bw/2, 0); ctx.scale(-1,1); ctx.drawImage(im, -bw/2, cy, bw, bh); ctx.restore(); }
-    else ctx.drawImage(im, x, cy, bw, bh);
+  var cy=(roadCarY||groundY()+6), rH=(roadCarH||H*0.17);
+  // TWO OPPOSING LANES. There was one row of cars parked above the centre line while the near half of
+  // the asphalt sat empty, which is what made the road read as a repeating strip rather than a street.
+  // FAR lane sits just under the shoulder heading one way; NEAR lane sits under the centre line heading
+  // the other, drawn larger because it is closer to camera. Each scrolls on its own clock.
+  // Sized off the ROAD, not the screen: at H*0.072/0.092 the near lane landed on top of the far one
+  // whenever roadH bottomed out at its H*0.085+8 floor. Each lane now takes its half of the asphalt,
+  // with the painted centre line left visible in the gap between them.
+  // FAR lane: x = n*bw - bandScroll, and bandScroll grows, so it travels LEFT.
+  // NEAR lane: scroll is negated, so x grows and it travels RIGHT. Opposing, as a road should be.
+  drawLane(im, bandScroll,   cy+rH*0.04, rH*0.40, true,  0.88);
+  drawLane(im, -bandScroll2, cy+rH*0.52, rH*0.46, false, 0.96);
+}
+// One lane of the strip. Each tile takes a stable PHASE into the art so a 6-car strip stops looping:
+// County Road 9 fits only ~1.4 strips on screen and 3 of its 6 vehicles are near-identical white-door
+// units, so a fixed order read as clones. The phase is hashed off the ABSOLUTE tile index, not the
+// scroll modulo, so a stretch of road keeps its cars as it scrolls instead of popping when a tile recycles.
+// The source art FACES RIGHT (taillight at the left edge, headlight and windscreen rake at the right --
+// checked against the strip, not assumed). A lane therefore flips only when it TRAVELS LEFT, and every
+// car in it flips together: facing is a property of the lane, never of the individual car. Flipping per
+// car -- which is what an earlier pass here did off the tile hash -- just puts cars in reverse.
+function drawLane(im, scroll, y, bh, travelsLeft, alpha){
+  var sw=im.naturalWidth, sh=im.naturalHeight, bw=bh*(sw/sh);
+  var n0=Math.floor(scroll/bw), n1=Math.floor((scroll+W)/bw)+1;
+  ctx.globalAlpha=alpha;
+  for(var n=n0;n<=n1;n++){
+    var x=n*bw-scroll, hsh=((n*2654435761)>>>0);
+    var sx=((hsh>>>8)%1024)/1024*sw, w1=sw-sx, w1s=w1/sw*bw;
+    ctx.save(); ctx.translate(x+bw/2,0);
+    if(travelsLeft) ctx.scale(-1,1);                    // whole lane, one direction
+    ctx.drawImage(im, sx,0,w1,sh, -bw/2, y, w1s, bh);
+    if(sx>0.5) ctx.drawImage(im, 0,0,sx,sh, -bw/2+w1s, y, sx/sw*bw, bh);
+    ctx.restore();
   }
   ctx.globalAlpha=1;
 }
@@ -1537,7 +1566,7 @@ function drawGround(){
     ctx.beginPath(); ctx.moveTo(0,roadTop+1); ctx.lineTo(W,roadTop+1); ctx.stroke();        // painted shoulder edge
     var seg=W*0.10, off=((roadScroll%seg)+seg)%seg;                                          // scrolling centre-lane dashes = a real moving road
     ctx.fillStyle='rgba(240,220,120,0.45)'; for(var x=-off;x<W;x+=seg) ctx.fillRect(x, roadTop+roadH*0.5-2, seg*0.5, 4);
-    roadCarY=roadTop;                                                                        // hand the car row its road surface
+    roadCarY=roadTop; roadCarH=roadH;                                                      // hand the car rows their road surface
   } else {
     var rows=[0.0,0.16,0.36,0.62,1.0];                                                       // receding field rows (near rows taller = perspective)
     for(var ri=0;ri<rows.length-1;ri++){ var y0=gy+8+below*rows[ri], y1=gy+8+below*rows[ri+1];
@@ -1830,7 +1859,19 @@ function liftSprite(c){
 function drawDaveHat(c,h){
   if(!isDave(c) || c.lock<0.30) return;
   var k=(c.lock-0.30)/0.70, hw=h*0.30;
-  drawImg('dave_hat', c.x+Math.sin(c.lock*7.5)*h*0.16, c.y-h*0.62-k*h*0.75, hw, c.lock*5.2, clamp(1.15-k*0.35,0,1)); }
+  var own=(c.owner===2)?R:P;
+  var x=c.x+Math.sin(c.lock*7.5)*h*0.16, y=c.y-h*0.62-k*h*0.75;
+  // The cap used to be pure offset maths with nothing above it: at a high lock it sailed past the
+  // emitter and drew ON TOP of the saucer, outside its own beam. It is now bounded by the same two
+  // things the lifted body is -- it stops at the belly, stays inside the cone -- and fades as it
+  // arrives, so it reads as tumbling up into the ship rather than glitching over it.
+  if(own){
+    var belly=own.y+SAUCER_W()*0.16;
+    if(y<belly) y=belly;
+    var half=Math.max(hw*0.5, funnelHalf(own,y)-hw*0.5);
+    x=clamp(x, own.x-half, own.x+half);
+  }
+  drawImg('dave_hat', x, y, hw, c.lock*5.2, clamp(1.10-k*0.95,0,1)); }
 // GROUND DEPTH (render-only). Every ground unit anchors to the SAME groundY()+6 line, so a
 // Gunpowder horde drew as a chorus line: one rank, one scale, and the depth sort at the top of
 // drawTargets compared identical y values. zd (0 = back at the horizon line, 1 = forward toward
