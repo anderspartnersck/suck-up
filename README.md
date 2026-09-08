@@ -46,14 +46,13 @@ Farmers shoot back.
 a full run, then continue or begin again. No stage select and no quitting
 mid-run, the same as a real cabinet.
 
-[BLACKSITE][story] is the same game, but it keeps your progress. Clear a zone
-and the next one opens; come back later and it drops you straight into the
-furthest zone you reached. There is no level select, it just continues, and the
-attract screen tells you where you left off.
+[BLACKSITE][story] is the same game, but it tracks your progress: clear a zone
+and the next one opens, and it drops you into the furthest one you have reached.
+There is no level select, it just continues. That progress lasts for the session
+and resets when you refresh.
 
-[COLEMAN'S ORIGINAL][testcab] is Blacksite with everything already open, and it
-never writes to your save. Use it to show someone the later zones without
-touching your own run.
+[COLEMAN'S ORIGINAL][testcab] is Blacksite with every zone already open. Use it
+to jump straight to the later stages.
 
 Sound sliders are in the corner of the screen on all of them.
 
@@ -69,9 +68,9 @@ You can unlock it from the arcade cab but you can't open it there, because that
 cab has no menus. Press C on the story cab instead. On the test cab it's already
 open.
 
-Progress and high scores are saved in your own browser and nowhere else. Nothing
-is sent anywhere, and closing the tab does not lose it. Clearing site data or
-playing in a private window does, and every browser keeps its own separate save.
+Nothing is saved. Progress, scores and the vault last as long as the tab is open
+and reset on refresh, the way a cabinet forgets your game when the power cycles.
+The game stores nothing on your machine and sends nothing anywhere.
 
 ## Controllers
 

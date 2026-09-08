@@ -353,9 +353,15 @@ var CAB_ART=ARCADE?'cab_hyscore':'cab_blacksite', CAB_ACCENT=ARCADE?'#d6bd86':'#
 // ---- SAVE (localStorage): STORY progress + the earned CHEATS vault. Blacksite is the "home console":
 // STORY unlocks one zone at a time; beating the full run on DEFCON 1 unlocks CHEATS. OG bypasses it all.
 var SAVE_KEY='suckupBlacksite1';
-function loadSave(){ try{ return JSON.parse(localStorage.getItem(SAVE_KEY)||'{}'); }catch(e){ return {}; } }
+// SESSION-ONLY BY CHOICE (Joe): this game writes NOTHING to the browser. Progress, scores, the vault
+// and the mix live in memory for as long as the tab is open and are gone on refresh -- an arcade
+// cabinet loses your game when the power cycles, and a web page has no business leaving a save behind
+// on a stranger's machine for a thing they clicked once. It also actively CLEARS the keys older builds
+// wrote, so anyone who played before gets tidied up rather than left with orphaned data.
+// (ckGamepad is still READ below -- the KILLBOX writes that, not us, and a cab needs its pad map.)
+function loadSave(){ try{ localStorage.removeItem(SAVE_KEY); localStorage.removeItem('suckupMix'); }catch(e){} return {}; }
 var SAVE=loadSave(); if(SAVE.storyMax==null) SAVE.storyMax=0;   // highest STORY zone unlocked (0 = only DAIRY FLATS open)
-function persist(){ if(OG) return; try{ localStorage.setItem(SAVE_KEY, JSON.stringify(SAVE)); }catch(e){} }
+function persist(){}   // session-only: SAVE lives in memory and is never written. See loadSave().
 function cheatsUnlocked(){ return OG || !!SAVE.cheats; }        // CHEATS vault — earned by a DEFCON-1 full clear (always open in OG)
 function storyMaxZone(){ return OG ? LEVELS.length-1 : (SAVE.storyMax|0); }
 var GOD=OG;                                                    // GOD mode / infinite lives (default ON in OG; toggled in CHEATS)
@@ -855,10 +861,10 @@ var AUDIO_ON=true;
 // The authored mix (the vol argument at each call site) is the reference: 1.0 here = exactly what
 // tools/mixcheck.py measures. Persisted per browser; the cab builds don't expose the sliders.
 var MIX={mus:1,sfx:1};
-try{ var _mx=JSON.parse(localStorage.getItem('suckupMix')||'{}');
+try{ var _mx={};   // session-only: nothing is read back, so the faders start at the authored mix every time
   if(_mx && typeof _mx.mus==='number') MIX.mus=clamp(_mx.mus,0,1);
   if(_mx && typeof _mx.sfx==='number') MIX.sfx=clamp(_mx.sfx,0,1); }catch(e){}
-function saveMix(){ try{ localStorage.setItem('suckupMix',JSON.stringify(MIX)); }catch(e){} }
+function saveMix(){}   // session-only: the faders reset with the tab, like every other setting here.
 var MUS={ menu:'audio/attract-questions.mp3', attract:'audio/attract-pod-1.mp3', ident:'audio/mystery-transition.mp3',
   zones:['audio/dairy-flats-1.mp3','audio/stage-theme-1.mp3','audio/stage-theme-2.mp3','audio/stage-theme-3.mp3','audio/stage-beltway.mp3','audio/stage-outskirts.mp3'],
   base:'audio/stage-base-1.mp3', backyard:'audio/stage-backyard.mp3', crab:'audio/claw-and-order.mp3',
