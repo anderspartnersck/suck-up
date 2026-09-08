@@ -93,4 +93,4 @@ controller, not the game. Then **A** is your beam and **B** is your warble.
 <sub>The logo and saucers above are the cabinet's own ASCII, lifted from the
 original terminal build.</sub>
 
-<sub>RESPEK LOGIC ART UREA · 25¢ per play</sub>
+<sub>RESPEK LOGIC ART UREA</sub>
