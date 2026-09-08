@@ -118,4 +118,4 @@ from the terminal original (`src/suck_up.py`) — `ATTRACT_LOGO`, the `<o>` and
 
 ---
 
-<sub>RESPEK LOGIC ART UREA · 25¢ per play</sub>
+<sub>RESPEK LOGIC ART UREA</sub>
