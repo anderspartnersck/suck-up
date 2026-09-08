@@ -69,7 +69,9 @@ You can unlock it from the arcade cab but you can't open it there, because that
 cab has no menus. Press C on the story cab instead. On the test cab it's already
 open.
 
-High scores stay in your own browser.
+Progress and high scores are saved in your own browser and nowhere else. Nothing
+is sent anywhere, and closing the tab does not lose it. Clearing site data or
+playing in a private window does, and every browser keeps its own separate save.
 
 ## Controllers
 
