@@ -48,7 +48,7 @@
     background:#13301f;border:1px solid #28543a;border-radius:4px;color:#bdf2cf}
   #mix button.off{background:#3a1414;border-color:#7a2a2a;color:#ff9d9d}
 </style>
-<script>window.__SUCKUP_BUILD='mouse';</script><!-- tools/build_editions.py replaces this marker with `<script>window.__SUCKUP_BUILD='mouse'|'stick'</script>` to BAKE a distributable edition (no URL param needed). Left as an inert comment in the master/dev build. -->
+<script>window.__SUCKUP_BUILD='mouse';window.__SUCKUP_MODE='arcade';</script><!-- tools/build_editions.py replaces this marker with `<script>window.__SUCKUP_BUILD='mouse'|'stick'</script>` to BAKE a distributable edition (no URL param needed). Left as an inert comment in the master/dev build. -->
 </head>
 <body>
 <canvas id="c"></canvas>
@@ -266,7 +266,11 @@ var state='boot', bootT=0, clock=0, t=0, shake=0, msg='', msgColor='#fff', msgT=
 var mode='campaign', stress=false, fps=60, fpsAcc=0, fpsN=0;
 var DEV=/[?&]dev\b/.test(location.search);                 // dev/tuning keys hidden from the cab; ?dev in the URL re-enables them
 // ARCADE = the HYSCORE FOREST quarter-eater: classical cab, NO stage select — attract -> INSERT COIN -> the full run -> CONTINUE, loops back to attract.
-var ARCADE=/[?&]arcade\b/.test(location.search);
+var MODEBAKE=(typeof window!=='undefined' && window.__SUCKUP_MODE)||'';   // baked by tools/build_pages.py --mode arcade, so a SHARED bare link is still the coin-op
+// An EXPLICIT mode in the URL beats the bake -- otherwise baking arcade would make the story
+// cab and the OG test cab unreachable on that upload, with no way back.
+var MODEOVR=/[?&](og|coleman|story|blacksite)\b/.test(location.search);
+var ARCADE=/[?&]arcade\b/.test(location.search) || (MODEBAKE==='arcade' && !MODEOVR);
 // COLEMAN'S ORIGINAL SUCK-UP BLACKSITE CABINET — the backdoor test cab: EVERYTHING unlocked from boot
 // (every level + every cheat + GOD mode), and it never touches the real player's save. ?coleman or ?og.
 var OG=/[?&](coleman|og)\b/.test(location.search);

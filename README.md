@@ -14,7 +14,7 @@
     &      @      f      @       &      @
 ```
 
-### ▶ **[PLAY IT](https://anderspartnersck.github.io/suck-up/)**
+### ▶ **[INSERT COIN](https://anderspartnersck.github.io/suck-up/)** — the arcade cabinet, 1-up quarter-eater
 
 A Castle Killscreen arcade title by **Anders & Partners LLC**.
 
@@ -41,18 +41,22 @@ works too, and two players can share one:
 
 `SPACE` starts / inserts a coin · `M` mutes
 
-## Modes
+## The cabinets
 
-Append to the URL:
+Every version is a link — no settings, no menus, just pick one.
 
-| | |
-|:--|:--|
-| *(nothing)* | **BLACKSITE** story — saves your progress, resumes from your furthest zone |
-| `?arcade` | the **HYSCORE** coin-op — attract → INSERT COIN → full run → CONTINUE |
-| `?og` | **COLEMAN'S ORIGINAL** — everything unlocked, never touches your save |
+| | | |
+|:--|:--|:--|
+| 🕹 **[ARCADE](https://anderspartnersck.github.io/suck-up/)** | the default | The **HYSCORE 1-up quarter-eater.** Attract reel → INSERT COIN → the full run → CONTINUE, then back to attract. No stage select, no bail-out — a real cabinet. **Start here.** |
+| 📖 **[STORY](https://anderspartnersck.github.io/suck-up/?story)** | `?story` | The **BLACKSITE** cab. Saves your progress and resumes from your furthest zone. The long game. |
+| 🔓 **[TEST CAB](https://anderspartnersck.github.io/suck-up/?og)** | `?og` | **COLEMAN'S ORIGINAL** — every level and every cheat unlocked from boot, and it never touches your real save. Best for showing someone around. |
 
-Clearing DEFCON-1 unlocks the CHEATS vault: level select, Champion Lap, and
-Hadrian's secret codes. High scores live in your own browser.
+Clearing DEFCON-1 in the arcade unlocks the CHEATS vault: level select, Champion
+Lap, and Hadrian's secret codes. High scores live in your own browser.
+
+<sub>The bare URL is baked to the arcade cab, so a link you paste to someone
+lands on the coin-op even with no parameters. An explicit mode above always wins
+over that default.</sub>
 
 ## Controllers
 
