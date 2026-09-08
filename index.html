@@ -1110,6 +1110,11 @@ function warbling(){ return warblingS(P); }
 // BEAM CONTEST tuning — how a fought-over catch resolves. DRAG is the fraction of normal lock speed the
 // ESTABLISHED owner keeps while contested (1 = contest does nothing, 0 = the old total denial).
 var CONTEST_DRAG=0.45, CONTEST_BACKOFF=2.2;
+// The blue ship's lift handicap. It exists to keep the CPU BEATABLE in a straight race -- it is a
+// difficulty knob, not a property of the colour. In 2-PLAYER the blue ship is a HUMAN, so it must lift
+// exactly as fast as green or P2 is simply playing a worse game. (Was applied unconditionally: a human
+// P2 silently carried the CPU's 1.4x penalty for every catch.)
+function blueLockMul(){ return twoP ? 1 : (defcon ? 1.1 : 1.4); }
 var PRIZE_BIAS=0.45;   // how much of a head start (in screen widths) a prize is worth to the rival
 function updateRival(dt){
   if(!R || mode==='base') return;
@@ -1335,13 +1340,13 @@ function update(dt){
     var tg=targets[pT]; tg.lifting=true; addFx((P.x+R.x)/2,(P.y+R.y)/2,'spark','#ffe23a',0.25);
     if(R) R.contestCd=clock+CONTEST_BACKOFF;                         // and it backs off this catch longer than before
     if(tg.owner===1){ tg.lock=clamp(tg.lock+dt/tg.def.lock*CONTEST_DRAG*(superT>0?2:1),0,1); P.lock=tg; if(tg.lock>=1) abduct(tg,1); }
-    else if(tg.owner===2){ tg.lock=clamp(tg.lock+dt/(tg.def.lock*(defcon?1.1:1.4))*CONTEST_DRAG,0,1); R.lock=tg; if(tg.lock>=1) abduct(tg,2); }
+    else if(tg.owner===2){ tg.lock=clamp(tg.lock+dt/(tg.def.lock*blueLockMul())*CONTEST_DRAG,0,1); R.lock=tg; if(tg.lock>=1) abduct(tg,2); }
     else tg.owner=0;                                                 // nobody had it yet — a true dead heat, neither gains
   } else {
     if(pT>=0){ var tg=targets[pT]; if(tg.owner===2 && tg.lock>0) tg.lock*=0.5; tg.owner=1; P.lock=tg;     // steal from the rival halves its progress
       tg.lock=clamp(tg.lock+dt/tg.def.lock*(superT>0?2:1),0,1); tg.lifting=true; if(tg.lock>=1) abduct(tg,1); }   // SUPER BEAM locks 2x faster
     if(rT>=0){ var tg=targets[rT]; if(tg.owner===1 && tg.lock>0) tg.lock*=0.5; tg.owner=2; R.lock=tg;
-      tg.lock=clamp(tg.lock+dt/(tg.def.lock*(defcon?1.1:1.4)),0,1); tg.lifting=true; if(tg.lock>=1) abduct(tg,2); }   // DEFCON 1 ALLSTAR locks nearly as fast as you (normal rival is 1.4x slower — beatable in a straight race)
+      tg.lock=clamp(tg.lock+dt/(tg.def.lock*blueLockMul()),0,1); tg.lifting=true; if(tg.lock>=1) abduct(tg,2); }   // CPU: 1.4x slower (1.1x on DEFCON) so it is beatable. HUMAN P2: parity with P1.
   }
   for(var i=0;i<targets.length;i++){ var c=targets[i]; if(c!==P.lock && (!R||c!==R.lock) && c.lock>0){ c.lock=Math.max(0,c.lock-dt*1.5); if(c.lock<=0){ c.lifting=false; c.owner=0; } } }
 
