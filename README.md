@@ -42,15 +42,18 @@ Farmers shoot back.
 
 ## The three cabinets
 
-[Arcade][play] is the default, and the one to start with. Attract reel, a
-full run, then continue or begin again. No stage select and no quitting
+[HYSCORE FOREST][play] is the default, and the one to start with. Attract reel,
+a full run, then continue or begin again. No stage select and no quitting
 mid-run, the same as a real cabinet.
 
-[Story][story] saves your progress and picks up from the furthest zone you
-reached.
+[BLACKSITE][story] is the same game, but it keeps your progress. Clear a zone
+and the next one opens; come back later and it drops you straight into the
+furthest zone you reached. There is no level select, it just continues, and the
+attract screen tells you where you left off.
 
-[Test cab][testcab] has everything unlocked and won't touch your saved game.
-Useful if you want to show someone the later stages.
+[COLEMAN'S ORIGINAL][testcab] is Blacksite with everything already open, and it
+never writes to your save. Use it to show someone the later zones without
+touching your own run.
 
 Sound sliders are in the corner of the screen on all of them.
 
