@@ -908,7 +908,11 @@ function audioDirector(){ var path=null,vol=0.5;
 var mixEl=document.getElementById('mix'), mixWakeT=0;
 (function(){
   if(!mixEl) return;
-  if(ARCADE||STICK){ mixEl.remove(); mixEl=null; return; }        // real cab: no widget on the glass
+  // A real CABINET hides the faders (there's a pot inside the box) -- but the arcade cab published to
+  // the WEB is a browser tab with no pot and no knob, so removing them there just left players with
+  // no volume at all but the M mute. Hide for the STICK cab, and for a non-desktop ?arcade (the cab
+  // launchers); KEEP them whenever this is the mouse/desktop build, arcade or not.
+  if(STICK || (ARCADE && !DESKTOP)){ mixEl.remove(); mixEl=null; return; }
   var mus=document.getElementById('volmus'), sfxS=document.getElementById('volsfx'),
       musV=document.getElementById('volmusv'), sfxV=document.getElementById('volsfxv'),
       mute=document.getElementById('volmute');
@@ -1103,6 +1107,9 @@ function warblingS(s){ return s && clock<s.warbleU; }
 function warbling(){ return warblingS(P); }
 
 /* ---------- the blue rival (CPU antagonist) — port of _cpu_control: hunt, contest, race for prizes, dodge ---------- */
+// BEAM CONTEST tuning — how a fought-over catch resolves. DRAG is the fraction of normal lock speed the
+// ESTABLISHED owner keeps while contested (1 = contest does nothing, 0 = the old total denial).
+var CONTEST_DRAG=0.45, CONTEST_BACKOFF=2.2;
 function updateRival(dt){
   if(!R || mode==='base') return;
   if(R.invuln>0) R.invuln-=dt;
@@ -1289,8 +1296,16 @@ function update(dt){
     // the beam hangs BELOW the emitter (belly->ground), NOT above it — so you can fly OVER a beaming
     // rival. Only block when the passer is at/below the emitter's belly (in the shaft), never above it.
     var vg=SAUCER_W()*0.15;                             // small grace so a clean pass-over reads
-    if(R.beamOn && !warbling() && Math.abs(P.x-R.x)<bw && P.y>R.y-vg){ P.x=(P.x<=R.x)?clamp(R.x-bw,W*0.05,W*0.95):clamp(R.x+bw,W*0.05,W*0.95); P.tx=P.x; }
-    if(planting && !warblingS(R) && Math.abs(R.x-P.x)<bw && R.y>P.y-vg){ R.x=(R.x<=P.x)?clamp(P.x-bw,W*0.05,W*0.95):clamp(P.x+bw,W*0.05,W*0.95); }
+    // COMMITTED-CATCH IMMUNITY. The barrier exists to stop you flying THROUGH a live beam. It was also
+    // evicting a saucer that had already parked and started lifting: whoever got HIGHER could shove the
+    // other off its own catch (the shove moves .x AND .tx, which breaks the lock), grab the drop, and be
+    // shoved off in turn -- the endless up/down/up/down. A saucer already lifting something is committed
+    // and cannot be pushed off it; a saucer merely flying through still is. Both locks are last frame's
+    // (they are cleared just below), which is what we want: it takes real committed progress to be immune.
+    var pHold = !!(P.lock && P.lock.lock>0 && !P.lock.gone);
+    var rHold = !!(R.lock && R.lock.lock>0 && !R.lock.gone);
+    if(R.beamOn && !warbling() && !pHold && Math.abs(P.x-R.x)<bw && P.y>R.y-vg){ P.x=(P.x<=R.x)?clamp(R.x-bw,W*0.05,W*0.95):clamp(R.x+bw,W*0.05,W*0.95); P.tx=P.x; }
+    if(planting && !warblingS(R) && !rHold && Math.abs(R.x-P.x)<bw && R.y>P.y-vg){ R.x=(R.x<=P.x)?clamp(P.x-bw,W*0.05,W*0.95):clamp(P.x+bw,W*0.05,W*0.95); }
   }
 
   /* beam / abduction (no beaming in base) — player (1) vs the blue rival (2): crossed beams cancel, a steal halves the lock */
@@ -1304,9 +1319,18 @@ function update(dt){
     var bestDr=W*0.06; for(var i=0;i<targets.length;i++){ var c=targets[i]; if(c.gone||c.hidden||c.protect) continue; var dxr=Math.abs(c.x-R.x);
       if(dxr<bestDr && R.y<c.y){ bestDr=dxr; rT=i; } }
   }
-  if(pT>=0 && pT===rT){                                              // CROSSED BEAMS — both want it, neither gains; it bleeds back down
-    targets[pT].lifting=true; targets[pT].owner=0; addFx((P.x+R.x)/2,(P.y+R.y)/2,'spark','#ffe23a',0.25);
-    if(R) R.contestCd=clock+1.4;                                     // DEATH-SPIRAL FIX: a stalemate makes the rival back off this catch briefly (no infinite tug-of-war even in the calm)
+  if(pT>=0 && pT===rT){                                              // CROSSED BEAMS — the ESTABLISHED claim holds
+    // Was: nobody gains and the lock bleeds out. That is what let the rival BOX YOU OUT -- it only had to
+    // park on your catch to deny it outright, back off 1.4s, and come straight back. You could be denied
+    // every grab without the rival ever having to be faster than you.
+    // Now a contest DRAGS instead of denying: whoever established the claim keeps pulling, at CONTEST_DRAG
+    // speed, and the late contester gains nothing. Getting there first is what wins the target -- being
+    // second only slows it down. Ties (neither committed yet) still stalemate, so a genuine dead heat reads.
+    var tg=targets[pT]; tg.lifting=true; addFx((P.x+R.x)/2,(P.y+R.y)/2,'spark','#ffe23a',0.25);
+    if(R) R.contestCd=clock+CONTEST_BACKOFF;                         // and it backs off this catch longer than before
+    if(tg.owner===1){ tg.lock=clamp(tg.lock+dt/tg.def.lock*CONTEST_DRAG*(superT>0?2:1),0,1); P.lock=tg; if(tg.lock>=1) abduct(tg,1); }
+    else if(tg.owner===2){ tg.lock=clamp(tg.lock+dt/(tg.def.lock*(defcon?1.1:1.4))*CONTEST_DRAG,0,1); R.lock=tg; if(tg.lock>=1) abduct(tg,2); }
+    else tg.owner=0;                                                 // nobody had it yet — a true dead heat, neither gains
   } else {
     if(pT>=0){ var tg=targets[pT]; if(tg.owner===2 && tg.lock>0) tg.lock*=0.5; tg.owner=1; P.lock=tg;     // steal from the rival halves its progress
       tg.lock=clamp(tg.lock+dt/tg.def.lock*(superT>0?2:1),0,1); tg.lifting=true; if(tg.lock>=1) abduct(tg,1); }   // SUPER BEAM locks 2x faster

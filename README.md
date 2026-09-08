@@ -62,10 +62,19 @@ game. It remembers where you got to and picks up from your furthest zone.
 unlocked from the start, and it never touches your real save. Good for showing
 someone around.
 
-Feeling brave? At the attract screen, press **X** before you drop a coin to arm
-**DEFCON 1** — one credit, no continues. Clear a full run on it and you unlock
-the CHEATS vault: level select, Champion Lap, and a few secrets. Open the vault
-with **C** on the STORY cab — the arcade cabinet has no menus, on purpose.
+Sound sliders are in the corner of the screen on both cabs. **M** mutes.
+
+### Unlocking the vault
+
+At the attract screen, press **X** before you drop a coin to arm **DEFCON 1** —
+one credit, no continues. Clear a full run on that and the **CHEATS vault**
+opens: every level on demand, the Military Base, Claw & Order, the #1 Champion
+Lap, DEFCON 1 with unlimited continues, THE GUNPOWDER HORROR, three secret
+codes, and the attract film on its own.
+
+You can *earn* it on the arcade cab, but you **open** it with **C** on the
+**STORY** cab — a real cabinet has no menus, so the arcade one doesn't either.
+On the **TEST CAB** the vault is simply open from the start.
 
 High scores are kept in your own browser, on your own machine.
 
