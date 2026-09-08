@@ -14,83 +14,71 @@
     &      @      f      @       &      @
 ```
 
-### ▶ **[INSERT COIN](https://anderspartnersck.github.io/suck-up/)**
+### [Play it here](https://anderspartnersck.github.io/suck-up/)
 
-A Castle Killscreen arcade game by **Anders & Partners LLC**. It runs in your
-browser — nothing to install, nothing to download.
+A Castle Killscreen arcade game by Anders & Partners LLC. It runs in a browser,
+free, with nothing to install.
 
-It is *not* co-op. Two alien pilots race to suck up more than the other off a
-scrolling night farm near Towson, Maryland — cows, people, the occasional
-power-up — while a single **shared** Military Response Meter climbs for both of
-you. Your rival's greed is your problem. You're still playing for the higher
-score. The aliens never appear and their motives never matter.
+Two alien pilots race to abduct more than the other from a scrolling night farm
+outside Towson, Maryland. Cows, people, the odd power-up. It isn't co-op. You
+both work the same field, and the Military Response Meter along the top is
+shared, so whatever your rival stirs up comes for you as well.
 
-*(It's* near *Towson. Near. Not in it — Dave will correct you.)*
-
----
+(Near Towson. Not in it. Dave will correct you.)
 
 ## How to play
 
-**Fly with the mouse** — the saucer glides toward your cursor. **Hold
-left-click** to run the tractor beam and pull something up. **Right-click** to
-WARBLE, which phases you through incoming fire.
+Move the mouse and the saucer follows your cursor. Hold left-click to run the
+tractor beam. Right-click to warble, which phases you through incoming fire.
 
-Prefer keys? **WASD** to fly, **Z** to beam, **X** to warble.
+On the keyboard it's WASD to fly, Z to beam, X to warble. Space starts a game
+and M mutes.
 
-**Two players share one keyboard.** At the start of a run the game asks *DO YOU
-THINK YOU ARE ALONE?* — press **;** to jump in as player two. From there it's
-**IJKL** to fly, **M** to beam, **,** to warble.
+A second player can join on the same keyboard. When the game asks DO YOU THINK
+YOU ARE ALONE? press `;` to jump in, then fly with IJKL, beam with M and warble
+with the comma key. M stops muting once two people are playing.
 
-**SPACE** inserts a coin. **M** mutes the game (except in two-player, where it's
-player two's beam).
+Farmers shoot back.
 
-Lift cows, people, and the odd power-up. Fly over a farmer and he'll shoot back.
-The meter at the top is shared — when your rival gets greedy, the response comes
-for you too.
+## The three cabinets
 
-## Three cabinets
+[Arcade](https://anderspartnersck.github.io/suck-up/) is the default, and the one to start with. Attract reel, a full
+run, then continue or begin again. No stage select and no quitting mid-run, the
+same as a real cabinet.
 
-**🕹 [ARCADE](https://anderspartnersck.github.io/suck-up/)** — *the default.*
-The quarter-eater: attract reel, INSERT COIN, the full run, CONTINUE, and back
-around again. No stage select and no bail-out, like a real cabinet. **Start
-here.**
+[Story](https://anderspartnersck.github.io/suck-up/?story) saves your progress and picks up from the furthest zone you
+reached.
 
-**📖 [STORY](https://anderspartnersck.github.io/suck-up/?story)** — the long
-game. It remembers where you got to and picks up from your furthest zone.
+[Test cab](https://anderspartnersck.github.io/suck-up/?og) has everything unlocked and won't touch your saved game.
+Useful if you want to show someone the later stages.
 
-**🔓 [TEST CAB](https://anderspartnersck.github.io/suck-up/?og)** — everything
-unlocked from the start, and it never touches your real save. Good for showing
-someone around.
+Sound sliders are in the corner of the screen on all of them.
 
-Sound sliders are in the corner of the screen on both cabs. **M** mutes.
+### The vault
 
-### Unlocking the vault
+Press X at the attract screen before you start and you'll arm DEFCON 1, which is
+one credit with no continues. Finish a run on that and the cheats vault unlocks.
+It holds every level, the Military Base, Claw & Order, the Champion Lap, DEFCON 1
+with unlimited continues, The Gunpowder Horror, three codes, and the attract film
+on its own.
 
-At the attract screen, press **X** before you drop a coin to arm **DEFCON 1** —
-one credit, no continues. Clear a full run on that and the **CHEATS vault**
-opens: every level on demand, the Military Base, Claw & Order, the #1 Champion
-Lap, DEFCON 1 with unlimited continues, THE GUNPOWDER HORROR, three secret
-codes, and the attract film on its own.
+You can unlock it from the arcade cab but you can't open it there, because that
+cab has no menus. Press C on the story cab instead. On the test cab it's already
+open.
 
-You can *earn* it on the arcade cab, but you **open** it with **C** on the
-**STORY** cab — a real cabinet has no menus, so the arcade one doesn't either.
-On the **TEST CAB** the vault is simply open from the start.
+High scores stay in your own browser.
 
-High scores are kept in your own browser, on your own machine.
+## Controllers
 
-## Using a controller?
+This build is mouse and keyboard, and it ignores gamepads. The arcade-stick
+version is a separate build.
 
-This version is built for mouse and keyboard, and ignores controllers on purpose
-— the arcade-stick build is a separate one.
-
-If you're playing that stick version, one thing matters: **set your controller to
-X-input mode.** On an 8BitDo, also flip the lever to **D-pad**. If left and right
-feel fine but up and down are unreliable, that's the setting — it's the
-controller, not the game. Then **A** is your beam and **B** is your warble.
+If you're on that one, put the controller in X-input mode, and on an 8BitDo set
+the lever to D-pad as well. Left and right working while up and down don't is
+almost always that setting rather than the game. A is beam, B is warble.
 
 ---
 
-<sub>The logo and saucers above are the cabinet's own ASCII, lifted from the
-original terminal build.</sub>
+<sub>The logo and the saucers above come from the terminal version of the game.</sub>
 
 <sub>RESPEK LOGIC ART UREA</sub>
