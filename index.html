@@ -1683,14 +1683,25 @@ function drawBoard(){
   ctx.textAlign='center'; ctx.fillStyle='#5f8a70'; ctx.font='700 12px ui-monospace'; ctx.fillText('press any key', W/2, H*0.94);
 }
 // LOCK-IN — "DO YOU THINK YOU ARE ALONE?" — P2's chance to jump in
+// FIT-TO-WIDTH. Every headline here sizes off W with a clamp FLOOR, and the floor is what breaks a
+// narrow screen: at W=390 (a phone in portrait) 'DO YOU THINK YOU ARE ALONE?' wants clamp(18.7,28,60)
+// = 28px, which measures ~416px against a 390px canvas, so it clips at BOTH margins. The proportional
+// size would have fitted; the floor forced it wider than the screen. This measures the string and only
+// shrinks when it genuinely does not fit, so nothing changes at any desktop width -- there the text was
+// already inside the margin and the call is a no-op.
+function fitFont(txt, weight, px, fam, maxW){
+  ctx.font = weight+' '+Math.round(px)+'px '+fam;
+  var w = ctx.measureText(txt).width;
+  if(w > maxW && w > 0) ctx.font = weight+' '+Math.max(9,Math.floor(px*maxW/w))+'px '+fam;
+}
 function drawLockin(){
   drawBG(); ctx.fillStyle='rgba(2,6,12,.82)'; ctx.fillRect(0,0,W,H); ctx.textAlign='center';
-  ctx.fillStyle='#39ff14'; ctx.font='800 '+clamp(W*0.02,15,24)+'px system-ui'; ctx.fillText('PLAYER 1  IS IN', W/2, H*0.28);
-  ctx.fillStyle='#ffd23f'; ctx.font='900 '+clamp(W*0.048,28,60)+'px system-ui'; ctx.fillText('DO YOU THINK YOU ARE ALONE?', W/2, H*0.44);
-  if(Math.floor(t*2)%2===0){ ctx.fillStyle='#3cc8ff'; ctx.font='800 '+clamp(W*0.028,18,32)+'px system-ui'; ctx.fillText('PLAYER 2 —  BEAM ( ; )  TO JOIN', W/2, H*0.60); }
-  ctx.fillStyle='#dff7e4'; ctx.font='700 '+clamp(W*0.016,12,16)+'px ui-monospace';
+  ctx.fillStyle='#39ff14'; fitFont('PLAYER 1  IS IN','800',clamp(W*0.02,15,24),'system-ui',W*0.92); ctx.fillText('PLAYER 1  IS IN', W/2, H*0.28);
+  ctx.fillStyle='#ffd23f'; fitFont('DO YOU THINK YOU ARE ALONE?','900',clamp(W*0.048,28,60),'system-ui',W*0.92); ctx.fillText('DO YOU THINK YOU ARE ALONE?', W/2, H*0.44);
+  if(Math.floor(t*2)%2===0){ ctx.fillStyle='#3cc8ff'; fitFont('PLAYER 2 —  BEAM ( ; )  TO JOIN','800',clamp(W*0.028,18,32),'system-ui',W*0.92); ctx.fillText('PLAYER 2 —  BEAM ( ; )  TO JOIN', W/2, H*0.60); }
+  ctx.fillStyle='#dff7e4'; fitFont('P1 BEAM / ENTER = PLAY SOLO        ·        WARBLE = STAND DOWN','700',clamp(W*0.016,12,16),'ui-monospace',W*0.94);
   ctx.fillText('P1 BEAM / ENTER = PLAY SOLO        ·        WARBLE = STAND DOWN', W/2, H*0.70);
-  ctx.fillStyle='#5f8a70'; ctx.font='700 12px ui-monospace';
+  ctx.fillStyle='#5f8a70'; fitFont("P2:  I J K L  move   ·   ;  beam   ·   '  warble   (or a 2nd gamepad)",'700',12,'ui-monospace',W*0.94);
   ctx.fillText("P2:  I J K L  move   ·   ;  beam   ·   '  warble   (or a 2nd gamepad)", W/2, H*0.78);
   var left=Math.max(0,Math.ceil(7-lockinT)); ctx.fillStyle='#9c89c4'; ctx.font='800 13px ui-monospace'; ctx.fillText('starting solo in '+left+'…', W/2, H*0.86);
   if(msgT>0){ ctx.globalAlpha=clamp(msgT,0,1); ctx.fillStyle=msgColor; ctx.font='800 24px system-ui'; ctx.fillText(msg,W/2,H*0.28); ctx.globalAlpha=1; }
