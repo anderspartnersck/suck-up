@@ -41,19 +41,6 @@ works too, and two players can share one:
 
 `SPACE` starts / inserts a coin · `M` mutes
 
-## Modes
-
-Append to the URL:
-
-| | |
-|:--|:--|
-| *(nothing)* | **BLACKSITE** story — saves your progress, resumes from your furthest zone |
-| `?arcade` | the **HYSCORE** coin-op — attract → INSERT COIN → full run → CONTINUE |
-| `?og` | **COLEMAN'S ORIGINAL** — everything unlocked, never touches your save |
-
-Clearing DEFCON-1 unlocks the CHEATS vault: level select, Champion Lap, and
-Hadrian's secret codes. High scores live in your own browser.
-
 ## Controllers
 
 **This edition ignores gamepads on purpose.** Mouse and stick are baked as
