@@ -14,9 +14,10 @@
     &      @      f      @       &      @
 ```
 
-### ▶ **[INSERT COIN](https://anderspartnersck.github.io/suck-up/)** — the arcade cabinet, 1-up quarter-eater
+### ▶ **[INSERT COIN](https://anderspartnersck.github.io/suck-up/)**
 
-A Castle Killscreen arcade title by **Anders & Partners LLC**.
+A Castle Killscreen arcade game by **Anders & Partners LLC**. It runs in your
+browser — nothing to install, nothing to download.
 
 It is *not* co-op. Two alien pilots race to suck up more than the other off a
 scrolling night farm near Towson, Maryland — cows, people, the occasional
@@ -28,111 +29,52 @@ score. The aliens never appear and their motives never matter.
 
 ---
 
-## Controls
+## How to play
 
-This site ships the **mouse edition** — fly to the cursor, hold left-click to
-run the beam, right-click to WARBLE (phase through incoming fire). The keyboard
-works too, and two players can share one:
+**Fly with the mouse** — the saucer glides toward your cursor. **Hold
+left-click** to run the tractor beam and pull something up. **Right-click** to
+WARBLE, which phases you through incoming fire.
 
-| | fly | beam | warble |
-|:--|:--|:--|:--|
-| **P1** | `WASD` | `Z` | `X` |
-| **P2** | `IJKL` | `M` | `,` |
+Prefer keys? **WASD** to fly, **Z** to beam, **X** to warble. A second player can
+join on the same keyboard with **IJKL**, **M** to beam and **,** to warble.
 
-`SPACE` starts / inserts a coin · `M` mutes
+**SPACE** inserts a coin. **M** mutes.
 
-## The cabinets
+Lift cows, people, and the odd power-up. Fly over a farmer and he'll shoot back.
+The meter at the top is shared — when your rival gets greedy, the response comes
+for you too.
 
-Every version is a link — no settings, no menus, just pick one.
+## Three cabinets
 
-| | | |
-|:--|:--|:--|
-| 🕹 **[ARCADE](https://anderspartnersck.github.io/suck-up/)** | the default | The **HYSCORE 1-up quarter-eater.** Attract reel → INSERT COIN → the full run → CONTINUE, then back to attract. No stage select, no bail-out — a real cabinet. **Start here.** |
-| 📖 **[STORY](https://anderspartnersck.github.io/suck-up/?story)** | `?story` | The **BLACKSITE** cab. Saves your progress and resumes from your furthest zone. The long game. |
-| 🔓 **[TEST CAB](https://anderspartnersck.github.io/suck-up/?og)** | `?og` | **COLEMAN'S ORIGINAL** — every level and every cheat unlocked from boot, and it never touches your real save. Best for showing someone around. |
+**🕹 [ARCADE](https://anderspartnersck.github.io/suck-up/)** — *the default.*
+The quarter-eater: attract reel, INSERT COIN, the full run, CONTINUE, and back
+around again. No stage select and no bail-out, like a real cabinet. **Start
+here.**
 
-Clearing DEFCON-1 in the arcade unlocks the CHEATS vault: level select, Champion
-Lap, and Hadrian's secret codes. High scores live in your own browser.
+**📖 [STORY](https://anderspartnersck.github.io/suck-up/?story)** — the long
+game. It remembers where you got to and picks up from your furthest zone.
 
-<sub>The bare URL is baked to the arcade cab, so a link you paste to someone
-lands on the coin-op even with no parameters. An explicit mode above always wins
-over that default.</sub>
+**🔓 [TEST CAB](https://anderspartnersck.github.io/suck-up/?og)** — everything
+unlocked from the start, and it never touches your real save. Good for showing
+someone around.
 
-## Controllers
+Clear DEFCON-1 on the arcade cab and you'll unlock the CHEATS vault: level
+select, Champion Lap, and a few secrets. High scores are kept in your own
+browser, on your own machine.
 
-**This edition ignores gamepads on purpose.** Mouse and stick are baked as
-separate builds so the two control models never fight each other — the
-arcade-stick edition is its own upload.
+## Using a controller?
 
-If you are running that stick edition, one setting matters more than everything
-else on this page:
+This version is built for mouse and keyboard, and ignores controllers on purpose
+— the arcade-stick build is a separate one.
 
-> ### ⚙ Put the pad in X-INPUT mode — on the 8BitDo, set the lever to D-PAD.
->
-> In X-input/D-pad mode the controller reports as a *standard* gamepad and the
-> game reads its d-pad as plain digital buttons: no deadzone, no analog drift,
-> no POV-hat decoding. It is the only input path with no flaky edges.
->
-> **Left/right fine, but up/down and diagonals unreliable?** That is the
-> signature of a pad in the wrong mode. The fix is the hardware switch, not the
-> software.
-
-Once it is in X-input, **nothing needs configuring**:
-
-| button | does |
-|:--|:--|
-| **A** | BEAM — also coin, confirm, menu select |
-| **B** | WARBLE |
-| **START** | back / exit — non-arcade modes only; a coin-op has no bail |
-
-X, Y, the bumpers, the triggers and SELECT are **deliberately dead**, so a stray
-thumb can't quit your run.
-
-<details>
-<summary><b>If your pad only does D-input</b> (e.g. a Mayflash F300 left in its D-input position)</summary>
-
-<br>
-
-It still **moves**. The movement layer identifies no brands and self-calibrates:
-it learns each axis's resting value, steers only from axes that rest near
-centre, and finds the stick, the d-pad or the POV hat on its own.
-
-**Buttons are the problem.** A non-standard pad falls back to a custom button map
-kept in browser storage — and browser storage is per-site. A map made in the
-local KILLBOX tool lives at `127.0.0.1`, so **a hosted copy of this game cannot
-see it**. Without it the game falls back to raw button indices `0`/`1`/`9`, and
-on an F300 index 0 is the physical *B* — so BEAM lands on the wrong button, with
-no way to remap it from the page.
-
-Flip the pad to X-input. That is the whole fix.
-
-*Honest note: gamepad support has no automated test — headless browsers expose
-no controllers, so this build's asset and soak gates say nothing about it. The
-X-input path is confirmed by hand on an 8BitDo; the D-input map path is not.*
-
-</details>
-
-## About this repo
-
-A self-contained static site — HTML5 canvas, no build step, no server, no
-dependencies. Everything it needs is `index.html`, `assets/` and `lib/`.
-
-It is **generated, not hand-edited.** The source of truth is the master in the
-private Castle Killscreen tree; this bundle is produced by:
-
-```sh
-make web                                            # the gate: asset wiring + soak
-python3 tools/build_pages.py --prune --edition mouse
-```
-
-`build_pages.py` takes its file list from the asset checker, so the bundle can
-never ship less art than the game references. Edit the master, re-run those two
-commands, commit. Don't patch files here — the next build overwrites them.
-
-<sub>The logo and the saucers above are the cabinet's own ASCII, lifted verbatim
-from the terminal original (`src/suck_up.py`) — `ATTRACT_LOGO`, the `<o>` and
-`{o}` hulls, the `:` tractor beam, `@` cow, `&` person, `f` farmer.</sub>
+If you're playing that stick version, one thing matters: **set your controller to
+X-input mode.** On an 8BitDo, also flip the lever to **D-pad**. If left and right
+feel fine but up and down are unreliable, that's the setting — it's the
+controller, not the game. Then **A** is your beam and **B** is your warble.
 
 ---
+
+<sub>The logo and saucers above are the cabinet's own ASCII, lifted from the
+original terminal build.</sub>
 
 <sub>RESPEK LOGIC ART UREA · 25¢ per play</sub>
