@@ -35,10 +35,14 @@ score. The aliens never appear and their motives never matter.
 left-click** to run the tractor beam and pull something up. **Right-click** to
 WARBLE, which phases you through incoming fire.
 
-Prefer keys? **WASD** to fly, **Z** to beam, **X** to warble. A second player can
-join on the same keyboard with **IJKL**, **M** to beam and **,** to warble.
+Prefer keys? **WASD** to fly, **Z** to beam, **X** to warble.
 
-**SPACE** inserts a coin. **M** mutes.
+**Two players share one keyboard.** At the start of a run the game asks *DO YOU
+THINK YOU ARE ALONE?* — press **;** to jump in as player two. From there it's
+**IJKL** to fly, **M** to beam, **,** to warble.
+
+**SPACE** inserts a coin. **M** mutes the game (except in two-player, where it's
+player two's beam).
 
 Lift cows, people, and the odd power-up. Fly over a farmer and he'll shoot back.
 The meter at the top is shared — when your rival gets greedy, the response comes
@@ -58,9 +62,12 @@ game. It remembers where you got to and picks up from your furthest zone.
 unlocked from the start, and it never touches your real save. Good for showing
 someone around.
 
-Clear DEFCON-1 on the arcade cab and you'll unlock the CHEATS vault: level
-select, Champion Lap, and a few secrets. High scores are kept in your own
-browser, on your own machine.
+Feeling brave? At the attract screen, press **X** before you drop a coin to arm
+**DEFCON 1** — one credit, no continues. Clear a full run on it and you unlock
+the CHEATS vault: level select, Champion Lap, and a few secrets. Open the vault
+with **C** on the STORY cab — the arcade cabinet has no menus, on purpose.
+
+High scores are kept in your own browser, on your own machine.
 
 ## Using a controller?
 
