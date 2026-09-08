@@ -1110,6 +1110,7 @@ function warbling(){ return warblingS(P); }
 // BEAM CONTEST tuning — how a fought-over catch resolves. DRAG is the fraction of normal lock speed the
 // ESTABLISHED owner keeps while contested (1 = contest does nothing, 0 = the old total denial).
 var CONTEST_DRAG=0.45, CONTEST_BACKOFF=2.2;
+var PRIZE_BIAS=0.45;   // how much of a head start (in screen widths) a prize is worth to the rival
 function updateRival(dt){
   if(!R || mode==='base') return;
   if(R.invuln>0) R.invuln-=dt;
@@ -1123,7 +1124,12 @@ function updateRival(dt){
     if(c===P.lock && (hot || clock<(R.contestCd||0))) continue;   // DEATH-SPIRAL FIX: under heat (ORANGE/RED) or during the re-contest cooldown, the rival won't grind on YOUR catch — it grabs elsewhere or bails to dodge, opening your window (greed still punished in the calm GREEN/YELLOW)
     var d=Math.abs(c.x-R.x);
     var contest = c===P.lock && (behind || d<W*(defcon?0.20:0.12));                             // DEFCON 1 ALLSTAR contests your catch from farther out
-    var pr = (c.isMo||c.isBoss||(c.def.val||0)>=2000)? d-1e5 : (contest? d-W*0.03 : d);          // prizes first, then contest, else nearest
+    // PRIZE bias was d-1e5 -- a hundred-thousand-pixel head start, so ANY prize anywhere outranked
+    // everything and the rival beelined to Mo/Dave from across the map every single time. Distance
+    // never entered into it, which is why it took every good spawn. It is now a finite head start:
+    // worth PRIZE_BIAS of travel, so if you are meaningfully closer to Mo than the rival is, you win
+    // the race to her. Still a priority, no longer a guarantee.
+    var pr = (c.isMo||c.isBoss||(c.def.val||0)>=2000)? d-PRIZE_BIAS*W : (contest? d-W*0.03 : d);
     if(pr<wbest){ wbest=pr; want=c; } }
   // 2) DODGE: nearest jet about to land / live shot in our lane
   var hz=null, hd=1e9;
