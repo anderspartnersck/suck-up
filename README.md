@@ -77,6 +77,13 @@ If you're on that one, put the controller in X-input mode, and on an 8BitDo set
 the lever to D-pad as well. Left and right working while up and down don't is
 almost always that setting rather than the game. A is beam, B is warble.
 
+## Credits
+
+Created by **Joseph Coleman**, with Claude and ChatGPT.
+A Castle Killscreen game by Anders & Partners LLC.
+
+<sub>Taken from the game's own ending credits, so the page and the cab say the same thing.</sub>
+
 ---
 
 <sub>The logo and the saucers above come from the terminal version of the game.</sub>
