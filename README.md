@@ -14,7 +14,7 @@
     &      @      f      @       &      @
 ```
 
-### [Play it here](https://anderspartnersck.github.io/suck-up/)
+### [Play it here][play]
 
 A Castle Killscreen arcade game by Anders & Partners LLC. It runs in a browser,
 free, with nothing to install.
@@ -42,14 +42,14 @@ Farmers shoot back.
 
 ## The three cabinets
 
-[Arcade](https://anderspartnersck.github.io/suck-up/) is the default, and the one to start with. Attract reel, a full
-run, then continue or begin again. No stage select and no quitting mid-run, the
-same as a real cabinet.
+[Arcade][play] is the default, and the one to start with. Attract reel, a
+full run, then continue or begin again. No stage select and no quitting
+mid-run, the same as a real cabinet.
 
-[Story](https://anderspartnersck.github.io/suck-up/?story) saves your progress and picks up from the furthest zone you
+[Story][story] saves your progress and picks up from the furthest zone you
 reached.
 
-[Test cab](https://anderspartnersck.github.io/suck-up/?og) has everything unlocked and won't touch your saved game.
+[Test cab][testcab] has everything unlocked and won't touch your saved game.
 Useful if you want to show someone the later stages.
 
 Sound sliders are in the corner of the screen on all of them.
@@ -82,3 +82,7 @@ almost always that setting rather than the game. A is beam, B is warble.
 <sub>The logo and the saucers above come from the terminal version of the game.</sub>
 
 <sub>RESPEK LOGIC ART UREA</sub>
+
+[play]: https://anderspartnersck.github.io/suck-up/
+[story]: https://anderspartnersck.github.io/suck-up/?story
+[testcab]: https://anderspartnersck.github.io/suck-up/?og
