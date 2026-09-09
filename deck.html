@@ -1,0 +1,65 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>SUCK UP — 1UP DECK</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!--
+  SUCK UP — THE DECK.  The game in an iframe with the real cabinet control panel
+  (assets/cab/panel-1up-ref.png) mounted beneath it, the way HIGH TABLE's
+  side_desktop.html does. Same house pattern, same reason: the panel art existed in
+  the repo and nothing displayed it, so a player never saw the deck the cab was
+  designed around.
+
+  The art is the TWO-PLAYER deck -- green P1 and blue P2, each an 8-way stick plus
+  BEAM and WARBLE, with the MILITARY RESPONSE strip along the bottom -- which is
+  what the physical 1UP cabinet carries.
+
+  Deliberately ART ONLY. side_desktop.html wires a live GET BIG hotspot over its
+  panel; nothing here is clickable and nothing is lit from game state. Adding live
+  hotspots means reaching into the game's internals across an iframe boundary, and
+  a decorative deck that cannot break the game is worth more than a lit one that
+  can.  ?panel=off  hides the deck and gives you the bare screen.
+-->
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;background:#04070d;overflow:hidden;color:#dff7e4;
+            font-family:"Helvetica Neue",Arial,sans-serif;-webkit-user-select:none;user-select:none}
+  #wrap{position:fixed;inset:0;display:flex;flex-direction:column}
+  #game{flex:1;border:0;width:100%;display:block;background:#04070d}
+  #deck{height:28vh;min-height:150px;position:relative;display:flex;align-items:center;justify-content:center;
+        background:radial-gradient(ellipse at 50% 0%, #0d1a12 0%, #04070d 72%);border-top:1px solid #16301f}
+  #panel{height:100%;width:auto;display:block}
+  #hint{position:absolute;top:5px;left:50%;transform:translateX(-50%);color:#5f8a70;
+        font-size:11px;letter-spacing:.16em;text-transform:uppercase;white-space:nowrap}
+  #tag{position:absolute;top:5px;right:10px;color:#3f5a4a;font-size:10px;letter-spacing:.18em}
+  @media (max-width:700px){ #deck{height:22vh;min-height:110px} #hint{font-size:9px} }
+</style>
+<body>
+<div id="wrap">
+  <iframe id="game" allow="gamepad; autoplay" title="SUCK UP — LIVE"></iframe>
+  <div id="deck">
+    <div id="hint">mouse or WASD to fly · hold click / Z to BEAM · right-click / X to WARBLE</div>
+    <div id="tag">DECK · 1UP</div>
+    <img id="panel" alt="SUCK UP cabinet control panel">
+  </div>
+</div>
+<script>
+  const Q = new URLSearchParams(location.search);
+  const game = document.getElementById('game'),
+        panel = document.getElementById('panel'),
+        deck  = document.getElementById('deck');
+
+  panel.src = 'assets/cab/panel-1up-ref.png';
+  if (Q.get('panel') === 'off') deck.style.display = 'none';   // bare screen
+
+  // Pass every param straight through EXCEPT our own, so ?og / ?story / ?arcade / ?dev
+  // all still reach the game. _cb busts the cache so a rebuilt game shows up.
+  const pass = new URLSearchParams(location.search);
+  pass.delete('panel');
+  pass.set('_cb', Date.now());
+  game.src = 'index.html?' + pass.toString();
+
+  // The game listens on its own document; give it focus so the keyboard reaches it.
+  game.addEventListener('load', () => { try { game.contentWindow.focus(); } catch (e) {} });
+  addEventListener('pointerdown', () => { try { game.contentWindow.focus(); } catch (e) {} });
+</script>
+</body>

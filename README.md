@@ -56,6 +56,8 @@ to jump straight to the later stages.
 
 Sound sliders are in the corner of the screen on all of them.
 
+[THE DECK][deck] mounts any of them over the real cabinet control panel.
+
 ### The vault
 
 Press X at the attract screen before you start and you'll arm DEFCON 1, which is
@@ -99,3 +101,4 @@ Music & SFX by **Joseph Coleman**.
 [play]: https://anderspartnersck.github.io/suck-up/
 [story]: https://anderspartnersck.github.io/suck-up/?story
 [testcab]: https://anderspartnersck.github.io/suck-up/?og
+[deck]: https://anderspartnersck.github.io/suck-up/deck.html
