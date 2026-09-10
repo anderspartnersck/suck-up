@@ -58,7 +58,7 @@ Sound sliders are in the corner of the screen on all of them.
 
 ### The deck
 
-[THE DECK][deck] mounts a cabinet over its own control panel, and the panel is live. The
+THE DECK mounts a cabinet over its own control panel, and the panel is live. The
 BEAM and WARBLE buttons light when they fire, the sticks lean the way the saucer is flying,
 and the MILITARY RESPONSE strip fills as the heat climbs. You can click the buttons too, and
 they play exactly as the keys do.
