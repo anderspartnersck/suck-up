@@ -56,7 +56,20 @@ to jump straight to the later stages.
 
 Sound sliders are in the corner of the screen on all of them.
 
-[THE DECK][deck] mounts any of them over the real cabinet control panel.
+### The deck
+
+[THE DECK][deck] mounts a cabinet over its own control panel, and the panel is live. The
+BEAM and WARBLE buttons light when they fire, the sticks lean the way the saucer is flying,
+and the MILITARY RESPONSE strip fills as the heat climbs. You can click the buttons too, and
+they play exactly as the keys do.
+
+Each cabinet brings its own deck, because they are not the same machine:
+
+- [HYSCORE FOREST deck][deck] — the painted arcade panel
+- [BLACKSITE deck][deckstory] — the jailbroken one
+- [COLEMAN'S ORIGINAL deck][deckog] — Blacksite's panel with every zone open
+
+Add `?panel=off` to any of them for the bare screen.
 
 ### The vault
 
@@ -102,3 +115,5 @@ Music & SFX by **Joseph Coleman**.
 [story]: https://anderspartnersck.github.io/suck-up/?story
 [testcab]: https://anderspartnersck.github.io/suck-up/?og
 [deck]: https://anderspartnersck.github.io/suck-up/deck.html
+[deckstory]: https://anderspartnersck.github.io/suck-up/deck.html?story
+[deckog]: https://anderspartnersck.github.io/suck-up/deck.html?og

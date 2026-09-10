@@ -48,7 +48,7 @@
     background:#13301f;border:1px solid #28543a;border-radius:4px;color:#bdf2cf}
   #mix button.off{background:#3a1414;border-color:#7a2a2a;color:#ff9d9d}
 </style>
-<script>window.__SUCKUP_BUILD='mouse';window.__SUCKUP_MODE='arcade';</script><!-- tools/build_editions.py replaces this marker with `<script>window.__SUCKUP_BUILD='mouse'|'stick'</script>` to BAKE a distributable edition (no URL param needed). Left as an inert comment in the master/dev build. -->
+<!--@BUILD@--><!-- tools/build_editions.py replaces this marker with `<script>window.__SUCKUP_BUILD='mouse'|'stick'</script>` to BAKE a distributable edition (no URL param needed). Left as an inert comment in the master/dev build. -->
 </head>
 <body>
 <canvas id="c"></canvas>
@@ -2266,6 +2266,41 @@ if(/[?&]soak\b/.test(location.search)){
       breaches:breaches.slice(0,15),errCount:errs.length,errs:errs.slice(0,15),avgScore:avg,maxScore:scores.length?Math.max.apply(null,scores):0,peakEntities:maxEnt});
   };
 }
+
+/* ---------- THE DECK BUS — the lit-panel wiring for deck.html (docs/cab-standard.md "lit-art-window")
+   deck.html mounts this game under the real cabinet panel and lights each control from live state.
+   Kept deliberately narrow, because the old art-only deck was right that the iframe boundary is the
+   risk: this READS engine state on a timer, and the only things it WRITES are the same two flags the
+   keyboard already sets, through the same guards. Dormant unless embedded, so the bare cab pays
+   nothing for it. Every hop is wrapped -- a deck that throws must never take the game down with it. */
+if(window.parent && window.parent!==window){
+  var _deckSeen='';
+  setInterval(function(){
+    try{
+      var lean=function(s){ return s?{x:+(s.bank||0).toFixed(2), y:+clamp((s.vy||0)/190,-1,1).toFixed(2)}:{x:0,y:0}; };
+      var pkt={ su:'deck', state:state, twoP:!!twoP, meter:Math.round(meter||0),
+                p1:{ beam:!!planting,  warble:!!(P&&clock<P.warbleU), lean:lean(P) },
+                p2:{ beam:!!(R&&R.beamOn), warble:!!(R&&clock<R.warbleU), lean:lean(R), live:!!R } };
+      var k=JSON.stringify(pkt); if(k===_deckSeen) return; _deckSeen=k;   // only speak when something changed
+      window.parent.postMessage(pkt,'*');
+    }catch(e){}
+  },50);
+  window.addEventListener('message',function(e){
+    var d=e&&e.data; if(!d||d.su!=='press'||state!=='play') return;
+    try{
+      if(d.p===2){
+        if(!twoP||!R) return;
+        if(d.b==='beam'){ if(d.on){ if(!planting2){ planting2=true; if(mode!=='base') sfx('beam',0.4); } } else planting2=false; }
+        else if(d.b==='warble' && clock>R.warbleCd){ R.warbleU=clock+0.60; R.warbleCd=clock+2.0; planting2=false; sfx('warble',0.6); }
+      } else {
+        if(!P) return;
+        if(d.b==='beam'){ if(d.on){ if(!planting){ planting=true; if(mode!=='base') sfx('beam',0.45); } } else planting=false; }
+        else if(d.b==='warble' && clock>P.warbleCd){ P.warbleU=clock+0.60; P.warbleCd=clock+2.0; planting=false; sfx('warble',0.7); }
+      }
+    }catch(e2){}
+  });
+}
+
 requestAnimationFrame(frame);
 })();
 </script>

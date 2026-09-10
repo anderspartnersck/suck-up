@@ -1,23 +1,32 @@
 <!doctype html>
 <meta charset="utf-8">
-<title>SUCK UP — 1UP DECK</title>
+<title>SUCK UP — THE DECK</title>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <!--
-  SUCK UP — THE DECK.  The game in an iframe with the real cabinet control panel
-  (assets/cab/panel-1up-ref.png) mounted beneath it, the way HIGH TABLE's
-  side_desktop.html does. Same house pattern, same reason: the panel art existed in
-  the repo and nothing displayed it, so a player never saw the deck the cab was
-  designed around.
+  SUCK UP — THE DECK.  The game in an iframe with the real cabinet control panel mounted
+  beneath it, the way HIGH TABLE's side_desktop.html does.
 
-  The art is the TWO-PLAYER deck -- green P1 and blue P2, each an 8-way stick plus
-  BEAM and WARBLE, with the MILITARY RESPONSE strip along the bottom -- which is
-  what the physical 1UP cabinet carries.
+  THE PANEL IS LIVE.  It was art-only until now, and the reason was written right here: live
+  hotspots mean reaching across the iframe boundary, and a decorative deck that cannot break the
+  game beat a lit one that can. That trade is settled by keeping the crossing narrow -- see THE
+  DECK BUS at the foot of the game. The panel now does what docs/cab-standard.md always specified:
 
-  Deliberately ART ONLY. side_desktop.html wires a live GET BIG hotspot over its
-  panel; nothing here is clickable and nothing is lit from game state. Adding live
-  hotspots means reaching into the game's internals across an iframe boundary, and
-  a decorative deck that cannot break the game is worth more than a lit one that
-  can.  ?panel=off  hides the deck and gives you the bare screen.
+    panel_off  = the cab's own painted deck   (panel-1up-ref / panel-alt-ref)
+    panel_on   = panel-bw-ref, the same panel thresholded to white, PIXEL-ALIGNED to both,
+                 revealed clipped to one control at a time and screen-blended over the base.
+
+  So a lit BEAM button is not a drawn glow -- it is the panel's own art, lit. Both players'
+  buttons, both sticks, and the MILITARY RESPONSE strip all run off live engine state, and the
+  buttons are clickable: pressing one plays exactly as the key does.
+
+  ONE PANEL PER CAB (Joe 2026-09-10). The three cabinets do not share a deck:
+    HYSCORE FOREST    (default) -> panel-1up-ref  the painted arcade deck
+    BLACKSITE         (?story)  -> panel-alt-ref  the jailbroken neon deck
+    COLEMAN'S ORIGINAL(?og)     -> panel-alt-ref  Blacksite's deck; it is Blacksite unlocked
+  which is the same mapping the pixel cab already uses (src/suck_up_art.py _CAB_PANEL_FILE).
+  ?panel=1up|alt forces one; ?panel=off hides the deck and gives you the bare screen.
+
+  Control positions were MEASURED off panel-1up-ref (both panels share a geometry), not eyeballed.
 -->
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
@@ -25,41 +34,160 @@
             font-family:"Helvetica Neue",Arial,sans-serif;-webkit-user-select:none;user-select:none}
   #wrap{position:fixed;inset:0;display:flex;flex-direction:column}
   #game{flex:1;border:0;width:100%;display:block;background:#04070d}
-  #deck{height:28vh;min-height:150px;position:relative;display:flex;align-items:center;justify-content:center;
+  #deck{height:30vh;min-height:160px;position:relative;display:flex;align-items:center;justify-content:center;
         background:radial-gradient(ellipse at 50% 0%, #0d1a12 0%, #04070d 72%);border-top:1px solid #16301f}
-  #panel{height:100%;width:auto;display:block}
+  #stage{position:relative;height:100%;display:block}
+  #panel{height:100%;width:auto;display:block;filter:drop-shadow(0 -6px 20px rgba(0,0,0,.55))}
+  /* Every lit control is a slice of panel-bw-ref used as a MASK, filled with the player's colour and
+     screen-blended over the base art -- so a lit BEAM is the panel's own button shape, glowing green
+     on P1 and blue on P2, rather than a white blob that loses whose side it is. */
+  .lit{position:absolute;opacity:0;pointer-events:none;mix-blend-mode:screen;
+       -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;transition:opacity .09s linear}
+  .lit.on{opacity:1}
+  .btn{position:absolute;border-radius:50%;cursor:pointer;transform:translate(-50%,-50%);
+       transition:box-shadow .09s linear}
+  .btn.on{box-shadow:0 0 22px 7px var(--glow)}
+  .lit.round{border-radius:50%}
   #hint{position:absolute;top:5px;left:50%;transform:translateX(-50%);color:#5f8a70;
         font-size:11px;letter-spacing:.16em;text-transform:uppercase;white-space:nowrap}
   #tag{position:absolute;top:5px;right:10px;color:#3f5a4a;font-size:10px;letter-spacing:.18em}
-  @media (max-width:700px){ #deck{height:22vh;min-height:110px} #hint{font-size:9px} }
+  @media (max-width:700px){ #deck{height:23vh;min-height:112px} #hint{font-size:9px} #tag{display:none} }
 </style>
 <body>
 <div id="wrap">
   <iframe id="game" allow="gamepad; autoplay" title="SUCK UP — LIVE"></iframe>
   <div id="deck">
-    <div id="hint">mouse or WASD to fly · hold click / Z to BEAM · right-click / X to WARBLE</div>
+    <div id="hint"></div>
     <div id="tag">DECK · 1UP</div>
-    <img id="panel" alt="SUCK UP cabinet control panel">
+    <div id="stage">
+      <img id="panel" alt="SUCK UP cabinet control panel">
+    </div>
   </div>
 </div>
 <script>
-  const Q = new URLSearchParams(location.search);
-  const game = document.getElementById('game'),
-        panel = document.getElementById('panel'),
-        deck  = document.getElementById('deck');
+(()=>{
+"use strict";
+const Q = new URLSearchParams(location.search);
+const game=document.getElementById('game'), panel=document.getElementById('panel'),
+      deck=document.getElementById('deck'), stage=document.getElementById('stage'),
+      hint=document.getElementById('hint'), tag=document.getElementById('tag');
 
-  panel.src = 'assets/cab/panel-1up-ref.png';
-  if (Q.get('panel') === 'off') deck.style.display = 'none';   // bare screen
+// ---- which cabinet, and therefore which deck art ----
+const DEMO=(Q.get('lit')||'')==='demo';   // the alignment self-test (see the foot of this file)
+const CAB = Q.has('og')||Q.has('coleman') ? 'og' : Q.has('story') ? 'blacksite' : 'hyscore';
+const PANELS={ hyscore:'panel-1up-ref', blacksite:'panel-alt-ref', og:'panel-alt-ref' };
+const forced=(Q.get('panel')||'').toLowerCase();
+const PNAME = forced==='1up' ? 'panel-1up-ref' : forced==='alt' ? 'panel-alt-ref' : PANELS[CAB];
+panel.src = 'assets/cab/'+PNAME+'.png';
+tag.textContent = ({hyscore:'HYSCORE FOREST',blacksite:'BLACKSITE',og:"COLEMAN'S ORIGINAL"})[CAB]+' · 1UP';
+if(forced==='off') deck.style.display='none';                       // bare screen
 
-  // Pass every param straight through EXCEPT our own, so ?og / ?story / ?arcade / ?dev
-  // all still reach the game. _cb busts the cache so a rebuilt game shows up.
-  const pass = new URLSearchParams(location.search);
-  pass.delete('panel');
-  pass.set('_cb', Date.now());
-  game.src = 'index.html?' + pass.toString();
+// Pass every param through EXCEPT our own, so ?og / ?story / ?arcade / ?dev all still reach the
+// game. _cb busts the cache so a rebuilt game shows up.
+const pass=new URLSearchParams(location.search); pass.delete('panel'); pass.set('_cb',Date.now());
+if(!DEMO) game.src='index.html?'+pass.toString();   // the self-test runs on a bare deck
 
-  // The game listens on its own document; give it focus so the keyboard reaches it.
-  game.addEventListener('load', () => { try { game.contentWindow.focus(); } catch (e) {} });
-  addEventListener('pointerdown', () => { try { game.contentWindow.focus(); } catch (e) {} });
+// ---- the controls, as fractions of the panel art (MEASURED off panel-1up-ref; ALT shares them) ----
+const R_BTN=0.030, R_STK=0.038;                                     // radii as a fraction of panel WIDTH
+const CTRL={
+  p1stick:{x:0.109,y:0.311,r:R_STK,stick:1,p:1},
+  p1beam :{x:0.241,y:0.404,r:R_BTN,b:'beam',  p:1},
+  p1warb :{x:0.333,y:0.406,r:R_BTN,b:'warble',p:1},
+  p2stick:{x:0.676,y:0.315,r:R_STK,stick:1,p:2},
+  p2beam :{x:0.793,y:0.413,r:R_BTN,b:'beam',  p:2},
+  p2warb :{x:0.886,y:0.415,r:R_BTN,b:'warble',p:2},
+};
+const METER={x0:0.273,x1:0.755,y0:0.773,y1:0.830};                  // the MILITARY RESPONSE strip
+const GLOW={1:'rgba(122,255,110,.55)',2:'rgba(90,180,255,.55)'};   // the halo around a pressed button
+const FILL={1:'#8dff7a',2:'#6fcaff'};                              // P1 green / P2 blue -- the cab's own two colours
+const LIT='assets/cab/panel-bw-ref.png';                            // the lit copy, aligned to both panels
+
+// build one lit window + one hotspot per control
+const el={};
+for(const k in CTRL){ const c=CTRL[k];
+  const lit=document.createElement('div'); lit.className='lit round';
+  lit.style.webkitMaskImage=lit.style.maskImage=`url("${LIT}")`;
+  lit.style.background=FILL[c.p];
+  const hot=document.createElement('div'); hot.className='btn'; hot.style.setProperty('--glow',GLOW[c.p]);
+  if(c.b){ hot.title=(c.p===1?'P1 ':'P2 ')+c.b.toUpperCase(); } else { hot.style.cursor='default'; hot.style.pointerEvents='none'; }
+  stage.appendChild(lit); stage.appendChild(hot); el[k]={lit,hot,c};
+}
+// the MILITARY RESPONSE strip lights in its own green->amber->red run, masked to the painted segments,
+// and the gradient is sized to the WHOLE strip so a half-full meter is green-to-amber, not a squeezed
+// copy of the entire ramp -- the colour at the fill edge is the colour the heat has actually reached.
+const mlit=document.createElement('div'); mlit.className='lit';
+mlit.style.webkitMaskImage=mlit.style.maskImage=`url("${LIT}")`;
+mlit.style.background='linear-gradient(90deg,#3ee653 0%,#8ff23a 28%,#f2d33a 55%,#f2903a 78%,#ff3b30 100%)';
+mlit.style.transition='opacity .09s linear, width .12s linear'; stage.appendChild(mlit);
+
+// place everything against the panel's rendered size (it letterboxes with the viewport)
+function place(){
+  const pw=panel.clientWidth, ph=panel.clientHeight; if(!pw) return;
+  stage.style.width=pw+'px';
+  for(const k in el){ const {lit,hot,c}=el[k];
+    const r=c.r*pw, d=2*r, cx=c.x*pw, cy=c.y*ph;
+    lit.style.width=lit.style.height=d+'px';
+    lit.style.left=(cx-r)+'px'; lit.style.top=(cy-r)+'px';
+    lit.style.webkitMaskSize=lit.style.maskSize=pw+'px '+ph+'px';
+    lit.style.webkitMaskPosition=lit.style.maskPosition=(-(cx-r))+'px '+(-(cy-r))+'px';
+    hot.style.width=hot.style.height=d+'px'; hot.style.left=cx+'px'; hot.style.top=cy+'px';
+  }
+  const mx=METER.x0*pw, my=METER.y0*ph, mh=(METER.y1-METER.y0)*ph;
+  mlit.style.left=mx+'px'; mlit.style.top=my+'px'; mlit.style.height=mh+'px';
+  mlit.style.webkitMaskSize=mlit.style.maskSize=pw+'px '+ph+'px';
+  mlit.style.webkitMaskPosition=mlit.style.maskPosition=(-mx)+'px '+(-my)+'px';
+  mlit.style.backgroundSize=((METER.x1-METER.x0)*pw)+'px 100%';   // gradient spans the FULL strip, not the fill
+  mlit._full=(METER.x1-METER.x0)*pw; paintMeter();
+}
+panel.addEventListener('load',place); addEventListener('resize',place); setTimeout(place,60);
+
+// ---- live state in, presses out ----
+let meter=0, twoP=false;
+function paintMeter(){ if(!mlit._full) return;
+  mlit.style.width=(mlit._full*Math.max(0,Math.min(100,meter))/100)+'px';
+  mlit.classList.toggle('on', meter>0.5); }
+function send(p,b,on){ try{ game.contentWindow.postMessage({su:'press',p,b,on},'*'); }catch(e){} }
+for(const k in el){ const {hot,c}=el[k]; if(!c.b) continue;
+  hot.addEventListener('pointerdown',e=>{ e.preventDefault(); send(c.p,c.b,true);
+    if(c.b==='warble') setTimeout(()=>send(c.p,c.b,false),60); });
+  addEventListener('pointerup',()=>{ if(c.b==='beam') send(c.p,c.b,false); });
+}
+function light(k,on){ const {lit,hot}=el[k]; lit.classList.toggle('on',!!on); hot.classList.toggle('on',!!on); }
+function lean(k,v){ const {lit,c}=el[k]; const pw=panel.clientWidth||1;
+  const d=c.r*pw*0.45;                                             // the ball shifts toward the push
+  lit.style.transform=`translate(${(v.x||0)*d}px, ${(v.y||0)*d}px)`; }
+addEventListener('message',e=>{ const d=e&&e.data; if(!d||d.su!=='deck'||DEMO) return;
+  meter=d.meter||0; paintMeter();
+  const live = d.state==='play';
+  twoP=!!d.twoP;
+  light('p1beam', live&&d.p1.beam); light('p1warb', live&&d.p1.warble);
+  const moving1 = live && (Math.abs(d.p1.lean.x)>0.12 || Math.abs(d.p1.lean.y)>0.12);
+  light('p1stick', moving1); lean('p1stick', live?d.p1.lean:{x:0,y:0});
+  // the blue side is lit whenever a rival is on the field -- in 1P that is the CPU flying it, which
+  // is what the real 2-player cab shows you too
+  const r=d.p2, rl=live&&r.live;
+  light('p2beam', rl&&r.beam); light('p2warb', rl&&r.warble);
+  const moving2 = rl && (Math.abs(r.lean.x)>0.12 || Math.abs(r.lean.y)>0.12);
+  light('p2stick', moving2); lean('p2stick', rl?r.lean:{x:0,y:0});
+  hint.textContent = twoP ? 'P1 mouse / WASD · Z BEAM · X WARBLE   ·   P2 IJKL · M BEAM · , WARBLE'
+                          : 'mouse or WASD to fly · hold click / Z to BEAM · right-click / X to WARBLE';
+});
+hint.textContent='mouse or WASD to fly · hold click / Z to BEAM · right-click / X to WARBLE';
+
+// ?lit=demo -- the ALIGNMENT self-test. Lights every control and sweeps the meter with no game
+// running, which is the only way to see whether the lit copy still lines up with the base art after
+// either panel is re-exported. docs/cab-standard.md calls this a live-display tune; this is the display.
+if(DEMO){
+  for(const k in el) light(k,true);
+  lean('p1stick',{x:-1,y:0}); lean('p2stick',{x:1,y:0});
+  let m=0; setInterval(()=>{ m=(m+2)%101; meter=m; paintMeter(); },40);
+  meter=100; paintMeter(); hint.textContent='LIT-PANEL ALIGNMENT TEST · every control forced on';
+}
+
+// the game listens on its own document; give it focus so the keyboard reaches it
+game.addEventListener('load',()=>{ try{ game.contentWindow.focus(); }catch(e){} });
+addEventListener('pointerdown',e=>{ if(e.target.classList.contains('btn')) return;
+  try{ game.contentWindow.focus(); }catch(e2){} });
+})();
 </script>
 </body>
