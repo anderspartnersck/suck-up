@@ -69,8 +69,6 @@ Each cabinet brings its own deck, because they are not the same machine:
 - [BLACKSITE deck][deckstory] — the jailbroken one
 - [COLEMAN'S ORIGINAL deck][deckog] — Blacksite's panel with every zone open
 
-Add `?panel=off` to any of them for the bare screen.
-
 ### The vault
 
 Press X at the attract screen before you start and you'll arm DEFCON 1, which is
