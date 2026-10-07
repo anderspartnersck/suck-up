@@ -216,7 +216,7 @@ function propDepth(s){ return clamp((PROP_DEPTH[s]!=null?PROP_DEPTH[s]:0.82)*rnd
 // ZONE RULES (1007 — Joe: "water towers where they shouldn't be", "offices in residential", "no barracks on the base").
 // Every scenery sprite has a CLASS; every zone lists the classes it may show. buildScenery + the recycler drop
 // anything off-list, and tools/web_check.mjs asserts the authored lists statically, so a stray water tower on a
-// residential street fails the gate instead of shipping. Water towers = rural farm stretches only.
+// residential street fails the gate instead of shipping. Water towers = DAIRY FLATS only (Joe 2026-10-07).
 var PROP_CLASS={ water_tower:'tower', barn:'farm', silo:'farm', windmill:'farm', haybale:'farm', corn:'farm',
   it_corn_1:'farm',it_corn_2:'farm',it_corn_3:'farm',it_corn_4:'farm',it_corn_5:'farm',it_corn_stalk:'farm',it_corn_machine:'farm',
   it_office:'office', it_highrise:'office', it_morale_corp:'office', it_brick:'office', highrise:'office', office:'office', tower_a:'office', tower_b:'office', tower_c:'office',
@@ -224,8 +224,9 @@ var PROP_CLASS={ water_tower:'tower', barn:'farm', silo:'farm', windmill:'farm',
   house:'res', res_mailbox:'res', res_mailbox_2:'res', res_shed:'res', res_garage:'res', res_lamp:'res', res_fence_wood:'res',
   barracks:'mil', bunker:'mil', radar:'mil', tree:'any', bush:'any' };
 function propClass(s){ return PROP_CLASS[s] || (/^it_house_/.test(s)?'res' : /^mb_/.test(s)?'mil' : 'any'); }
-var ZONE_OK={ 'DAIRY FLATS':'farm tower any', 'CORN COUNTRY':'farm tower any', 'DOWNTOWN TOWSON':'office shop any',
-  'COUNTY ROAD 9':'farm tower res shop any', 'THE BELTWAY':'office shop any', 'OUTSKIRTS OF TOWSON':'res farm any',
+var ZONE_OK={ 'DAIRY FLATS':'farm tower any', 'CORN COUNTRY':'farm any',   // water towers = DAIRY FLATS ONLY (Joe 2026-10-07)
+  'DOWNTOWN TOWSON':'office shop any',
+  'COUNTY ROAD 9':'farm res shop any', 'THE BELTWAY':'office shop any', 'OUTSKIRTS OF TOWSON':'res farm any',
   base:'mil any', backyard:'res farm any', crab:'res shop any', champ:'res farm any' };
 function sceneZone(){ return mode==='campaign'? (LEVELS[level]&&LEVELS[level].zone) : (mode==='base'||mode==='gunpowder')? 'base' : mode==='bonus'? bonusKind : null; }
 function zoneAllows(z,s){ var ok=ZONE_OK[z]; return !ok || (' '+ok+' ').indexOf(' '+propClass(s)+' ')>=0; }
@@ -300,9 +301,9 @@ var LEVELS=[
     pool: [ {s:'it_morale_corp',d:0.4,sc:0.92,w:0.5}, {s:'it_highrise',d:0.46}, {s:'it_highrise',d:0.52,sc:0.82}, {s:'it_office',d:0.6,sc:0.92},
             {s:'it_office',d:0.5,sc:0.8}, {s:'it_brick',d:0.8}, {s:'it_shops',d:0.92}, {s:'it_bldg6',d:1.0}, {s:'tree',d:0.9,w:0.7} ] },   // Towson core: MORALE CORP + glass towers DEEP, HYSCORE BURGERS/strip NEAR, over the parallax skyline band + bumper-to-bumper traffic · URBAN RED
   { zone:'COUNTY ROAD 9',       clock:62, personBias: 0.12, scrollStart:30, daveChance:0.30, meter0:24, truck:true, red:true, band:'county_police_row', col:'#ffd27a',
-    props:[ {s:'it_corn_1',d:0.4,sc:1.05}, {s:'silo',d:0.44}, {s:'water_tower',d:0.52}, {s:'it_house_5',d:0.6,sc:0.82},
+    props:[ {s:'it_corn_1',d:0.4,sc:1.05}, {s:'silo',d:0.44}, {s:'windmill',d:0.52}, {s:'it_house_5',d:0.6,sc:0.82},
             {s:'it_bldg6',d:0.82,sc:0.95}, {s:'it_house_8',d:1.0}, {s:'tree',d:0.92}, {s:'haybale',d:1.0} ],
-    pool: [ {s:'it_corn_1',d:0.4,sc:1.05}, {s:'it_corn_3',d:0.48}, {s:'silo',d:0.44}, {s:'water_tower',d:0.52,w:0.4}, {s:'windmill',d:0.5},
+    pool: [ {s:'it_corn_1',d:0.4,sc:1.05}, {s:'it_corn_3',d:0.48}, {s:'silo',d:0.44}, {s:'windmill',d:0.5},
             {s:'barn',d:0.7,sc:0.85}, {s:'it_house_5',d:0.6,sc:0.82}, {s:'it_house_6',d:0.95}, {s:'it_house_1',d:1.0}, {s:'it_house_8',d:1.0},
             {s:'it_bldg6',d:0.82,sc:0.95,w:0.5}, {s:'tree',d:0.92}, {s:'haybale',d:1.0} ] },   // rural highway: farm + farmhouses, one roadside burger joint (no strip mall / rowhouse — didn't belong)
   { zone:'THE BELTWAY',         clock:90, personBias: 0.45, scrollStart:26, daveChance:0.55, meter0:30, aa:true, truck:true, urban:true, band:'beltway_traffic_row', col:'#ff9d3a',
