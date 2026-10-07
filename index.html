@@ -28,6 +28,19 @@
   html,body{height:100%;background:#01030a;overflow:hidden;cursor:none;
     font:13px/1.4 ui-monospace,Menlo,Consolas,monospace;color:#dff7e4;-webkit-user-select:none;user-select:none}
   #c{position:fixed;inset:0;display:block}
+  /* ---- PHONE PANEL (Joe 2026-10-07): touch + landscape = the cab control panel, big, under the game. The painted
+     sticks/buttons ARE the controls (P1 green left · P2 blue right). Skins: ALT (fluorescent) / 1UP (dark). */
+  #tpanel,#trot{display:none}
+  body.tmode #tpanel{display:block;position:fixed;left:0;right:0;bottom:0;height:var(--ph,140px);background:#000;touch-action:none;
+    -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;z-index:20;overflow:hidden;padding-bottom:env(safe-area-inset-bottom)}
+  #tpanel .art{position:absolute;top:0;height:100%;left:50%;transform:translateX(-50%);pointer-events:none}
+  #tpanel img,#tpanel canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+  body.tmode #mix{display:none!important}
+  body.trot #trot{display:flex;position:fixed;inset:0;z-index:60;background:#020604;color:#39ff14;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+    font:900 20px/1.2 "Helvetica Neue",Arial;letter-spacing:.06em;text-align:center}
+  #trot .ph{width:46px;height:78px;border:3px solid #39ff14;border-radius:9px;animation:tRot 1.6s ease-in-out infinite}
+  @keyframes tRot{40%,100%{transform:rotate(-90deg)}}
+
   #hint{display:none}   /* control readout retired — it blocked the attract text (controls live on the panel / rules card) */
   #hint b{color:#9c89c4} kbd{background:#13301f;border:1px solid #28543a;border-radius:4px;padding:0 5px;color:#bdf2cf;font-size:11px}
   /* MIX PANEL — the player's two volume faders, parked off the action on the right edge.
@@ -51,6 +64,8 @@
 <!--@BUILD@--><!-- tools/build_editions.py replaces this marker with `<script>window.__SUCKUP_BUILD='mouse'|'stick'</script>` to BAKE a distributable edition (no URL param needed). Left as an inert comment in the master/dev build. -->
 </head>
 <body>
+<div id="tpanel"><div class="art"><img id="tpimg" alt=""><canvas id="tpfx"></canvas></div></div>
+<div id="trot"><div class="ph"></div>TURN YOUR PHONE<br><span style="font-size:13px;color:#9fd8a8;font-weight:700">suck up flies sideways</span></div>
 <canvas id="c"></canvas>
 <!-- THE SUCK UP FILES — the REAL pre-airy reel, baked from the Python build (suck_up_art.py) to mp4. Played verbatim as the attract; no JS reimplementation. -->
 <video id="reel" src="assets/attract-reel.mp4" loop muted playsinline preload="auto" style="position:absolute;left:-9999px;width:8px;height:8px"></video>
@@ -70,7 +85,7 @@
 "use strict";
 var cv=document.getElementById('c'), ctx=cv.getContext('2d');
 var reelVid=document.getElementById('reel');                      // THE SUCK UP FILES — the real baked reel (mp4)
-var W=0,H=0; function resize(){ W=cv.width=innerWidth; H=cv.height=innerHeight; } addEventListener('resize',resize); resize();
+var W=0,H=0; function resize(){ W=cv.width=innerWidth; H=cv.height=innerHeight-(window.__suPanelH||0); } addEventListener('resize',resize); resize();   // __suPanelH: the PHONE PANEL band under the game (script at the end of the page)
 function rnd(a,b){ return a+(b-a)*Math.random(); }
 function clamp(v,a,b){ return v<a?a:v>b?b:v; }
 function chance(p){ return Math.random()<p; }
@@ -97,6 +112,15 @@ load('impact_g',A+'impact-super-green.png'); load('impact_b',A+'impact-super-blu
  'it_house_1','it_house_2','it_house_3','it_house_4','it_house_5','it_house_6',
  'it_house_7','it_house_8','it_house_9','it_house_10','it_house_11','it_house_12',
  'it_corn_stalk','it_corn_1','it_corn_2','it_corn_3','it_corn_4','it_corn_5','it_corn_machine',    // CORN COUNTRY: painterly single stalk (replaces the crude 'corn' glyph) + wide fenced field-plot backdrops (barn/truck/harvester) + red combine hero vehicle
+ // 1007 VARIATION PASS (tools/cut_props.py): individual road VEHICLES (the lanes were pre-baked strips — one all-police,
+ // one with mailboxes + a kid on a bike baked INTO the traffic lane), residential street furniture for the verge, and the
+ // MILITARY BASE set that only ever lived in the masters (barracks, fence, gate, watch tower, hangar, chapel ...).
+ 'veh_minivan_silver','veh_minivan_tan','veh_van_white','veh_pickup_white','veh_wagon_gold','veh_sedan_white','veh_zebra',
+ 'veh_sedan_dark','veh_suv_dark','veh_van_work','veh_pickup_silver','veh_sedan_unmarked',
+ 'veh_cop_cruiser','veh_cop_interceptor','veh_cop_suv','veh_cop_k9','veh_cop_lights','veh_cop_flash',
+ 'res_mailbox','res_mailbox_2','res_shed','res_garage','res_lamp','res_fence_wood',
+ 'mb_barracks','mb_gate','mb_fence','mb_watchtower','mb_radar_trailer','mb_hangar','mb_shed','mb_bunkhouse','mb_array','mb_chapel',
+ 'mb_commissary','mb_motorpool',
  'it_sky_1_n','it_sky_2_n','it_sky_3_n','it_sky_4_n','it_sky_5_n','it_sky_6_n'    // distant-city skylines for the parallax horizon band — NIGHT-GRADED (tools/sky_night.py: cooled the warm 'sunrise' glow, compressed highlights, faded the pale haze-halo so they sit in the night sky, not a bright box)
 ].forEach(function(n){ load(n,AR+n+'.png'); });
 load('ck_logo',LG+'castle-killscreen-logo.png'); load('ck_text',LG+'ck-logo-new.png'); load('suck_logo',LG+'suck-up-logo.png');
@@ -169,7 +193,11 @@ var SCN_H={ highrise:0.40,tower_c:0.38,tower_a:0.35,tower_b:0.31,office:0.33,wat
   it_house_1:0.16,it_house_2:0.16,it_house_3:0.17,it_house_4:0.165,it_house_5:0.155,it_house_6:0.155,
   it_house_7:0.18,it_house_8:0.185,it_house_9:0.20,it_house_10:0.19,it_house_11:0.175,it_house_12:0.19,
   it_corn_stalk:0.19, it_corn_1:0.20,it_corn_2:0.22,it_corn_3:0.17,it_corn_4:0.21,it_corn_5:0.21, it_corn_machine:0.17,
-  it_skyline_a:0.11,it_skyline_b:0.085 };   // downtown buildings scaled to the artist's relative heights (tower>office>mini-mart>diner); barracks is 4.7:1 wide so its HEIGHT stays low
+  it_skyline_a:0.11,it_skyline_b:0.085,
+  // 1007: residential verge furniture + the military base set (wide sprites get a SHORT height, same rule)
+  res_mailbox:0.07,res_mailbox_2:0.065,res_shed:0.12,res_garage:0.13,res_lamp:0.16,res_fence_wood:0.085,
+  mb_barracks:0.125,mb_gate:0.09,mb_fence:0.10,mb_watchtower:0.27,mb_radar_trailer:0.14,mb_hangar:0.115,
+  mb_shed:0.11,mb_bunkhouse:0.11,mb_array:0.24,mb_chapel:0.17,mb_commissary:0.105,mb_motorpool:0.13 };   // downtown buildings scaled to the artist's relative heights (tower>office>mini-mart>diner); barracks is 4.7:1 wide so its HEIGHT stays low
 function scnH(n){ return H*(SCN_H[n]||0.16); }
 // INTENTIONAL DEPTH per prop (not random): distant LANDMARKS recede to the back (dim/small/raised),
 // the near HOMESTEAD / street-level buildings stay prominent up front. Reads as a real place, not a scatter.
@@ -180,8 +208,32 @@ var PROP_DEPTH={ barn:1.0,house:1.0,restaurant:1.0,storefront:1.0,barracks:0.7,h
   it_shops:0.92,it_bldg6:0.95,it_penalty_box:0.88,it_brick:0.8,it_house_1:1.0,it_house_2:1.0,it_house_3:1.0,it_house_4:1.0,it_house_5:1.0,it_house_6:1.0,
   it_house_7:1.0,it_house_8:1.0,it_house_9:1.0,it_house_10:1.0,it_house_11:1.0,it_house_12:1.0,
   it_corn_stalk:0.95, it_corn_1:0.62,it_corn_2:0.6,it_corn_3:0.5,it_corn_4:0.66,it_corn_5:0.6, it_corn_machine:1.0,
-  it_office:0.66,it_highrise:0.48,it_morale_corp:0.42,it_skyline_a:0.35,it_skyline_b:0.35 };
+  it_office:0.66,it_highrise:0.48,it_morale_corp:0.42,it_skyline_a:0.35,it_skyline_b:0.35,
+  res_mailbox:1.0,res_mailbox_2:1.0,res_shed:0.9,res_garage:0.9,res_lamp:0.96,res_fence_wood:0.95,
+  mb_barracks:0.68,mb_gate:0.92,mb_fence:0.9,mb_watchtower:0.5,mb_radar_trailer:0.82,mb_hangar:0.55,
+  mb_shed:0.86,mb_bunkhouse:0.78,mb_array:0.46,mb_chapel:0.6,mb_commissary:1.0,mb_motorpool:0.92 };
 function propDepth(s){ return clamp((PROP_DEPTH[s]!=null?PROP_DEPTH[s]:0.82)*rnd(0.9,1.06), 0.35, 1.0); }
+// ZONE RULES (1007 — Joe: "water towers where they shouldn't be", "offices in residential", "no barracks on the base").
+// Every scenery sprite has a CLASS; every zone lists the classes it may show. buildScenery + the recycler drop
+// anything off-list, and tools/web_check.mjs asserts the authored lists statically, so a stray water tower on a
+// residential street fails the gate instead of shipping. Water towers = rural farm stretches only.
+var PROP_CLASS={ water_tower:'tower', barn:'farm', silo:'farm', windmill:'farm', haybale:'farm', corn:'farm',
+  it_corn_1:'farm',it_corn_2:'farm',it_corn_3:'farm',it_corn_4:'farm',it_corn_5:'farm',it_corn_stalk:'farm',it_corn_machine:'farm',
+  it_office:'office', it_highrise:'office', it_morale_corp:'office', it_brick:'office', highrise:'office', office:'office', tower_a:'office', tower_b:'office', tower_c:'office',
+  it_shops:'shop', it_bldg6:'shop', it_penalty_box:'shop', storefront:'shop', restaurant:'shop',
+  house:'res', res_mailbox:'res', res_mailbox_2:'res', res_shed:'res', res_garage:'res', res_lamp:'res', res_fence_wood:'res',
+  barracks:'mil', bunker:'mil', radar:'mil', tree:'any', bush:'any' };
+function propClass(s){ return PROP_CLASS[s] || (/^it_house_/.test(s)?'res' : /^mb_/.test(s)?'mil' : 'any'); }
+var ZONE_OK={ 'DAIRY FLATS':'farm tower any', 'CORN COUNTRY':'farm tower any', 'DOWNTOWN TOWSON':'office shop any',
+  'COUNTY ROAD 9':'farm tower res shop any', 'THE BELTWAY':'office shop any', 'OUTSKIRTS OF TOWSON':'res farm any',
+  base:'mil any', backyard:'res farm any', crab:'res shop any', champ:'res farm any' };
+function sceneZone(){ return mode==='campaign'? (LEVELS[level]&&LEVELS[level].zone) : (mode==='base'||mode==='gunpowder')? 'base' : mode==='bonus'? bonusKind : null; }
+function zoneAllows(z,s){ var ok=ZONE_OK[z]; return !ok || (' '+ok+' ').indexOf(' '+propClass(s)+' ')>=0; }
+// Sign-bearing art never mirrors (a flipped COMMISSARY / HYSCORE sign reads backwards); everything else may, which
+// is half the cure for "the same building again" — a mirrored house is a different house at a glance.
+var NOFLIP={ it_shops:1, it_bldg6:1, it_penalty_box:1, it_morale_corp:1, barracks:1, mb_commissary:1, mb_gate:1, storefront:1, restaurant:1 };
+// FILLER props may repeat freely; anything else is a BUILDING and the recycler keeps it unique on screen.
+var FILLER={ tree:1, haybale:1, it_corn_stalk:1, bush:1, res_mailbox:1, res_mailbox_2:1, res_lamp:1, res_fence_wood:1 };
 // SCENERY BUILDER — a prop entry is either a string (name, depth from PROP_DEPTH) OR an object
 // {s:name, d:depthOverride 0.35..1, sc:scaleMult}. The override is what lets one zone stack the SAME
 // building type at different depths (true front/back layering, not a flat single-depth row). Items are
@@ -190,9 +242,39 @@ function propNode(pr,i,x0,step){
   var nm=(typeof pr==='string')?pr:pr.s;
   var d =(pr&&typeof pr==='object'&&pr.d!=null)?clamp(pr.d*rnd(0.96,1.04),0.3,1.0):propDepth(nm);
   var scv=(pr&&typeof pr==='object'&&pr.sc!=null)?pr.sc:1;
-  return { x:W*(x0+i*step+rnd(-0.022,0.022)), s:nm, sc:scv*rnd(0.93,1.05), d:d };
+  return { x:W*(x0+i*step+rnd(-0.022,0.022)), s:nm, sc:scv*rnd(0.93,1.05), d:d, fl:!NOFLIP[nm] && Math.random()<0.5 };
 }
-function buildScenery(props,x0,step){ scenery=[]; for(var i=0;i<props.length;i++) scenery.push(propNode(props[i],i,x0,step)); scenery.sort(function(a,b){return a.d-b.d;}); }
+// buildScenery(props, x0, step [, pool]) — props = the authored OPENING composition (what you see at the horn);
+// pool = what the street turns into as it scrolls (defaults to props). Both are filtered by the zone rules.
+var scenePool=[], sceneRecent=[];
+function buildScenery(props,x0,step,pool){
+  var z=sceneZone(), keep=function(pr){ var nm=(typeof pr==='string')?pr:pr.s; if(zoneAllows(z,nm)) return true; if(DEV) console.warn('scenery: '+nm+' is not allowed in '+z); return false; };
+  props=props.filter(keep); scenePool=(pool||props).filter(keep); sceneRecent=[];
+  scenery=[]; for(var i=0;i<props.length;i++) scenery.push(propNode(props[i],i,x0,step)); scenery.sort(function(a,b){return a.d-b.d;});
+  rollMoon(z);
+}
+// RECYCLE a prop that scrolled off the left edge (1007). It used to wrap back as ITSELF, so every zone replayed
+// the same 7-10 buildings in the same order every 1.24 screens. Now it re-dresses from the zone pool: a BUILDING
+// that is already on screen (or one of the last few placed) is skipped, so the street keeps changing. Pure
+// presentation — scenery feeds no hit logic.
+function recycleProp(p){
+  if(!scenePool.length) return;
+  var near={}; for(var i=0;i<scenery.length;i++){ var q=scenery[i]; if(q!==p && Math.abs(q.x-p.x)<W*1.1) near[q.s]=1; }
+  for(var r=0;r<sceneRecent.length;r++) near[sceneRecent[r]]=1;
+  var cands=[], tot=0;
+  for(var k=0;k<scenePool.length;k++){ var pr=scenePool[k], nm=(typeof pr==='string')?pr:pr.s;
+    if(!FILLER[nm] && near[nm]) continue;
+    var w=(typeof pr==='object'&&pr.w!=null)?pr.w:1; cands.push([pr,w]); tot+=w; }
+  if(!cands.length) return;                                   // nothing fresh: keep what it was rather than force a clone
+  var u=Math.random()*tot, pick2=cands[0][0];
+  for(var c=0;c<cands.length;c++){ u-=cands[c][1]; if(u<=0){ pick2=cands[c][0]; break; } }
+  var n=propNode(pick2,0,0,0); p.s=n.s; p.d=n.d; p.sc=n.sc; p.fl=n.fl;
+  if(!FILLER[p.s]){ sceneRecent.push(p.s); if(sceneRecent.length>3) sceneRecent.shift(); }
+  scenery.sort(function(a,b){return a.d-b.d;});
+}
+function scrollScenery(dx){
+  for(var i=0;i<scenery.length;i++){ var p=scenery[i]; p.x-=dx; if(p.x<-W*0.12){ p.x+=W*1.24; recycleProp(p); } }
+}
 
 /* ---------- ALL SIX ZONES — the old model's exact run (values from src/suck_up.py ROUNDS).
    meter0 = starting Military Response, rush = top-score goal, aa = AA hot from the start,
@@ -202,24 +284,48 @@ function buildScenery(props,x0,step){ scenery=[]; for(var i=0;i<props.length;i++
 var LEVELS=[
   { zone:'DAIRY FLATS',         clock:78, personBias:-0.10, scrollStart:48, daveChance:0.0,  meter0:0,  col:'#9affc0', mo:true,
     props:[ {s:'silo',d:0.4}, {s:'barn',d:0.48,sc:0.82}, {s:'windmill',d:0.54}, {s:'water_tower',d:0.6},
-            {s:'silo',d:0.7}, {s:'barn',d:0.96}, {s:'tree',d:0.9}, {s:'haybale',d:1.0}, {s:'haybale',d:0.84} ] },   // Mo's pasture: far farm silhouette (silos/windmill/water tower) → near barn + trees + hay
+            {s:'tree',d:0.7}, {s:'barn',d:0.96}, {s:'tree',d:0.9}, {s:'haybale',d:1.0}, {s:'haybale',d:0.84} ],
+    pool: [ {s:'silo',d:0.42}, {s:'silo',d:0.66}, {s:'barn',d:0.5,sc:0.82}, {s:'barn',d:0.95}, {s:'windmill',d:0.52}, {s:'water_tower',d:0.58,w:0.5},
+            {s:'it_corn_5',d:0.58}, {s:'tree',d:0.85}, {s:'tree',d:1.0}, {s:'haybale',d:1.0}, {s:'haybale',d:0.86} ] },   // the ONE level a water tower is home (+ rural stretches) · Mo's pasture: far farm silhouette → near barn + trees + hay
   { zone:'CORN COUNTRY',        clock:70, personBias: 0.00, scrollStart:38, daveChance:0.12, meter0:10, rush:true, col:'#bdf2cf',
     props:[ {s:'it_corn_1',d:0.42,sc:1.1}, {s:'silo',d:0.46}, {s:'it_corn_2',d:0.6}, {s:'windmill',d:0.52},
             {s:'it_corn_stalk',d:0.95}, {s:'it_corn_machine',d:1.0}, {s:'it_corn_stalk',d:0.9},
-            {s:'it_corn_4',d:0.66}, {s:'it_corn_stalk',d:1.0}, {s:'silo',d:0.58} ] },   // 0710 IT: deep fenced field-plots (barn/truck) behind painterly stalks + the red combine up front
+            {s:'it_corn_4',d:0.66}, {s:'it_corn_stalk',d:1.0}, {s:'barn',d:0.58,sc:0.85} ],
+    pool: [ {s:'it_corn_1',d:0.42,sc:1.1}, {s:'it_corn_2',d:0.6}, {s:'it_corn_3',d:0.5}, {s:'it_corn_4',d:0.66}, {s:'it_corn_5',d:0.6},
+            {s:'silo',d:0.46}, {s:'windmill',d:0.52}, {s:'barn',d:0.58,sc:0.85}, {s:'haybale',d:1.0}, {s:'it_corn_machine',d:1.0,w:0.4},
+            {s:'it_corn_stalk',d:0.95,w:2}, {s:'it_corn_stalk',d:0.9,w:2} ] },   // 0710 IT: deep fenced field-plots (barn/truck) behind painterly stalks + the red combine up front
   { zone:'DOWNTOWN TOWSON',     clock:72, personBias: 0.50, scrollStart:32, daveChance:0.20, meter0:16, rush:true, red:true, urban:true, band:'beltway_traffic_row', col:'#7fe9ff',
     props:[ {s:'it_morale_corp',d:0.4,sc:0.92}, {s:'it_highrise',d:0.46}, {s:'it_office',d:0.6,sc:0.92},
-            {s:'it_brick',d:0.8}, {s:'it_shops',d:0.92}, {s:'it_bldg6',d:1.0}, {s:'it_highrise',d:0.5,sc:0.85} ] },   // Towson core: MORALE CORP + glass towers DEEP, HYSCORE BURGERS/strip NEAR, over the parallax skyline band + bumper-to-bumper traffic · URBAN RED
+            {s:'it_brick',d:0.8}, {s:'it_shops',d:0.92}, {s:'it_bldg6',d:1.0}, {s:'tree',d:0.9} ],
+    pool: [ {s:'it_morale_corp',d:0.4,sc:0.92,w:0.5}, {s:'it_highrise',d:0.46}, {s:'it_highrise',d:0.52,sc:0.82}, {s:'it_office',d:0.6,sc:0.92},
+            {s:'it_office',d:0.5,sc:0.8}, {s:'it_brick',d:0.8}, {s:'it_shops',d:0.92}, {s:'it_bldg6',d:1.0}, {s:'tree',d:0.9,w:0.7} ] },   // Towson core: MORALE CORP + glass towers DEEP, HYSCORE BURGERS/strip NEAR, over the parallax skyline band + bumper-to-bumper traffic · URBAN RED
   { zone:'COUNTY ROAD 9',       clock:62, personBias: 0.12, scrollStart:30, daveChance:0.30, meter0:24, truck:true, red:true, band:'county_police_row', col:'#ffd27a',
     props:[ {s:'it_corn_1',d:0.4,sc:1.05}, {s:'silo',d:0.44}, {s:'water_tower',d:0.52}, {s:'it_house_5',d:0.6,sc:0.82},
-            {s:'it_bldg6',d:0.82,sc:0.95}, {s:'it_house_8',d:1.0}, {s:'tree',d:0.92}, {s:'haybale',d:1.0} ] },   // rural highway: deep cornfield + silo + water tower → roadside HYSCORE BURGERS + farmhouses up front (dropped the urban strip mall + brick rowhouse — didn't belong)
+            {s:'it_bldg6',d:0.82,sc:0.95}, {s:'it_house_8',d:1.0}, {s:'tree',d:0.92}, {s:'haybale',d:1.0} ],
+    pool: [ {s:'it_corn_1',d:0.4,sc:1.05}, {s:'it_corn_3',d:0.48}, {s:'silo',d:0.44}, {s:'water_tower',d:0.52,w:0.4}, {s:'windmill',d:0.5},
+            {s:'barn',d:0.7,sc:0.85}, {s:'it_house_5',d:0.6,sc:0.82}, {s:'it_house_6',d:0.95}, {s:'it_house_1',d:1.0}, {s:'it_house_8',d:1.0},
+            {s:'it_bldg6',d:0.82,sc:0.95,w:0.5}, {s:'tree',d:0.92}, {s:'haybale',d:1.0} ] },   // rural highway: farm + farmhouses, one roadside burger joint (no strip mall / rowhouse — didn't belong)
   { zone:'THE BELTWAY',         clock:90, personBias: 0.45, scrollStart:26, daveChance:0.55, meter0:30, aa:true, truck:true, urban:true, band:'beltway_traffic_row', col:'#ff9d3a',
     props:[ {s:'it_highrise',d:0.46}, {s:'it_office',d:0.6,sc:0.92}, {s:'it_shops',d:0.92}, {s:'it_bldg6',d:1.0,sc:0.95},
-            {s:'tree',d:0.88}, {s:'it_penalty_box',d:0.86}, {s:'it_highrise',d:0.5,sc:0.78} ] },   // I-695: glass towers DEEP, HYSCORE BURGERS near, then a TREE GAP so the PENALTY BOX (NACHOS) landmark sign reads clear — the trailing tower pushed deep/small (sc0.78) so it no longer crowds the sign
+            {s:'tree',d:0.88}, {s:'it_penalty_box',d:0.86}, {s:'it_brick',d:0.62,sc:0.8} ],
+    pool: [ {s:'it_highrise',d:0.46}, {s:'it_highrise',d:0.5,sc:0.78}, {s:'it_office',d:0.6,sc:0.92}, {s:'it_office',d:0.52,sc:0.8},
+            {s:'it_morale_corp',d:0.42,sc:0.82,w:0.4}, {s:'it_brick',d:0.62,sc:0.8}, {s:'it_shops',d:0.92}, {s:'it_bldg6',d:1.0,sc:0.95},
+            {s:'it_penalty_box',d:0.86}, {s:'tree',d:0.88,w:0.7} ] },   // I-695: glass towers DEEP, HYSCORE BURGERS near, then a TREE GAP so the PENALTY BOX (NACHOS) landmark sign reads clear — a low brick block trails it (was a 2nd glass tower = a clone)
   { zone:'OUTSKIRTS OF TOWSON', clock:84, personBias: 0.32, scrollStart:22, daveChance:1.0,  meter0:45, aa:true, truck:true, rush:true, band:'outskirts_row', col:'#ff5d6c',
-    props:[ {s:'it_house_12',d:0.5,sc:0.82}, {s:'water_tower',d:0.55}, {s:'it_house_8',d:1.0}, {s:'tree',d:0.9},
-            {s:'barn',d:0.92}, {s:'it_house_10',d:1.0}, {s:'it_house_7',d:0.62,sc:0.85}, {s:'tree',d:1.0} ] }   // Dave's block: deep homestead + water tower → warm-lit HOUSES-3 homes + barn up front
+    props:[ {s:'it_house_12',d:0.5,sc:0.82}, {s:'it_house_3',d:0.56,sc:0.8}, {s:'it_house_8',d:1.0}, {s:'res_mailbox',d:1.0}, {s:'tree',d:0.9},
+            {s:'barn',d:0.92}, {s:'it_house_10',d:1.0}, {s:'res_mailbox_2',d:1.0}, {s:'it_house_7',d:0.62,sc:0.85}, {s:'tree',d:1.0} ],
+    pool: [ {s:'it_house_7',d:0.62,sc:0.85}, {s:'it_house_8',d:1.0}, {s:'it_house_10',d:1.0}, {s:'it_house_11',d:0.95}, {s:'it_house_12',d:0.5,sc:0.82},
+            {s:'it_house_2',d:0.58,sc:0.8}, {s:'it_house_3',d:0.56,sc:0.8}, {s:'it_house_6',d:1.0}, {s:'res_garage',d:0.9}, {s:'res_shed',d:0.88,w:0.6},
+            {s:'barn',d:0.92,w:0.4}, {s:'res_mailbox',d:1.0}, {s:'res_mailbox_2',d:1.0}, {s:'res_lamp',d:0.97,w:0.6}, {s:'res_fence_wood',d:0.95,w:0.4}, {s:'tree',d:0.9}, {s:'tree',d:1.0} ] }   // residential: houses + curbside mailboxes ON THE VERGE (they used to ride the traffic lane); no water tower, no offices · Dave's block
 ];
+// MILITARY BASE dressing (1007) — shared by the base gauntlet, the attract demo and THE GUNPOWDER HORROR. It used
+// to be office tower + water tower + three radar dishes in front of ONE commissary, so the tower read as the base
+// and none of the barracks / fences ever showed (they were never cut from the masters). Now: watch tower + comms
+// array + hangar DEEP, the barracks block MID, and the fence line / gate / commissary / motor pool on the flightline.
+var BASE_PROPS=[ {s:'mb_watchtower',d:0.46}, {s:'radar',d:0.5}, {s:'mb_hangar',d:0.56,sc:0.9}, {s:'mb_barracks',d:0.68},
+  {s:'mb_array',d:0.48}, {s:'mb_fence',d:0.9}, {s:'mb_gate',d:0.92}, {s:'mb_commissary',d:1.0}, {s:'mb_radar_trailer',d:0.84}, {s:'mb_motorpool',d:0.94} ];
+var BASE_POOL=BASE_PROPS.concat([ {s:'mb_shed',d:0.86}, {s:'mb_bunkhouse',d:0.78}, {s:'mb_chapel',d:0.6,w:0.5}, {s:'radar',d:0.66},
+  {s:'mb_barracks',d:0.62,sc:0.85}, {s:'mb_fence',d:0.88}, {s:'tree',d:0.9,w:0.5} ]);
 // Mo (Dairy Flats boss) — suck_up.py: telegraph 42s, appear 50s, bonus 3000, slow drift
 var MO_TELE=42, MO_APPEAR=50, MO_BONUS=3000;
 // Dave's rocket truck (the chase rounds) — suck_up.py: fire 1.7s, speed 7 cols/s, 3.5s gap,
@@ -601,8 +707,7 @@ function enterAttract(){ state='attract'; idleT=0; mode='campaign'; attractMode=
 // dress the demo viewport as one mission (scenery/zone backdrop + cows + cosmetic planes)
 function setDemoZone(zi){ var Z=DEMO_ZONES[zi]; demoZ=zi; level=Z.lvl; mode=Z.base?'base':'campaign';
   jets=[]; shots=[]; fx=[];
-  var props = Z.base ? [ {s:'it_office',d:0.4,sc:0.9}, {s:'radar',d:0.55}, {s:'water_tower',d:0.52}, {s:'it_brick',d:0.85,sc:0.85}, {s:'bunker',d:0.95}, {s:'barracks',d:1.0} ] : LEVELS[Z.lvl].props;
-  buildScenery(props, 0.04, 0.13);
+  if(Z.base) buildScenery(BASE_PROPS, 0.02, 0.112, BASE_POOL); else buildScenery(LEVELS[Z.lvl].props, 0.04, 0.13, LEVELS[Z.lvl].pool);
   targets=[];
   if(Z.cows){ for(var k=0;k<7;k++) targets.push({ kind:'cow', def:TARGETKINDS.cow, sprite:pick(TARGETKINDS.cow.sprites),
     x:W*rnd(0.1,0.9), y:groundY(), dir:chance(.5)?1:-1, lock:0, lifting:false, gone:false, owner:null, respawnA:0 }); }
@@ -661,7 +766,7 @@ function updateAttract(dt){ var _W=W,_H=H; W=H=Math.min(_W,_H);     // square sp
     if(je.x>W*0.12 && je.x<W*0.88){ je.fireCd-=dt; if(je.fireCd<=0){ je.fireCd=rnd(1.4,2.6);                  // planes strafe a UFO (the threat)
       var tg=(Math.abs(demo.x-je.x)<=Math.abs(demo2.x-je.x))?demo:demo2, dx=tg.x-je.x, dy=tg.y-je.y, LF=Math.hypot(dx,dy)||1; shoot(je.x,je.y,dx/LF*440,dy/LF*440,'tracer','#fff2a0'); } }
     if((je.dir>0&&je.x>W+90)||(je.dir<0&&je.x<-90)) je.x=je.dir>0?-70:W+70; }
-  var ws=22; for(var i=0;i<scenery.length;i++){ scenery[i].x-=ws*dt; if(scenery[i].x<-W*0.12) scenery[i].x+=W*1.24; }
+  var ws=22; scrollScenery(ws*dt);
   bandScroll+=ws*dt;
   var b=band();
   demo.phase+=dt;  demo.x=W*0.32+Math.sin(demo.phase*0.55)*W*0.20;   demo.y=(b.top+b.bot)/2+Math.sin(demo.phase*0.9)*H*0.10;
@@ -689,7 +794,7 @@ function startLevel(idx){
   meter=L.meter0||0; stageClock=L.clock; levelLen=L.clock; jetTimer=L.aa?0.6:2; aaTimer=L.aa?0.8:1.8;
   runActive=false; daveSpawned=false; moTele=false; moSpawned=false; moTarget=null; moEscapeAt=0; bandScroll=0; bandScroll2=0; roadScroll=0; superT=0;   // fresh round: drop any active super (brisket charge carries the run)
   truck = L.truck ? truckRespawn({gapCd:0}) : null;   // Dave's rocket truck this round (enters from a random side, faces its travel direction)
-  buildScenery(L.props, 0.03, L.props.length>7?0.128:0.135);
+  buildScenery(L.props, 0.03, L.props.length>7?0.128:0.135, L.pool);
   for(var k=0;k<5;k++) spawnTarget();
   if(L.aa) for(var k=0;k<2;k++) spawnTarget('tank');   // BELTWAY / OUTSKIRTS: AA batteries entrenched from t=0 (hot maps)
   state='play'; flash('ZONE '+(idx+1)+'  —  '+L.zone+(L.rush?'   · RUSH':''), L.col, 2.0);
@@ -700,11 +805,7 @@ function startBase(fresh){
   mode='base'; clock=0; if(fresh){ score=0; hp=maxHP; }            // fresh = standalone (B key); woven-in keeps score+hull
   P=newPlayer(); R=null; targets=[]; jets=[]; shots=[]; fx=[]; shake=0; bonusKind=null;   // base = solo dodge, no rival
   meter=100; stageClock=30; levelLen=30; jetTimer=1.0; aaTimer=1.2; runActive=false; daveSpawned=true; moSpawned=true; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0; superT=0;
-  // MILITARY BASE — layered: distant lit base-city skyline + deep admin/HQ office blocks (silhouette) →
-  // mid radar dishes + water tower → near barracks/commissary + bunkers on the flightline. Depth spread
-  // so it reads as a real installation, not a flat prop row.
-  buildScenery([ {s:'it_office',d:0.34,sc:0.72}, {s:'radar',d:0.5}, {s:'water_tower',d:0.56}, {s:'radar',d:0.66},
-    {s:'it_brick',d:0.8,sc:0.85}, {s:'bunker',d:0.9}, {s:'barracks',d:1.0}, {s:'bunker',d:0.96}, {s:'radar',d:0.74} ], 0.02, 0.112);   // a base has ONE commissary: the far barracks-twin is now a brick admin/billet block (no duplicate COMMISSARY sign)
+  buildScenery(BASE_PROPS, 0.02, 0.112, BASE_POOL);   // MILITARY BASE — see BASE_PROPS (barracks, fence line, gate, tower, hangar; ONE commissary)
   for(var k=0;k<2;k++) spawnTarget('farmer');
   for(var k=0;k<3;k++) spawnTarget('tank');            // AA BATTERIES — the base's ground fire launches from these (no ordnance from nowhere)
   state='play'; flash('ALONE NOW — THE OTHER CRAFT IS GONE','#ff5d6c',2.2);   // the UFOs are separated here; the brass think they downed one (but who knows)
@@ -771,8 +872,7 @@ function startGunpowder(fresh){
   meter=0; stageClock=GUNPOWDER_SECS; levelLen=GUNPOWDER_SECS; runActive=false; daveSpawned=true; moSpawned=true; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0; superT=0;
   gpWaveT=0; gpBradley=false; gpVeh=false; gpFell=false;
   // FORT GUNPOWDER backdrop — the base at night (reuse the military installation dressing)
-  buildScenery([ {s:'radar',d:0.5}, {s:'water_tower',d:0.56}, {s:'it_brick',d:0.82,sc:0.85}, {s:'bunker',d:0.92},
-    {s:'barracks',d:1.0}, {s:'bunker',d:0.95}, {s:'radar',d:0.72} ], 0.03, 0.13);
+  buildScenery(BASE_PROPS, 0.02, 0.112, BASE_POOL);
   // DEFENDERS — DEFENSE IN DEPTH from the edges inward: a forward HARDWARE line (3 hits each) soaks the
   // first contact and buys time, armed SOLDIERS (2 hits) hold the middle, CIVILIANS (1 hit) safe in the
   // dead center = the thing to save. Gnomes attack the NEAREST, so the line is chewed front-to-back.
@@ -829,7 +929,7 @@ function startBonus(bi){
   P=newPlayer(); R=newRival(); targets=[]; jets=[]; shots=[]; fx=[]; shake=0; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0;
   meter=0; stageClock=BONUS_SECONDS; levelLen=BONUS_SECONDS; runActive=false; daveSpawned=true; moSpawned=true; superT=0;
   // CLAW & ORDER (crab feast, waterfront) vs DAVE'S BACKYARD (homestead) — layered w/ a deep house behind
-  var bp = crab? [ {s:'it_house_11',d:0.5,sc:0.8}, {s:'water_tower',d:0.55}, {s:'it_bldg6',d:1.0}, {s:'tree',d:0.95} ]
+  var bp = crab? [ {s:'it_house_11',d:0.5,sc:0.8}, {s:'tree',d:0.62}, {s:'it_bldg6',d:1.0}, {s:'tree',d:0.95} ]   // (water tower dropped — rural farm stretches only)
                : [ {s:'it_house_3',d:0.5,sc:0.82}, {s:'tree',d:0.6}, {s:'it_house_8',d:1.0}, {s:'barn',d:0.9}, {s:'tree',d:1.0} ];
   buildScenery(bp, 0.06, 0.205);
   var loot=crab?CRAB_LOOT:BACKYARD_LOOT, boss=crab?['the_bull',1000,1.25]:['dave',1000,1.0];
@@ -1264,7 +1364,7 @@ function update(dt){
     if(!planting && P.stun<=0) P.tx=clamp(P.tx-(14+40*ramp)*dt, W*0.05, W*0.95);   // softer drag toward the back edge
   }
   // scenery scrolls left (the world comes at you), wrapping
-  for(var i=0;i<scenery.length;i++){ scenery[i].x-=worldSpeed*dt; if(scenery[i].x<-W*0.12) scenery[i].x+=W*1.24; }
+  scrollScenery(worldSpeed*dt);
   // STOP-AND-GO, and the two lanes are out of phase so the road is never uniform. Both keep a floor of
   // 0.3 so neither ever freezes (a frozen band was a real bug once) -- they crawl, then surge.
   var flowA=0.30+0.70*ease01(Math.sin(clock*0.23)*0.5+0.5);
@@ -1418,6 +1518,9 @@ function update(dt){
     else { if(countKind('tank')<1 && targets.length<=8) spawnTarget('tank'); aaTimer=0.4; }   // no source at onslaught stage -> a battery rolls in (the heightened response), retry soon
   } }
 
+  /* County Road 9 cop fire (heat-keyed; see COPFIRE) */
+  updateCopFire(dt,stg);
+
   /* Dave's rocket truck (chase rounds) */
   updateTruck(dt);
 
@@ -1459,6 +1562,7 @@ function update(dt){
 
   /* fx (aatel fires its AA bolt at end of telegraph) */
   for(var f=fx.length-1;f>=0;f--){ var e=fx[f]; e.t+=dt;
+    if(e.kind==='coptel'){ var cs=copSpot(e.k); if(cs){ e.x=cs.x; e.y=cs.y; } if(e.fire && e.t>=e.life && state==='play'){ if(copFire(e)) continue; e.fire=false; } }
     if(e.kind==='aatel' && e.fire && e.t>=e.life){ var at=e.tgt; if(at){ var adx=at.x-e.x, ady=at.y-e.y, AL=Math.hypot(adx,ady)||1; shoot(e.x,e.y,adx/AL*580,ady/AL*580,'aa','#ff5d6c'); } else shoot(e.x,e.y,0,-560,'aa','#ff5d6c'); e.fire=false; }
     if(e.t>e.life) fx.splice(f,1);
   }
@@ -1511,8 +1615,98 @@ function drawBand(){
   // with the painted centre line left visible in the gap between them.
   // FAR lane: x = n*bw - bandScroll, and bandScroll grows, so it travels LEFT.
   // NEAR lane: scroll is negated, so x grows and it travels RIGHT. Opposing, as a road should be.
+  if(TRAFFIC_OK()){                                    // 1007: real per-car traffic (whole cars, civilian mix) — the strip is only a fallback now
+    trafficReset();
+    drawCarLane(0, bandScroll,   cy+rH*0.46, rH*0.36, true,  0.90);   // FAR lane, travels LEFT, wheels just above the centre line
+    drawCarLane(1, -bandScroll2, cy+rH*0.97, rH*0.42, false, 0.97);   // NEAR lane, travels RIGHT
+    return; }
   drawLane(im, bandScroll,   cy+rH*0.04, rH*0.40, true,  0.88);
   drawLane(im, -bandScroll2, cy+rH*0.52, rH*0.46, false, 0.96);
+}
+// TRAFFIC (1007). The lanes were the three baked strips scrolled with a random phase per tile, which (a) sliced cars
+// in half at every tile seam, (b) made County Road 9 a wall of police cruisers (its strip IS five cop cars) and
+// (c) drove the Outskirts strip's MAILBOXES and a KID ON A BIKE down the traffic lane. Now each lane is a row of
+// SLOTS; a slot's car is chosen the first time it is seen and cached, so a car never pops or changes as it scrolls.
+// Mix = civilians, with police as an ACCENT: a per-zone base share (County Rd 9 is the patrol road) that rises with
+// the MILITARY RESPONSE on onslaught maps — the cops show up as the heat does. Source art faces RIGHT.
+var VEH_CIV=['veh_minivan_silver','veh_minivan_tan','veh_van_white','veh_pickup_white','veh_wagon_gold','veh_sedan_white',
+  'veh_sedan_dark','veh_suv_dark','veh_van_work','veh_pickup_silver','veh_sedan_unmarked','veh_zebra'];
+var VEH_COP=['veh_cop_cruiser','veh_cop_interceptor','veh_cop_suv','veh_cop_k9','veh_cop_lights','veh_cop_flash'];
+var VEH_LEN={ veh_van_white:1.08, veh_van_work:1.08, veh_pickup_white:1.1, veh_pickup_silver:1.1, veh_wagon_gold:1.04, veh_suv_dark:1.04,
+  veh_cop_suv:1.04, veh_cop_k9:1.06, veh_zebra:1.02 };
+var VEH_W={ veh_zebra:0.25 };                         // the zebra car is a rare gag, not traffic
+// density = share of slots with a car (Beltway is bumper-to-bumper); police = base cop share before the heat adds to it
+var TRAFFIC={ 'DOWNTOWN TOWSON':{density:0.80,police:0.06}, 'COUNTY ROAD 9':{density:0.50,police:0.20},
+  'THE BELTWAY':{density:0.92,police:0.05}, 'OUTSKIRTS OF TOWSON':{density:0.38,police:0.03} };
+var _tCache=[{},{}], _tKey='', _tLast=[0,0];
+// COP FIRE (Joe 2026-10-07) — COUNTY ROAD 9's patrol cars SHOOT, keyed to the MILITARY RESPONSE like the jets/AA:
+//   GREEN  patrol only (no fire) · YELLOW a single telegraphed round · ORANGE 3-round bursts, quicker
+//   RED    bursts + the WALL OF LEAD: every cruiser on screen strobes, then throws a randomized fan of rounds
+//          at the sky — gaps are random, so it's read-and-thread (or WARBLE through: rounds ricochet like all fire).
+// Always telegraphed (red/blue light-bar strobe) — no ordnance from nowhere. More heat = more cops in the lanes
+// (pickVeh), so the threat scales with the meter on its own. Rounds use the shared shot path: they hit either
+// invader, ricochet off a warble, and a ricochet can still deny a jet.
+var COPSPOT=[], copT=2.0, copVolT=3.6, copWallSeen=false;
+var COPFIRE={ zones:{'COUNTY ROAD 9':1}, speed:[560,680], tel:0.55, wallTel:0.85, wallMax:6, burstGap:0.09 };
+function copZone(){ var L=LEVELS[level]; return mode==='campaign' && !!(L && COPFIRE.zones[L.zone]); }
+function copSpot(k){ for(var i=0;i<COPSPOT.length;i++) if(COPSPOT[i].k===k) return COPSPOT[i]; return null; }
+function updateCopFire(dt,stg){
+  if(state!=='play' || !copZone()){ copT=2.0; copVolT=3.6; copWallSeen=false; return; }
+  if(DEV){ var cq=window.__cops||(window.__cops={tel:0,rounds:0,walls:0}); cq.stg=Math.max(cq.stg||0,stg); cq.spots=Math.max(cq.spots||0,COPSPOT.length); cq.vol=+copVolT.toFixed(2); }
+  if(stg<1 || !COPSPOT.length) return;
+  var hot=defcon?0.8:1;
+  copT-=dt; if(copT<=0){ var c=COPSPOT[(Math.random()*COPSPOT.length)|0];
+    copT=(stg>=3?rnd(1.3,2.0):stg>=2?rnd(1.7,2.5):rnd(2.6,3.8))*hot;
+    fx.push({x:c.x,y:c.y,k:c.k,kind:'coptel',col:'#ff5d6c',t:0,life:COPFIRE.tel,fire:true,burst:stg>=2?3:1,tgt:fireTarget()}); }
+  if(stg>=3){ copVolT-=dt; if(copVolT<=0){ copVolT=rnd(3.2,4.6)*hot;
+    var sp=COPSPOT.slice(0,COPFIRE.wallMax);
+    for(var i=0;i<sp.length;i++) fx.push({x:sp[i].x,y:sp[i].y,k:sp[i].k,kind:'coptel',col:'#ff5d6c',t:-i*0.05,life:COPFIRE.wallTel,fire:true,wall:true});
+    if(!copWallSeen){ copWallSeen=true; flash('WALL OF LEAD!','#ff5d6c',1.1); } } }
+}
+function copFire(e){   // a telegraph ends: fire from where that cruiser is NOW (it kept driving while it strobed)
+  if(DEV){ var cn=window.__cops||(window.__cops={tel:0,rounds:0,walls:0}); if(e.wall) cn.walls++; }
+  var c=copSpot(e.k); if(c){ e.x=c.x; e.y=c.y; }
+  var lo=COPFIRE.speed[0], hi=COPFIRE.speed[1];
+  if(e.wall){ var n=2+((Math.random()*2)|0);
+    for(var i=0;i<n;i++){ var a=rnd(-0.30,0.30), v=rnd(lo,hi); shoot(e.x,e.y,Math.sin(a)*v,-Math.cos(a)*v,'copshot','#ffb347'); if(DEV) window.__cops.rounds++; }
+    sfxT('rocket',0.12,0.35); return false; }
+  var tg=e.tgt||P, dx=tg.x-e.x, dy=tg.y-e.y, L=Math.hypot(dx,dy)||1, a2=Math.atan2(dy,dx)+rnd(-0.07,0.07), v2=rnd(lo,hi);
+  shoot(e.x,e.y,Math.cos(a2)*v2,Math.sin(a2)*v2,'copshot','#ffb347'); sfxT('rocket',0.08,0.28); if(DEV) window.__cops.rounds++;
+  if(--e.burst>0){ e.t=e.life-COPFIRE.burstGap; return true; }   // more rounds in this burst: stay alive a beat
+  return false;
+}
+function TRAFFIC_OK(){ return ok('veh_sedan_dark') && ok('veh_minivan_silver'); }
+function trafficReset(){ var k=mode+'|'+level; if(k!==_tKey || bandScroll<_tLast[0]-1 || bandScroll2<_tLast[1]-1){ _tCache=[{},{}]; _tKey=k; }
+  _tLast[0]=bandScroll; _tLast[1]=bandScroll2; }
+function vhash(n,salt){ var h=(Math.imul(n|0,2654435761) ^ Math.imul(salt|0,40503))>>>0; h^=h>>>15; h=Math.imul(h,2246822519)>>>0; h^=h>>>13; return (h>>>0)/4294967296; }
+function pickVeh(lane,n){
+  var L=LEVELS[level], T=TRAFFIC[L&&L.zone]||{density:0.7,police:0.05}, salt=lane*7919+level*104729;
+  if(vhash(n,salt+1)>T.density) return {empty:true};
+  var heat=onslaughtMap()? 0.28*clamp((meter-50)/50,0,1) : 0;
+  var cop=vhash(n,salt+2) < T.police+heat, pool=cop?VEH_COP:VEH_CIV, c=_tCache[lane], nb={};
+  if(c[n-1]&&!c[n-1].empty) nb[c[n-1].s]=1; if(c[n+1]&&!c[n+1].empty) nb[c[n+1].s]=1;
+  if(cop && ((c[n-1]&&c[n-1].cop) || (c[n+1]&&c[n+1].cop)) && heat<0.1){ cop=false; pool=VEH_CIV; }   // no cop convoys until the heat is on
+  var u=vhash(n,salt+3), tot=0, i, nm=pool[0];
+  for(i=0;i<pool.length;i++) if(!nb[pool[i]]) tot+=(VEH_W[pool[i]]||1);
+  u*=tot; for(i=0;i<pool.length;i++){ if(nb[pool[i]]) continue; u-=(VEH_W[pool[i]]||1); if(u<=0){ nm=pool[i]; break; } }
+  return { s:nm, cop:cop, jit:(vhash(n,salt+4)-0.5)*0.12 };
+}
+function drawCarLane(lane, scroll, baseY, lh, travelsLeft, alpha){
+  var carL=lh*2.6, slot=carL*1.1*1.22, c=_tCache[lane];
+  if(lane===0) COPSPOT.length=0;                                        // rebuilt every frame: where the cruisers are right now
+  var n0=Math.floor((scroll-slot)/slot), n1=Math.floor((scroll+W+slot)/slot);
+  ctx.save(); ctx.globalAlpha=alpha;
+  for(var n=n0;n<=n1;n++){
+    var v=c[n] || (c[n]=pickVeh(lane,n)); if(v.empty) continue;
+    var im=IMG[v.s]; if(!im||!im.ok) continue;
+    var w=carL*(VEH_LEN[v.s]||1), h=w*im.naturalHeight/im.naturalWidth, x=n*slot-scroll+(0.5+v.jit)*slot;
+    if(x<-w || x>W+w) continue;
+    ctx.save(); ctx.translate(x,0); if(travelsLeft) ctx.scale(-1,1);   // the whole lane faces its travel direction
+    ctx.drawImage(im, -w/2, baseY-h, w, h); ctx.restore();
+    if(v.cop && x>w*0.5 && x<W-w*0.5) COPSPOT.push({k:lane+':'+n, x:x, y:baseY-h*0.92});   // light-bar position = where a cop fires from
+  }
+  ctx.restore();
+  for(var k in c){ if(+k<n0-6 || +k>n1+6) delete c[k]; }               // keep the cache to what's near the screen
 }
 // One lane of the strip. Each tile takes a stable PHASE into the art so a 6-car strip stops looping:
 // County Road 9 fits only ~1.4 strips on screen and 3 of its 6 vehicles are near-identical white-door
@@ -1814,17 +2008,59 @@ function drawReelChrome(){
   ctx.globalAlpha=1; ctx.fillStyle='#fff'; ctx.font='800 12px ui-monospace'; ctx.fillText('REC', 36, 28);
   if(!drawImg('tjbug', W-52, 30, 60,0,0.85)){ ctx.textAlign='right'; ctx.fillStyle='#9c89c4'; ctx.font='800 14px ui-monospace'; ctx.fillText('TJ·TV', W-20, 30); }
 }
+// THE MOON (1007) — it was the same full moon in the same spot on every stage. Now each stage rolls a PHASE,
+// a spot + size, and sometimes a zone-flavoured tint (a low amber harvest moon over the farms, a hazy one over the
+// city, a rare blood moon over the base). Rendered at the sprite's native 50px and scaled with smoothing OFF, so
+// the phase terminator is pixel-stepped like the art. Render-only: never touches gameplay state.
+var MOON={x:0.84,y:0.15,s:1,phase:0.5,kind:'cool',glow:'214,228,255'}, _moonCv=null, _moonKey='';
+var MOON_TINT={ cool:null, harvest:'rgba(255,160,60,0.34)', haze:'rgba(140,160,205,0.30)', blood:'rgba(225,60,40,0.40)' };
+var MOON_GLOW={ cool:'214,228,255', harvest:'255,205,140', haze:'190,205,235', blood:'255,140,120' };
+function rollMoon(z){
+  var rural=(z==='DAIRY FLATS'||z==='CORN COUNTRY'||z==='COUNTY ROAD 9'||z==='champ'||z==='backyard');
+  var urban=(z==='DOWNTOWN TOWSON'||z==='THE BELTWAY'||z==='OUTSKIRTS OF TOWSON');
+  var PH=[0.5,0.5,0.44,0.56,0.38,0.62,0.25,0.75,0.15,0.85];          // weighted toward a bright moon — it is the scene's key light
+  MOON.phase=PH[(Math.random()*PH.length)|0];
+  MOON.x=rnd(0.60,0.90); MOON.y=rnd(0.13,0.20); MOON.s=rnd(0.80,1.12);
+  var r=Math.random();
+  MOON.kind = (rural&&r<0.35)?'harvest' : (urban&&r<0.45)?'haze' : (z==='base'&&r<0.22)?'blood' : 'cool';
+  if(MOON.kind==='harvest'){ MOON.s*=1.15; MOON.y=rnd(0.17,0.21); }    // the harvest moon sits big and low
+  MOON.glow=MOON_GLOW[MOON.kind];
+}
+function moonLit(){ return (1-Math.cos(2*Math.PI*MOON.phase))/2; }  // lit fraction: 0 new .. 1 full
+function moonCanvas(){
+  var key=MOON.phase+'|'+MOON.kind; if(_moonCv && _moonKey===key) return _moonCv;
+  var im=IMG['moon']; if(!im||!im.ok) return null;
+  var S=50, cv=document.createElement('canvas'); cv.width=S; cv.height=S; var c=cv.getContext('2d');
+  c.imageSmoothingEnabled=false; c.drawImage(im, 10,5,S,S, 0,0,S,S);   // the disc only (moon.png is 78x66, disc at x11..59 y6..54)
+  c.globalCompositeOperation='source-atop';
+  if(MOON_TINT[MOON.kind]){ c.fillStyle=MOON_TINT[MOON.kind]; c.fillRect(0,0,S,S); }
+  var f=MOON.phase;
+  if(Math.abs(f-0.5)>0.01){                                          // shade the unlit part (earthshine leaves it faintly visible)
+    var wax=f<0.5, g=wax?f:1-f, k=Math.cos(2*Math.PI*g), cx=S/2, cy=S/2, rr=S/2, rx=Math.max(0.01,rr*Math.abs(k));
+    c.save(); if(!wax){ c.translate(S,0); c.scale(-1,1); }           // waning = mirrored (lit on the left)
+    c.beginPath(); c.arc(cx,cy,rr,-Math.PI/2,Math.PI/2,true);         // the dark limb (left half)
+    if(k>0) c.ellipse(cx,cy,rx,rr,0,Math.PI/2,-Math.PI/2,true);       // crescent: the terminator bulges into the lit side
+    else    c.ellipse(cx,cy,rx,rr,0,Math.PI/2,Math.PI*1.5,false);     // gibbous: it cuts back into the dark side
+    c.closePath(); c.fillStyle='rgba(8,12,30,0.86)'; c.fill(); c.restore();
+  }
+  _moonCv=cv; _moonKey=key; return cv;
+}
+function drawMoon(x,y,w){
+  var cv=moonCanvas(); if(!cv) return;
+  var d=w*50/78;                                                     // same disc size the 78px sprite drew at width w
+  ctx.save(); ctx.imageSmoothingEnabled=false; ctx.globalAlpha=0.95; ctx.drawImage(cv, Math.round(x-d/2), Math.round(y-d/2), Math.round(d), Math.round(d)); ctx.restore();
+}
 function drawBG(){
   var sky=ctx.createLinearGradient(0,0,0,H); sky.addColorStop(0,'#060a1c'); sky.addColorStop(.55,'#0a1320'); sky.addColorStop(.84,'#0b1a12'); sky.addColorStop(1,'#05110a');
   ctx.fillStyle=sky; ctx.fillRect(0,0,W,H);
   // DEEP star layer — dim, dense, 1px, slow shimmer: a far-field that the brighter stars sit IN FRONT of (star depth, not one flat plane)
   ctx.fillStyle='#7f95bb'; for(var i=0;i<150;i++){ var dx=(i*197%W), dy=(i*89%(H*0.62)); ctx.globalAlpha=0.05+0.09*Math.abs(Math.sin(i*1.7+t*0.6)); ctx.fillRect(dx,dy,1,1); } ctx.globalAlpha=1;
   ctx.fillStyle='#cfe8ff'; for(var i=0;i<90;i++){ var sx=(i*131%W), sy=(i*71%(H*0.55)); ctx.globalAlpha=0.3+0.5*Math.abs(Math.sin(i+t*1.1)); ctx.fillRect(sx,sy,1.6,1.6); } ctx.globalAlpha=1;
-  var mnx=W*0.84, mny=H*0.15, mnr=clamp(W*0.08,70,130);
-  var mglow=ctx.createRadialGradient(mnx,mny,mnr*0.35, mnx,mny,mnr*3.4);   // soft moon halo — warms the empty sky, reads as haze around the moon
-  mglow.addColorStop(0,'rgba(214,228,255,0.11)'); mglow.addColorStop(0.5,'rgba(214,228,255,0.035)'); mglow.addColorStop(1,'rgba(214,228,255,0)');
+  var mnx=W*MOON.x, mny=H*MOON.y, mnr=clamp(W*0.08,70,130)*MOON.s, mlit=0.35+0.65*moonLit(), mgc=MOON.glow;
+  var mglow=ctx.createRadialGradient(mnx,mny,mnr*0.35, mnx,mny,mnr*3.4);   // soft moon halo — warms the empty sky, reads as haze around the moon (dimmer for a thin moon)
+  mglow.addColorStop(0,'rgba('+mgc+','+(0.11*mlit)+')'); mglow.addColorStop(0.5,'rgba('+mgc+','+(0.035*mlit)+')'); mglow.addColorStop(1,'rgba('+mgc+',0)');
   ctx.fillStyle=mglow; ctx.fillRect(mnx-mnr*3.4,mny-mnr*3.4,mnr*6.8,mnr*6.8);
-  if(ok('moon')) drawImg('moon',mnx,mny,mnr,0,0.95);
+  drawMoon(mnx,mny,mnr);
   var gy=groundY();
   // MOONLIT CLOUD WISPS — whisper-faint drifting haze on slow parallax. Deterministic positions (no per-frame RNG,
   // no flicker); soft + low-alpha so they read as distant atmosphere BEHIND everything and never fight the UFO/jet band.
@@ -1858,7 +2094,7 @@ function drawBG(){
     if(!im || !im.ok || Math.max(im.naturalWidth, im.naturalHeight) < 24) continue;
     var dep=(p.d==null?1:p.d);                                              // DEPTH: far props read smaller, dimmer, raised toward the horizon (parallax world-building)
     var ar=im.naturalWidth/im.naturalHeight, h=scnH(p.s)*p.sc*(0.58+0.42*dep), w=h*ar;
-    drawImg(p.s, p.x, gy-h/2+4-(1-dep)*H*0.05, w, 0, 0.5+0.45*dep, false); }
+    drawImg(p.s, p.x, gy-h/2+4-(1-dep)*H*0.05, w, 0, 0.5+0.45*dep, !!p.fl); }
   drawGround();
   drawBand();
 }
@@ -2008,7 +2244,9 @@ function drawShots(){
       ctx.save(); ctx.translate(sh.x,sh.y); ctx.rotate(a); ctx.fillStyle='#ff5d6c'; roundRect(-9,-3,16,6,3); ctx.fill(); ctx.fillStyle='#ffd27a'; ctx.fillRect(8,-1.5,4,3); ctx.restore(); }
     else if(sh.kind==='rocket'){ var a=Math.atan2(sh.vy,sh.vx);   // rocket glow removed
       ctx.save(); ctx.translate(sh.x,sh.y); ctx.rotate(a); ctx.fillStyle='#ff8a2a'; roundRect(-10,-3.5,18,7,3); ctx.fill(); ctx.fillStyle='#ffe2a0'; ctx.beginPath(); ctx.moveTo(9,-3.5); ctx.lineTo(15,0); ctx.lineTo(9,3.5); ctx.fill(); ctx.restore(); }
-    else if(sh.kind==='aa'){ glow(sh.x,sh.y,10,'rgba(255,106,122,0.85)'); }                 // white core cut
+    else if(sh.kind==='aa'){ glow(sh.x,sh.y,10,'rgba(255,106,122,0.85)'); }
+    else if(sh.kind==='copshot'){ ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.globalAlpha=0.9; ctx.strokeStyle='#ff8a2a'; ctx.lineWidth=3; ctx.lineCap='round';   // a cop round: HOT ORANGE slug (jet tracers are pale yellow — tell them apart)
+      ctx.beginPath(); ctx.moveTo(sh.x-sh.vx*0.04,sh.y-sh.vy*0.04); ctx.lineTo(sh.x,sh.y); ctx.stroke(); ctx.restore(); glow(sh.x,sh.y,6,'rgba(255,170,90,0.95)'); }                 // white core cut
     else { glow(sh.x,sh.y,6,sh.col); }   // potshot etc. (white core cut)
   }
 }
@@ -2024,6 +2262,10 @@ function drawJets(){
 }
 function drawFx(){
   for(var f=0;f<fx.length;f++){ var e=fx[f], p=e.t/e.life, a=1-p;
+    if(e.kind==='coptel'){ if(e.t<0) continue; var on=Math.floor(e.t*16)%2; ctx.save(); ctx.globalCompositeOperation='lighter';   // light-bar strobe = the tell
+      glow(e.x-6,e.y,e.wall?16:12,on?'rgba(255,60,80,0.95)':'rgba(255,60,80,0.25)'); glow(e.x+6,e.y,e.wall?16:12,on?'rgba(60,140,255,0.25)':'rgba(60,140,255,0.95)');
+      if(e.wall){ ctx.globalAlpha=0.18+0.25*on; ctx.strokeStyle='#ffd2d8'; ctx.lineWidth=1.5; ctx.setLineDash([3,6]); ctx.beginPath(); ctx.moveTo(e.x,e.y); ctx.lineTo(e.x,band().top); ctx.stroke(); ctx.setLineDash([]); }
+      ctx.restore(); continue; }
     if(e.kind==='aatel'){ ctx.globalAlpha=0.4+0.6*Math.abs(Math.sin(e.t*30)); ctx.strokeStyle=e.col; ctx.lineWidth=2; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(e.x,e.y); var lx=e.tgt?e.tgt.x:e.x, ly=e.tgt?e.tgt.y:band().top; ctx.lineTo(lx,ly); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha=1; continue; }   // telegraph tracks the aim line from the tank to the targeted ship
     if(e.kind==='boom'){ var br=8+p*52; ctx.save(); ctx.globalAlpha=a; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font='800 '+Math.round(13+p*12)+'px ui-monospace,monospace'; ctx.fillStyle=e.col||'#ff7a3a'; var ch=['*','+','x','✦','*','+','x','✦']; for(var k=0;k<8;k++){ var an=k*0.7854+p*1.1; ctx.fillText(ch[k], e.x+Math.cos(an)*br, e.y+Math.sin(an)*br); } ctx.fillStyle='#ffd27a'; ctx.fillText(p<0.35?'✸':'*', e.x, e.y); ctx.restore(); ctx.globalAlpha=1; }   // ASCII burst, no bloom
     else if(e.kind==='emp'){ var efr=Math.min(5,(p*6)|0); ctx.globalCompositeOperation='lighter';   // real 6-frame EMP shockwave
@@ -2167,6 +2409,7 @@ function frame(ts){
     else if(STAGE_PARAM==='champion'){ startBonus(2); }
     else if(STAGE_PARAM==='gunpowder'){ startGunpowder(true); }
     else { _devStageBooted=false; }
+    { var _mp=(location.search.match(/[?&]meter=([0-9.]+)/)||[])[1]; if(_mp!=null) meter=clamp(+_mp,0,100); }   // dev: &meter=N pins the MILITARY RESPONSE (e.g. 95 = RED) to review heat-keyed threats
     if(_devStageBooted){ state='play'; if(STAGE_ELAPSED>0){ stageClock=Math.max(1,stageClock-STAGE_ELAPSED); }
       if(STAGE_SIM>0){ for(var _s=0; _s<STAGE_SIM*60 && state==='play'; _s++){ if(BOTPLAY) devBot(); update(1/60); } }   // deterministic fast-forward into live combat (BOTPLAY = best-case auto-player, for winnability tests)
       if(STAGE_LIFT>=0) devStageLift(STAGE_LIFT);                    // stage a frozen abduction for the lift-art review
@@ -2302,6 +2545,92 @@ if(window.parent && window.parent!==window){
 }
 
 requestAnimationFrame(frame);
+})();
+</script>
+<script>
+/* ---- PHONE PANEL (Joe 2026-10-07) ------------------------------------------------------------------------------
+   Touch device held landscape (or ?touch): the game shrinks to the top, the cab control panel fills the bottom, and
+   the painted sticks / buttons are the controls. It speaks the same KEYS the gamepad layer synthesizes, so every
+   state (coin, ARE YOU ALONE? join, menus, play, continue) works untouched:
+     P1 (green, left)  stick = arrows · BEAM = Space (hold) · WARBLE = X
+     P2 (blue, right)  stick = I J K L · BEAM = ; (hold; also JOINS at the lock-in) · WARBLE = '
+   Stick = 8-way, floating origin (wherever the thumb lands in the stick zone), the painted arrow lights up.
+   Tap the centre legend to swap panel skins (ALT fluorescent / 1UP dark). */
+(function(){
+  var Q=new URLSearchParams(location.search), pan=document.getElementById('tpanel'); if(!pan||!document.body||!document.body.classList) return;
+  var TOUCHDEV=Q.has('touch')||((('ontouchstart' in window)||navigator.maxTouchPoints>0)&&matchMedia('(pointer:coarse)').matches);
+  if(!TOUCHDEV||window.top!==window) return;   // desktop + the DECK wrapper keep their own panel
+  var art=pan.querySelector('.art'), img=document.getElementById('tpimg'), fx=document.getElementById('tpfx'), g=fx.getContext('2d'), cv=document.getElementById('c');
+  var AR=1800/368;   // band aspect (assets/cab/phone/panel-*-band.png)
+  // hotspots in band fractions (measured on the art; both skins share the layout)
+  var HS={ p1stick:{x:0.100,y:0.55,col:'#7dff3a'}, p1beam:{x:0.228,y:0.47,col:'#7dff3a'}, p1warble:{x:0.322,y:0.47,col:'#7dff3a'},
+           p2stick:{x:0.675,y:0.55,col:'#2fd4ff'}, p2beam:{x:0.800,y:0.47,col:'#2fd4ff'}, p2warble:{x:0.895,y:0.47,col:'#2fd4ff'} };
+  var KEYS={ p1:{up:'ArrowUp',down:'ArrowDown',left:'ArrowLeft',right:'ArrowRight',beam:' ',warble:'x'},
+             p2:{up:'i',down:'k',left:'j',right:'l',beam:';',warble:"'"} };
+  var SKINS=['alt','1up'], skin='alt'; try{ var sv=localStorage.getItem('suPanelSkin'); if(SKINS.indexOf(sv)>=0) skin=sv; }catch(_){}
+  if(Q.get('panel')==='1up'||Q.get('panel')==='alt') skin=Q.get('panel');
+  function setSkin(s){ skin=s; img.src='assets/cab/phone/panel-'+s+'-band.png'; try{localStorage.setItem('suPanelSkin',s);}catch(_){} }
+  setSkin(skin);
+  var TMODE=false, bw=0, bh=0;
+  function layout(){
+    TMODE=innerWidth>=innerHeight;
+    document.body.classList.toggle('tmode',TMODE); document.body.classList.toggle('trot',!TMODE);
+    if(TMODE){ bh=Math.round(Math.min(innerHeight*0.36, innerWidth/AR, 190)); bw=Math.round(bh*AR); }
+    window.__suPanelH=TMODE?bh:0;
+    document.documentElement.style.setProperty('--ph',bh+'px'); art.style.width=bw+'px';
+    cv.style.bottom=(TMODE?bh:0)+'px';
+    var d=Math.min(devicePixelRatio||1,2); fx.width=Math.round(bw*d); fx.height=Math.round(bh*d); g.setTransform(d,0,0,d,0,0);
+    window.dispatchEvent(new Event('resize'));   // the game re-reads W/H (its resize subtracts __suPanelH)
+  }
+  var _lay=false; addEventListener('resize',function(){ if(_lay)return; _lay=true; layout(); _lay=false; });
+  addEventListener('orientationchange',function(){ setTimeout(function(){ _lay=true; layout(); _lay=false; },150); });
+  _lay=true; layout(); _lay=false;
+  function key(type,k){ window.dispatchEvent(new KeyboardEvent(type,{key:k,bubbles:true,cancelable:true})); }
+  function buzz(ms){ try{ navigator.vibrate&&navigator.vibrate(ms||10); }catch(_){} }
+  // which control a touch landed on: by x within the band (side margins belong to the outer stick / warble)
+  function zoneAt(cx){ var r=art.getBoundingClientRect(), f=(cx-r.left)/r.width;
+    if(f<0.165) return 'p1stick'; if(f<0.275) return 'p1beam'; if(f<0.39) return 'p1warble';
+    if(f<0.59) return 'legend'; if(f<0.75) return 'p2stick'; if(f<0.85) return 'p2beam'; return 'p2warble'; }
+  var touches={}, lit={}, dirs={p1:{},p2:{}};
+  function setDir(pl,want){ var K=KEYS[pl], cur=dirs[pl];
+    ['up','down','left','right'].forEach(function(d){ if(want[d]&&!cur[d]) key('keydown',K[d]); if(!want[d]&&cur[d]) key('keyup',K[d]); });
+    dirs[pl]=want; }
+  function dir8(dx,dy){ if(Math.hypot(dx,dy)<10) return {};
+    var a=((Math.round(Math.atan2(dy,dx)/(Math.PI/4))%8)+8)%8, o={};
+    var X=[1,1,0,-1,-1,-1,0,1][a], Y=[0,1,1,1,0,-1,-1,-1][a];
+    if(X>0)o.right=1; if(X<0)o.left=1; if(Y>0)o.down=1; if(Y<0)o.up=1; return o; }
+  pan.addEventListener('pointerdown',function(e){ e.preventDefault(); try{pan.setPointerCapture(e.pointerId);}catch(_){}
+    var z=zoneAt(e.clientX), t={z:z,ox:e.clientX,oy:e.clientY}; touches[e.pointerId]=t; buzz(10);
+    if(z==='legend'){ setSkin(SKINS[(SKINS.indexOf(skin)+1)%SKINS.length]); return; }
+    var pl=z.slice(0,2), act=z.slice(2);
+    if(act==='beam'){ key('keydown',KEYS[pl].beam); lit[z]=1; }
+    else if(act==='warble'){ key('keydown',KEYS[pl].warble); key('keyup',KEYS[pl].warble); lit[z]=0.0001; t.flash=performance.now(); }
+    else if(act==='stick'){ lit[z]=1; } });
+  pan.addEventListener('pointermove',function(e){ var t=touches[e.pointerId]; if(!t||t.z.slice(2)!=='stick')return;
+    var pl=t.z.slice(0,2), w=dir8(e.clientX-t.ox,e.clientY-t.oy), was=dirs[pl];
+    if(JSON.stringify(w)!==JSON.stringify(was)&&(w.up||w.down||w.left||w.right)) buzz(5);
+    setDir(pl,w); t.dir=w; });
+  function lift(e){ var t=touches[e.pointerId]; if(!t)return; delete touches[e.pointerId];
+    var pl=t.z.slice(0,2), act=t.z.slice(2);
+    if(act==='beam'){ key('keyup',KEYS[pl].beam); lit[t.z]=0; }
+    if(act==='stick'){ setDir(pl,{}); lit[t.z]=0; } }
+  pan.addEventListener('pointerup',lift); pan.addEventListener('pointercancel',lift); pan.addEventListener('lostpointercapture',lift);
+  pan.addEventListener('contextmenu',function(e){ e.preventDefault(); });
+  addEventListener('blur',function(){ setDir('p1',{}); setDir('p2',{}); });
+  // FX: lit buttons glow, a pushed stick lights its painted arrow (8 arrows on an ellipse round the gate)
+  function glow(x,y,r,col,a){ var gr=g.createRadialGradient(x,y,0,x,y,r); gr.addColorStop(0,'rgba(255,255,255,'+(0.55*a)+')'); gr.addColorStop(0.35,col); gr.addColorStop(1,'rgba(0,0,0,0)');
+    g.globalAlpha=a; g.fillStyle=gr; g.beginPath(); g.arc(x,y,r,0,7); g.fill(); g.globalAlpha=1; }
+  (function tick(){ requestAnimationFrame(tick); if(!TMODE) return;
+    g.clearRect(0,0,bw,bh); g.globalCompositeOperation='lighter';
+    var now=performance.now();
+    for(var id in touches){ var t=touches[id]; if(t.flash){ var k=1-(now-t.flash)/220; if(k>0) glow(HS[t.z].x*bw,HS[t.z].y*bh,bh*0.3,HS[t.z].col,k); } }
+    ['p1beam','p2beam'].forEach(function(z){ if(lit[z]) glow(HS[z].x*bw,HS[z].y*bh,bh*0.3,HS[z].col,0.9); });
+    ['p1','p2'].forEach(function(pl){ var d=dirs[pl], dx=(d.right?1:0)-(d.left?1:0), dy=(d.down?1:0)-(d.up?1:0), h=HS[pl+'stick'];
+      if(!dx&&!dy){ if(lit[pl+'stick']) glow(h.x*bw,h.y*bh,bh*0.16,h.col,0.35); return; }
+      var n=Math.hypot(dx,dy), ax=h.x*bw+dx/n*bh*0.30, ay=h.y*bh+dy/n*bh*0.27;
+      glow(ax,ay,bh*0.17,h.col,1); glow(h.x*bw+dx/n*bh*0.08,h.y*bh+dy/n*bh*0.07,bh*0.2,h.col,0.4); });
+    g.globalCompositeOperation='source-over'; })();
+  if(Q.has('qa')) window.__suPad={ dirs:dirs, zoneAt:zoneAt, h:function(){ return [window.__suPanelH, cv.height]; } };
 })();
 </script>
 </body>
