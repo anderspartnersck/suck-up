@@ -137,7 +137,14 @@ load('impact_g',A+'impact-super-green.png'); load('impact_b',A+'impact-super-blu
  'gp_soldier_a','gp_soldier_b','gp_soldier_c',                   // URBAN levels: soldiers on foot (the ground military response) instead of cows
  'gp_bradley','gp_aa_gun','gp_vehicle','gp_wall','gp_banner',    // GUNPOWDER painterly hardware (were cut for the Python build, unused in web): gnome-captured Bradley, AA gun, humvee, wall/cover, PAX banner
  'gn_knife','gn_pistol','gn_smg','gn_heavy',                     // GUNPOWDER foot-gnome army — real painterly weapon sprites (cut from the labeled ChatGPT strips via whitekey+cut_sheet), one per weapon class, replacing the crude placeholder
- 'gn_rpg','gn_cart','gn_mower','gn_flag',                        // the motor pool + RPG heavy + PAX cheer squad. These four were WIRED as live GNOME_UNITS but never loaded, so they drew as nothing and the cart/mower/RPG dealt damage from thin air. tools/web_check.mjs now fails on that class.
+ 'gn_rpg','gn_cart','gn_mower','gn_flag',
+ // 1014 GUNPOWDER REBUILD (tools/cut_gunpowder_army.py, Joe's labeled strips): attack poses, the FLAMETHROWER + WIZARD + commando +
+ // mortar classes, the lightning-bolt strike, the wire-climber, the geese; FORT GUNPOWDER's front gate complex + PX + housing and the
+ // soldier variations (aim / run / guard / CO / wounded) from the fort sheet; sandbag clusters split out of the gp_wall strip.
+ 'gn_knife_slash','gn_knife_run','gn_pistol_fire','gn_smg_fire','gn_rifle','gn_sarge','gn_flame','gn_flame_fire','gn_rpg_fire','gn_mortar',
+ 'gn_wizard','gn_wizard_b','gn_wizard_raise','gn_wizard_cast','gn_wizard_gun','gn_climb','fx_bolt_0','fx_bolt_1','fx_bolt_2','fx_bolt_3','fx_goose_a','fx_goose_b',
+ 'fort_gate','fort_guardhouse','fort_sign','fort_tower','fort_lamp','fort_px','fort_house','fort_sandbag_a','fort_sandbag_b','fort_sandbag_c',
+ 'gp_aim','gp_run','gp_guard','gp_officer','gp_wounded',                        // the motor pool + RPG heavy + PAX cheer squad. These four were WIRED as live GNOME_UNITS but never loaded, so they drew as nothing and the cart/mower/RPG dealt damage from thin air. tools/web_check.mjs now fails on that class.
  // 0710 IT BUILDINGS — painterly night Towson set (offices/shops/burgers/landmarks/skyline) + 6 homestead houses. Cut from SPRITES/0710 BUILDINGS/IT (alpha-trimmed).
  'it_office','it_highrise','it_brick','it_bldg6','it_shops','it_penalty_box','it_morale_corp','it_skyline_a','it_skyline_b',
  'it_house_1','it_house_2','it_house_3','it_house_4','it_house_5','it_house_6',
@@ -152,12 +159,13 @@ load('impact_g',A+'impact-super-green.png'); load('impact_b',A+'impact-super-blu
  'res_mailbox','res_mailbox_2','res_shed','res_garage','res_lamp','res_fence_wood',
  'mb_barracks','mb_gate','mb_fence','mb_watchtower','mb_radar_trailer','mb_hangar','mb_shed','mb_bunkhouse','mb_array','mb_chapel',
  'mb_commissary','mb_motorpool',
- 'it_sky_1_n','it_sky_2_n','it_sky_3_n','it_sky_4_n','it_sky_5_n','it_sky_6_n'    // distant-city skylines for the parallax horizon band — NIGHT-GRADED (tools/sky_night.py: cooled the warm 'sunrise' glow, compressed highlights, faded the pale haze-halo so they sit in the night sky, not a bright box)
+ 'it_sky_1_n','it_sky_2_n','it_sky_3_n','it_sky_4_n','it_sky_5_n','it_sky_6_n','horizon_farm','horizon_hills','horizon_town_lights','ground_pasture','ground_corn','ground_shoulder','ground_mud','ground_dock','water_bay','crab_house','fishing_pier','crab_pots','beltway_gantry','sound_wall','sound_wall_ivy','highway_light','clothesline','above_ground_pool','string_lights','picnic_table','kettle_grill','clouds_moonlit','haze_city'    // distant-city skylines for the parallax horizon band — NIGHT-GRADED (tools/sky_night.py: cooled the warm 'sunrise' glow, compressed highlights, faded the pale haze-halo so they sit in the night sky, not a bright box)
 ].forEach(function(n){ load(n,AR+n+'.png'); });
 load('ck_logo',LG+'castle-killscreen-logo.png'); load('ck_text',LG+'ck-logo-new.png'); load('suck_logo',LG+'suck-up-logo.png');
 for(var i=0;i<4;i++) load('scraps'+i,A+'scraps/scraps_nap_0'+i+'.png');     // Ol' Scraps napping through the CK ident
 load('drl_g',AR+'drl.png');                                              // Dr. L as a GROUND target (the #1 CHAMPION LAP boss). Own key because IMG['drl'] is his attract-reel interview photo.
-load('dave_truck',A+'dave_truck.png');                                   // Dave's rocket pickup (the chase rounds)
+load('dave_truck',A+'dave_truck.png');
+['smoker_a','smoker_b','smoker_c'].forEach(function(n){ load(n,A+n+'.png'); });   // Dave's offset smoker — 3 plume frames, cycled as the smoke breathing (DAVE'S BACKYARD)                                   // Dave's rocket pickup (the chase rounds)
 for(var i=0;i<6;i++) load('emp'+i,'assets/sprites/fx/emp'+i+'.png');     // EMP shockwave — 6-frame electric burst (plane disabled by beam/warble)
 var BR='assets/broll/';                                                  // per-zone scrolling bottom bands (traffic / police)
 ['county_police_row','beltway_traffic_row','outskirts_row'].forEach(function(n){ load(n,BR+n+'.png'); });
@@ -167,9 +175,10 @@ load('cab_blacksite','assets/cab/blacksite-cab.png'); load('cab_hyscore','assets
  ['taught_build','broll/taught-build'],['hive','broll/cosmic-hive'],['cosmic','broll/cosmic-ledger'],
  ['davefam','broll/dave-family-photo'],['drl','interviews/drl/drl-1-explain'],['two_saucers','establishing/two-saucers'],
  ['tonight','broll/tonight-on'],['tjbug','broll/tj-bug'],['tjglitch','broll/tj-glitch'],['title','title/title-screen-1'],
- ['crab','bonus/claw-and-order'],['familyportrait','broll/family-portrait']].forEach(function(p){ load(p[0], 'assets/'+p[1]+'.png'); });
+ ['crab_card','bonus/claw-and-order'],['familyportrait','broll/family-portrait']].forEach(function(p){ load(p[0], 'assets/'+p[1]+'.png'); });
 ['gnome','flamingo','lawn_chair','kiddie_pool','grill','cooler','dog','beach_ball',     // BONUS sweep loot
- 'crab','old_bay','mallet','bushel','the_bull'].forEach(function(n){ load(n,AR+n+'.png'); });
+ 'crab','old_bay','mallet','bushel','the_bull',
+ 'crab_b','lager','tin_cooler','lemons'].forEach(function(n){ load(n,AR+n+'.png'); });   // CLAW & ORDER feast set (Joe's crab-boil sheets, 2026-10-14)
 function ok(n){ var im=IMG[n]; return im&&im.ok; }
 function drawImg(n,x,y,w,rot,alpha,flip,smooth){
   var im=IMG[n]; if(!im||!im.ok) return false;
@@ -220,7 +229,7 @@ var SCN_H={ highrise:0.40,tower_c:0.38,tower_a:0.35,tower_b:0.31,office:0.33,wat
   windmill:0.30,radar:0.22,silo:0.27, barn:0.18,house:0.17,restaurant:0.28,storefront:0.30,
   barracks:0.105,bunker:0.095, tree:0.21,corn:0.14,haybale:0.085,bush:0.10,
   // 0710 IT buildings — HEIGHT-keyed to real proportions (wide sprites get a SHORT height so their width doesn't balloon: shops ar3.7 / bldg6 ar2.9 / houses ar2.6 / skylines ar5-7)
-  it_highrise:0.42,it_office:0.34,it_morale_corp:0.36,it_brick:0.26,it_penalty_box:0.20,it_bldg6:0.17,it_shops:0.155,
+  it_highrise:0.42,it_office:0.34,it_morale_corp:0.36,it_brick:0.26,it_penalty_box:0.20,it_bldg6:0.17,crab_house:0.36,clothesline:0.13,fishing_pier:0.20,crab_pots:0.14,above_ground_pool:0.072,string_lights:0.15,picnic_table:0.062,kettle_grill:0.085,smoker_a:0.17,smoker_b:0.17,smoker_c:0.17,it_shops:0.155,
   it_house_1:0.16,it_house_2:0.16,it_house_3:0.17,it_house_4:0.165,it_house_5:0.155,it_house_6:0.155,
   it_house_7:0.18,it_house_8:0.185,it_house_9:0.20,it_house_10:0.19,it_house_11:0.175,it_house_12:0.19,
   it_corn_stalk:0.19, it_corn_1:0.20,it_corn_2:0.22,it_corn_3:0.17,it_corn_4:0.21,it_corn_5:0.21, it_corn_machine:0.17,
@@ -228,7 +237,8 @@ var SCN_H={ highrise:0.40,tower_c:0.38,tower_a:0.35,tower_b:0.31,office:0.33,wat
   // 1007: residential verge furniture + the military base set (wide sprites get a SHORT height, same rule)
   res_mailbox:0.07,res_mailbox_2:0.065,res_shed:0.12,res_garage:0.13,res_lamp:0.16,res_fence_wood:0.085,
   mb_barracks:0.125,mb_gate:0.09,mb_fence:0.10,mb_watchtower:0.27,mb_radar_trailer:0.14,mb_hangar:0.115,
-  mb_shed:0.11,mb_bunkhouse:0.11,mb_array:0.24,mb_chapel:0.17,mb_commissary:0.105,mb_motorpool:0.13 };   // downtown buildings scaled to the artist's relative heights (tower>office>mini-mart>diner); barracks is 4.7:1 wide so its HEIGHT stays low
+  mb_shed:0.11,mb_bunkhouse:0.11,mb_array:0.24,mb_chapel:0.17,mb_commissary:0.105,mb_motorpool:0.13,
+  fort_guardhouse:0.135,fort_tower:0.30,fort_lamp:0.20,fort_sign:0.085,fort_px:0.12,fort_house:0.15 };   // FORT GUNPOWDER (1014): sized against a 0.058H soldier — see docs/FORT_LAYOUT_LESSONS.md   // downtown buildings scaled to the artist's relative heights (tower>office>mini-mart>diner); barracks is 4.7:1 wide so its HEIGHT stays low
 function scnH(n){ return H*(SCN_H[n]||0.16); }
 // INTENTIONAL DEPTH per prop (not random): distant LANDMARKS recede to the back (dim/small/raised),
 // the near HOMESTEAD / street-level buildings stay prominent up front. Reads as a real place, not a scatter.
@@ -251,9 +261,10 @@ function propDepth(s){ return clamp((PROP_DEPTH[s]!=null?PROP_DEPTH[s]:0.82)*rnd
 var PROP_CLASS={ water_tower:'tower', barn:'farm', silo:'farm', windmill:'farm', haybale:'farm', corn:'farm',
   it_corn_1:'farm',it_corn_2:'farm',it_corn_3:'farm',it_corn_4:'farm',it_corn_5:'farm',it_corn_stalk:'farm',it_corn_machine:'farm',
   it_office:'office', it_highrise:'office', it_morale_corp:'office', it_brick:'office', highrise:'office', office:'office', tower_a:'office', tower_b:'office', tower_c:'office',
-  it_shops:'shop', it_bldg6:'shop', it_penalty_box:'shop', storefront:'shop', restaurant:'shop',
+  it_shops:'shop', it_bldg6:'shop', crab_house:'shop', clothesline:'res farm', above_ground_pool:'res', string_lights:'res', picnic_table:'res', kettle_grill:'res', smoker_a:'res', smoker_b:'res', smoker_c:'res', fishing_pier:'shop', crab_pots:'shop', it_penalty_box:'shop', storefront:'shop', restaurant:'shop',
   house:'res', res_mailbox:'res', res_mailbox_2:'res', res_shed:'res', res_garage:'res', res_lamp:'res', res_fence_wood:'res',
-  barracks:'mil', bunker:'mil', radar:'mil', tree:'any', bush:'any' };
+  barracks:'mil', bunker:'mil', radar:'mil', tree:'any', bush:'any',
+  fort_guardhouse:'mil', fort_tower:'mil', fort_lamp:'mil', fort_sign:'mil', fort_px:'mil', fort_house:'mil' };
 function propClass(s){ return PROP_CLASS[s] || (/^it_house_/.test(s)?'res' : /^mb_/.test(s)?'mil' : 'any'); }
 var ZONE_OK={ 'DAIRY FLATS':'farm tower any', 'CORN COUNTRY':'farm any',   // water towers = DAIRY FLATS ONLY (Joe 2026-10-07)
   'DOWNTOWN TOWSON':'office shop any',
@@ -263,7 +274,7 @@ function sceneZone(){ return mode==='campaign'? (LEVELS[level]&&LEVELS[level].zo
 function zoneAllows(z,s){ var ok=ZONE_OK[z]; return !ok || (' '+ok+' ').indexOf(' '+propClass(s)+' ')>=0; }
 // Sign-bearing art never mirrors (a flipped COMMISSARY / HYSCORE sign reads backwards); everything else may, which
 // is half the cure for "the same building again" — a mirrored house is a different house at a glance.
-var NOFLIP={ it_shops:1, it_bldg6:1, it_penalty_box:1, it_morale_corp:1, barracks:1, mb_commissary:1, mb_gate:1, storefront:1, restaurant:1 };
+var NOFLIP={ fort_sign:1, fort_px:1, fort_guardhouse:1, it_shops:1, it_bldg6:1, crab_house:1, beltway_gantry:1, it_penalty_box:1, it_morale_corp:1, barracks:1, mb_commissary:1, mb_gate:1, storefront:1, restaurant:1 };
 // FILLER props may repeat freely; anything else is a BUILDING and the recycler keeps it unique on screen.
 var FILLER={ tree:1, haybale:1, it_corn_stalk:1, bush:1, res_mailbox:1, res_mailbox_2:1, res_lamp:1, res_fence_wood:1 };
 // SCENERY BUILDER — a prop entry is either a string (name, depth from PROP_DEPTH) OR an object
@@ -313,6 +324,8 @@ function scrollScenery(dx){
    truck = Dave's rocket truck fights back this round (the late chase). ---------- */
 // PROPS are depth-authored per zone ({s,d,sc} = sprite, depth 0.35 far..1 near, scale) so each stage
 // reads as a layered PLACE — distant silhouettes recede, street-level stuff sits up front — not a flat row.
+var SHOULDER_SOLID=0.33;   // ground_shoulder.png: weed tips fill the top third, gravel from there down (measured)
+var RURAL_HZ=['horizon_hills','horizon_farm',null,'horizon_town_lights',null,'horizon_town_lights'];   // per campaign zone: Dairy, Corn, (Downtown), County, (Beltway), Outskirts -- the last two sit nearest town
 var LEVELS=[
   { zone:'DAIRY FLATS',         clock:78, personBias:-0.10, scrollStart:48, daveChance:0.0,  meter0:0,  col:'#9affc0', mo:true,
     props:[ {s:'silo',d:0.4}, {s:'barn',d:0.48,sc:0.82}, {s:'windmill',d:0.54}, {s:'water_tower',d:0.6},
@@ -393,11 +406,22 @@ var endT=0;   // run-complete CREDIT PAGE (the 'ending' state) — stands on its
 // BONUS sweep — no meter/jets/AA, ~20s, clear it all for PERFECT +5000 (suck_up.py).
 var BONUS_SECONDS=20, BONUS_PERFECT=5000, bonusKind=null;
 // loot: [sprite, value, size-vs-cow]. Backyard + Claw & Order, mirrored from suck_up.py.
+// DAVE'S BACKYARD (composed 1014, docs/FORT_LAYOUT_LESSONS.md): three depth bands. FAR = the neighbour's house, the barn,
+//   a tree (dim, raised). MID = the above-ground pool and the clothesline. NEAR = Dave's house (the landmark) with his STATION
+//   beside it — Dave is a GRILL MASTER: the glowing kettle grill + the offset smoker by the back door — and the patio: the
+//   picnic table under the Edison string lights, which throw the one warm pool of light in the yard ("light the line").
+var BACKYARD_SCENE=[ { s:'it_house_3', x:0.07, d:0.48, sc:0.82 }, { s:'tree', x:0.19, d:0.6 }, { s:'barn', x:0.92, d:0.56, sc:0.95 },
+  { s:'above_ground_pool', x:0.27, d:0.80 }, { s:'clothesline', x:0.79, d:0.78 }, { s:'tree', x:0.985, d:0.88 },
+  { s:'smoker_a', x:0.355, d:0.94 }, { s:'it_house_8', x:0.53, d:0.97 }, { s:'string_lights', x:0.685, d:0.98 },
+  { s:'kettle_grill', x:0.425, d:1.0 }, { s:'picnic_table', x:0.685, d:1.0 } ];
 var BACKYARD_LOOT=[['gnome',150,0.8],['flamingo',200,1.05],['lawn_chair',100,0.8],['kiddie_pool',250,0.9],
   ['grill',400,1.0],['cooler',300,0.85],['dog',500,0.85],['beach_ball',150,0.6],
   ['gnome',150,0.8],['flamingo',200,1.05],['lawn_chair',100,0.8],['cooler',300,0.85]];
-var CRAB_LOOT=[['crab',200,0.85],['crab',200,0.85],['old_bay',150,0.65],['mallet',100,0.7],['bushel',250,0.95],
-  ['cooler',300,0.85],['crab',200,0.85],['corn',150,0.7],['crab',200,0.85],['old_bay',150,0.65],['mallet',100,0.7],['bushel',250,0.95]];
+// CLAW & ORDER: the steamed-crab feast (Joe's 1014 sheets: two crab poses, the bushel spilling crabs, the tin cooler, a lager,
+//   Old Bay + lemons in bowls, the mallet). Same 12 slots / same value spread as before; corn kept, the backyard's cooler swapped
+//   for the tin one so the two bonus stages stop sharing loot.
+var CRAB_LOOT=[['crab',200,0.85],['crab_b',200,0.8],['old_bay',150,0.55],['mallet',100,0.7],['bushel',250,0.95],
+  ['tin_cooler',300,0.85],['crab',200,0.85],['corn',150,0.7],['crab_b',200,0.8],['lager',150,0.75],['lemons',100,0.55],['bushel',250,0.95]];
 
 /* ---------- state ---------- */
 var state='boot', bootT=0, clock=0, t=0, shake=0, msg='', msgColor='#fff', msgT=0;
@@ -445,14 +469,8 @@ function devStageLift(k){
 }
 var BOTPLAY=/[?&]bot\b/.test(location.search);   // dev: best-case auto-player during sim — targets the gnome CLOSEST to a defender, beams it (measures winnability)
 var _botTgt=null;
-function devBot(){ if(mode!=='gunpowder'||!P) return;   // COMMIT to one gnome (the most-threatening) until it's beamed, then re-pick — beams complete instead of thrashing
-  if(_botTgt && (_botTgt.gone || _botTgt.kind!=='gnome')) _botTgt=null;
-  if(!_botTgt){ var defs=liveDefenders(), best=null, bestScore=1e9;
-    for(var i=0;i<targets.length;i++){ var g=targets[i]; if(g.gone||g.kind!=='gnome') continue;
-      var thr=1e9; for(var j=0;j<defs.length;j++){ var d=Math.abs(defs[j].x-g.x); if(d<thr) thr=d; }
-      if(thr<bestScore){ bestScore=thr; best=g; } }
-    _botTgt=best; }
-  if(_botTgt){ P.x=P.tx=_botTgt.x; P.y=P.ty=groundY()-SAUCER_W()*1.4; planting=true; } else planting=false; }
+function devBot(){ if(clawOn()){ var _cp=(location.search.match(/[?&]policy=([a-z]+)/)||[])[1]||'careful'; clawBotStep(1/60, CLAW_SKILL[_cp]||CLAW_SKILL.careful); return; }
+  if(mode!=='gunpowder'||!P) return; gpBotStep(1/60, GP_SKILL[(location.search.match(/[?&]policy=([a-z]+)/)||[])[1]||'competent']||GP_SKILL.competent); }   // the battery's scripted player (gpBotStep): capped beam speed + threat sense, not a teleport
 // DEV SOAK / FUZZ (?dev&soak=SECONDS): drive EVERY mode with randomized input under try/catch, asserting
 // hard invariants each tick (bounded entities, finite positions, meter/hp/lives in range). Reports breaches.
 var SOAK=parseFloat((location.search.match(/[?&]soak=([0-9.]+)/)||[])[1]||'0'), __soak=null;
@@ -608,7 +626,7 @@ var PODS=[
   { bg:'two_saucers', l1:'A cow named Mo vanished one fall.', l2:'No gate. No tracks. A circle of grass, laid flat.', col:'#b388ff', sec:5.4 },
   { bg:'davefam', who:'DAVE', title:'FARMER · RET. ARMY SGT. MAJOR', l1:'"What, ya want me eatin\' LEAVES?!', l2:"Not my brisket you don't.", col:'#9affc0', sec:5.2 },
   { bg:'familyportrait', who:'DAVE — IN HIS OWN WORDS', l1:'"Applewood and the slow. A cold Browie.', l2:'That\'s the whole religion."', col:'#9affc0', sec:5.0 },
-  { bg:'crab', who:'BONUS STAGE', tag:'CLAW & ORDER', l1:'Sweep the spread for a PERFECT.', col:'#ffd23f', sec:4.4 },
+  { bg:'crab_card', who:'BONUS STAGE', tag:'CLAW & ORDER', l1:'Steal the feast. Bank it. They shoot back.', col:'#ffd23f', sec:4.4 },
   { live:true, l1:'Six zones. One run home.', l2:'Most sucked up wins.', col:'#ff9d3a', sec:6.5 },
   { bg:'title', coin:true, col:'#39ff14', sec:4.6 }
 ];
@@ -843,128 +861,462 @@ function startBase(fresh){
   for(var k=0;k<3;k++) spawnTarget('tank');            // AA BATTERIES — the base's ground fire launches from these (no ordnance from nowhere)
   state='play'; flash('ALONE NOW — THE OTHER CRAFT IS GONE','#ff5d6c',2.2);   // the UFOs are separated here; the brass think they downed one (but who knows)
 }
-/* ---------- THE GUNPOWDER HORROR (PAX GNOMANIA) — web port of the Python base-defense mission ----------
-   The garden gnomes storm the base at Gunpowder, MD. You BEAM UP the gnomes to thin the swarm; they
-   advance on the defenders (hardware forward, soldiers + civilians in the center) and strike in melee.
-   A defender overrun blinks out. No player death here — the objective is to SAVE as many as you can;
-   save them all = PERFECT. A SET, bounded force (waves cap out, + a Bradley climax) so it stays performant. */
-var GUNPOWDER_SECS=48, GNOME_WAVE_EVERY=4.6, GNOME_WAVES_STOP=9.0, GNOME_WAVE_SIZE=3, GNOME_FOOT_CAP=13, GNOME_OPENING=5;
-// OPENING was 8. Measured idle attrition with the old value: 6/8 defenders by t=4, 4/8 by t=8,
-// 1/8 by t=14 — so an un-played base fell at ~15s of a 48s mission (the comment below claimed
-// mid-clock), and gpFell then ends the stage on the spot. That meant a merely-decent player
-// never saw the motor pool (16s) or the Bradley climax (32s) at all: two thirds of the level
-// was unreachable. Smaller opening swarm + one more hit on the forward hardware pushes the
-// idle fall back toward mid-clock so the set pieces actually land, without touching the
-// per-unit threat numbers that give each weapon class its character.
-var GNOME_SAVE_BONUS=200, GNOME_VANISH=0.5, GNOME_BRADLEY_AT=0.45;   // Bradleys WAS 2/3 (t=32) — see GNOME_VEH_AT below
-// unit: reach + advance are FRACTIONS OF W; dmg = hits dealt; cd = seconds between strikes; pts = beam payout; lockT = beam time
-var GNOME_UNITS={   // adv/reach as fractions of W; tuned so an idle base falls ~mid-clock (a beaming player can hold it)
-  knife:  {reach:0.030, adv:0.030, dmg:1, cd:1.5, pts:150, lockT:0.55,sprite:'gn_knife'},
-  pistol: {reach:0.052, adv:0.024, dmg:1, cd:2.0, pts:200, lockT:0.6, sprite:'gn_pistol'},
-  smg:    {reach:0.066, adv:0.022, dmg:1, cd:1.1, pts:250, lockT:0.65,sprite:'gn_smg'},
-  heavy:  {reach:0.082, adv:0.017, dmg:2, cd:2.8, pts:350, lockT:0.8, sprite:'gn_heavy', big:1.35},
-  rpg:    {reach:0.086, adv:0.017, dmg:2, cd:2.8, pts:350, lockT:0.8, sprite:'gn_rpg', big:1.3},   // heavy VARIANT — same threat as the flamethrower (splits its count), just the RPG sprite instead
-  cart:   {reach:0.050, adv:0.021, dmg:2, cd:2.6, pts:350, lockT:1.0, sprite:'gn_cart', big:1.45, veh:1},   // gnome GOLF CART — fast light vehicle, wide; beam it for a juicy payout
-  mower:  {reach:0.034, adv:0.026, dmg:1, cd:1.7, pts:300, lockT:0.85,sprite:'gn_mower', big:1.2, veh:1},   // gnome RIDING MOWER — quick melee harasser
-  cheer:  {reach:0.02,  adv:0,     dmg:0, cd:9,   pts:300, lockT:0.6, sprite:'gn_flag', big:1.05,cheer:1},  // PAX CHEER SQUAD — waves the standard, never attacks; beam for a morale bonus (zero threat)
-  bradley:{reach:0.05,  adv:0.014, dmg:2, cd:2.4, pts:400, lockT:1.3, sprite:'gp_bradley', big:2.4, armor:1}   // the painterly gnome-captured Bradley (red-hat gnomes + PAX flag)
+/* ---------- THE GUNPOWDER HORROR — the bonus mission (REBUILT 2026-10-14) ----------
+   FORT GUNPOWDER, MD. The garden gnomes pour out of the golf course (screen RIGHT) and assault the fort. The fort is
+   composed in DEPTH (docs/FORT_LAYOUT_LESSONS.md): back = hangar / radar / housing dim + raised, the barracks / PX /
+   motor pool mid, the chain-link perimeter along the back of the compound, the FRONT GATE COMPLEX on the line
+   (guardhouse, floodlights, tower, the welcome sign OUTSIDE the wire), then three COVER LINES the garrison falls
+   back through. "A couple of moves":
+     I   THE WIRE    forward sandbags behind the gate                   0-55s (ends early if the gate falls)
+     II  FALL BACK   the compound: sandbags + the humvee                to 105s — the forward bags are now GNOME cover
+     III LAST STAND  the barracks: sandbags + the AA gun, civilians behind; Bradleys + a wizard LEFT FLANK
+     IV  EVAC        the convoy pulls up, the civilians board; hold to 170s
+   BOTH SIDES FIGHT. Soldiers shoot (tracers, muzzle flash, hits knock gnomes back), take cover, get WOUNDED and limp
+   to the aid post (patched up, they come back), and are lost if hit again. Every gnome class fights its own way:
+   knife rush + going over the wire / pistol / SMG bursts / the commando rifle that OUTRANGES the line / the
+   flamethrower cone that burns people AND cover / wizard arcing lightning that ignores cover, shields its squad and
+   HEXES your beam / mortar shells with a telegraph / RPG on structures / golf-cart rams that drop riders / the
+   Bradley cannon. A gnome the SOLDIERS kill pays you nothing — the beam is the lever.
+   FAIL = fewer than GP_MUST_SAVE people alive (soldiers + civilians; the wounded still count) -> the FAILED card,
+   BEAM retries from phase I. Pure web build (src/suck_up.py keeps its own older mission). */
+var GP_LEN=170, GP_MUST_SAVE=6, GP_PHASE_AT=[0,55,105,148], GP_WAVES_STOP=152, GP_FOOT_CAP=16;
+var GP_GATE_X=0.79, GP_GATE_HP=40, GP_AID_X=0.20, GP_SURGE=[1,1.15,1.3,1.4];   // SURGE: ground given up is ground LOST (the Python fallback lesson) — each fall-back speeds the advance
+var GP_SAVE_SOLDIER=400, GP_SAVE_CIV=600, GNOME_VANISH=0.6;
+var GP_SOLDIER={ hp:4, range:0.32, acc:0.55, dmg:1.0, cd:1.1, cover:0.30, run:0.12 };   // cover = damage taken from direct fire behind live sandbags
+var GP_PHASES=[
+  { name:'PHASE I · THE WIRE',     sub:'HOLD THE GATE — SUCK UP THE GNOMES BEFORE THEY BREACH', col:'#9affc0', every:6.0, size:3,
+    mix:{knife:5, pistol:3, smg:2, rifle:1} },
+  { name:'PHASE II · FALL BACK',   sub:'THE GATE IS DOWN — HOLD THE COMPOUND', col:'#ffd23f', every:5.2, size:3,
+    mix:{knife:3, pistol:2, smg:2, rifle:1, flame:2, wizard:1} },
+  { name:'PHASE III · LAST STAND', sub:'DIG IN AT THE BARRACKS — THE CIVILIANS ARE BEHIND YOU', col:'#ff9d3a', every:5.2, size:4,
+    mix:{knife:3, pistol:1, smg:2, rifle:2, flame:2, wizard:2} },
+  { name:'PHASE IV · EVAC',        sub:'THE CONVOY IS IN — GET THE CIVILIANS ABOARD', col:'#7fe9ff', every:6.0, size:3,
+    mix:{knife:2, smg:2, flame:1, wizard:1} } ];
+// COVER LINES — one per fall-back. h = draw height (fraction of H); posts are dealt across each line's real span.
+var GP_COVER=[ {s:'fort_sandbag_b',x:0.640,ph:0,hp:14,h:0.039}, {s:'fort_sandbag_a',x:0.708,ph:0,hp:10,h:0.050},
+               {s:'fort_sandbag_c',x:0.446,ph:1,hp:10,h:0.050}, {s:'gp_vehicle',    x:0.520,ph:1,hp:18,h:0.075},
+               {s:'fort_sandbag_b',x:0.262,ph:2,hp:14,h:0.039}, {s:'gp_aa_gun',     x:0.340,ph:2,hp:16,h:0.090,aa:1} ];
+var GP_CO_X=0.19, GP_CIV_X=[0.075,0.105,0.135,0.16];
+// THE FORT (scenery, back layers) — drawn by drawBG with the house depth rule (far = smaller, dimmer, raised).
+var GP_FORT=[ {s:'mb_array',x:0.03,d:0.42}, {s:'mb_hangar',x:0.34,d:0.46,sc:0.92}, {s:'radar',x:0.6,d:0.45},
+  {s:'fort_house',x:0.07,d:0.6,sc:0.9}, {s:'fort_px',x:0.42,d:0.66}, {s:'mb_motorpool',x:0.565,d:0.72},
+  {s:'mb_barracks',x:0.16,d:0.76}, {s:'fort_guardhouse',x:0.712,d:0.9}, {s:'fort_lamp',x:0.752,d:0.93},
+  {s:'fort_tower',x:0.838,d:0.84}, {s:'fort_lamp',x:0.865,d:0.9}, {s:'fort_sign',x:0.918,d:0.96},
+  {s:'tree',x:0.975,d:0.88}, {s:'tree',x:1.01,d:0.7} ];
+// THE GNOME ARMY — Joe's strips (tools/cut_gunpowder_army.py). ai = how it fights; h = draw height (fraction of H).
+// pose:{...} = the attack / alt-walk frames (tools/web_check.mjs scans pose:{} so a typo'd frame fails the gate).
+var GNOME_UNITS={
+  knife:  {ai:'melee',  hp:2.5, spd:0.034, reach:0.024, dmg:0.8, cd:1.3, pts:150, lockT:0.55, h:0.052, climb:0.45, sprite:'gn_knife',  pose:{walk:'gn_knife_run', atk:'gn_knife_slash'}},
+  pistol: {ai:'gun',    hp:2.5, spd:0.026, range:0.20, dmg:1.0, acc:0.35, cd:2.1, burst:1, pts:200, lockT:0.6, h:0.052, sprite:'gn_pistol', pose:{atk:'gn_pistol_fire'}},
+  smg:    {ai:'gun',    hp:2.5, spd:0.026, range:0.16, dmg:0.55,acc:0.30, cd:2.3, burst:3, pts:250, lockT:0.65,h:0.052, sprite:'gn_smg',    pose:{atk:'gn_smg_fire'}},
+  rifle:  {ai:'gun',    hp:2.5, spd:0.020, range:0.36, dmg:1.0, acc:0.30, cd:3.4, burst:1, pts:300, lockT:0.7, h:0.056, sprite:'gn_rifle',  pose:{aim:'gn_sarge'}},
+  flame:  {ai:'flame',  hp:3.5, spd:0.022, range:0.075,dmg:0.42,cd:2.8, burn:1.4, pts:350, lockT:0.8, h:0.052, sprite:'gn_flame',  pose:{walk:'gn_heavy', atk:'gn_flame_fire'}},
+  wizard: {ai:'wizard', hp:3.5, spd:0.020, range:0.30, dmg:1.0, cd:3.4, pts:400, lockT:0.85, h:0.065, sprite:'gn_wizard', pose:{walk:'gn_wizard_b', aim:'gn_wizard_raise', atk:'gn_wizard_cast', hex:'gn_wizard_gun'}},
+  mortar: {ai:'mortar', hp:3.5, spd:0.016, dmg:1.0, cd:5.2, pts:400, lockT:0.9, h:0.055, sprite:'gn_mortar'},
+  rpg:    {ai:'rpg',    hp:2.5, spd:0.022, range:0.30, dmg:7, cd:3.8, pts:300, lockT:0.75, h:0.052, sprite:'gn_rpg',    pose:{atk:'gn_rpg_fire'}},
+  cart:   {ai:'cart',   hp:4.5, spd:0.075, reach:0.03, dmg:2.0, pts:350, lockT:1.0, h:0.075, sprite:'gn_cart'},
+  mower:  {ai:'melee',  hp:3.5, spd:0.05,  reach:0.03, dmg:1.0, cd:1.0, pts:300, lockT:0.85, h:0.062, sprite:'gn_mower'},
+  bradley:{ai:'armor',  hp:20,  armor:0.2, spd:0.018, range:0.40, dmg:2.0, cd:3.4, pts:500, lockT:1.4, h:0.111, sprite:'gp_bradley'},
+  cheer:  {ai:'cheer',  hp:2,   spd:0, pts:300, lockT:0.6, h:0.060, sprite:'gn_flag'}
 };
 var GNOME_UPRISING_BARKS=['THE GNOMES ARE REVOLTING! …no, REALLY revolting!','SUCK UP THE LAWN GNOMES — HELP THE ARMY, JUST THIS ONCE!','POINTY HATS ON THE WIRE! HOLD THE LINE!','DR. L: the little ones came for Gunpowder. i warned them.'];
-var GNOME_VEH_AT=0.25;                       // the gnome MOTOR POOL (golf cart + mower) — WAS 1/3 (t=16)
-// Set-piece timing is driven by WHEN THE MISSION ACTUALLY ENDS, not by the 48s clock. Measured:
-// an idle base is overrun by ~15s and gpFell ends the stage on the spot, and even after softening
-// the opening it is gone by ~16s. The escalations sat at 16s and 32s, so anyone short of expert
-// play never saw either one — the motor pool, the cheer squad and the Bradley climax were content
-// nobody could reach. Pulled to 12s and ~22s so a typical run gets all three beats. (The 48s clock
-// still stands for a player good enough to hold the line; this only decides how early the show starts.)
-var gpWaveT=0, gpBradley=false, gpVeh=false, gpFell=false, gpTotal=8;
-function gnomeFootUnit(){ var prog=1-stageClock/GUNPOWDER_SECS;      // ramp: melee rushers early -> shooters + heavies late
-  var pool=[]; function add(k,n){ for(var i=0;i<n;i++) pool.push(k); }
-  var nH=Math.floor(prog*2);                                        // heavies split evenly across flamethrower + RPG sprites (same total threat)
-  add('knife',Math.max(1,5-Math.floor(prog*4))); add('pistol',2+Math.floor(prog*2)); add('smg',Math.floor(prog*3)); add('heavy',nH-((nH/2)|0)); add('rpg',(nH/2)|0);
-  return pool.length?pool[(Math.random()*pool.length)|0]:'knife'; }
+var GP_CO_BARKS=['CO: STEADY! PICK YOUR TARGETS!','CO: THAT SAUCER IS ON OUR SIDE. DON\'T ASK.','CO: HOLD THIS LINE, GENTLEMEN!','CO: SOMEBODY GET ME A BIGGER GUN.'];
+var gpPhase=0, gpWaveT=0, gpFell=false, gpWon=false, gpTotal=10, gpGate=null, gpEvac=null, gpShots=[], gpFx=[], gpAmb=[], gpEvents={},
+    gpStats=null, gpBan=null, gpBanT=0, gpFailT=0, gpFailWhy='', gpScore0=0, gpScoreSet=false, gpFenceCut=false, gpWarnT=0, gpTally=null, gpCoT=0;
+function gpEl(){ return GP_LEN-stageClock; }
+function gpIsPerson(c){ return c.kind==='defender' && (c.dkind==='soldier'||c.dkind==='officer'||c.dkind==='civilian'); }
+function gpPeople(){ var a=[]; for(var i=0;i<targets.length;i++){ var c=targets[i]; if(!c.gone && c.vanish<=0 && gpIsPerson(c)) a.push(c); } return a; }   // alive + on the field (wounded included, aboard excluded)
+function liveDefenders(){ return gpPeople(); }
+function gpCounts(){ var o={s:0,sT:0,c:0,cT:0,w:0,aboard:0};
+  for(var i=0;i<targets.length;i++){ var c=targets[i]; if(!gpIsPerson(c)) continue; var civ=c.dkind==='civilian';
+    if(civ) o.cT++; else o.sT++;
+    var alive=c.aboard || (!c.gone && c.vanish<=0);
+    if(alive){ if(civ) o.c++; else o.s++; if(c.st==='wounded') o.w++; if(c.aboard) o.aboard++; } }
+  o.alive=o.s+o.c; o.total=o.sT+o.cT; return o; }
+function gpBodyY(c,k){ return groundY()+6+zdY(c)-H*(c.drawH||0.045)*zdS(c)*k; }
+function gpCovers(){ var a=[]; for(var i=0;i<targets.length;i++){ var c=targets[i]; if(!c.gone && c.dkind==='cover') a.push(c); } return a; }
+function gpHalfW(c){ var im=IMG[c.sprite], ar=(im&&im.ok)?im.naturalWidth/im.naturalHeight:2.5; return H*c.drawH*zdS(c)*ar*0.5; }
+function gpCovered(d){ var cs=gpCovers(); for(var i=0;i<cs.length;i++){ var c=cs[i]; if(c.hp>0 && !c.captured && Math.abs(d.x-c.x)<gpHalfW(c)+W*0.006) return true; } return false; }
+function gpInCover(g){ var cs=gpCovers(); for(var i=0;i<cs.length;i++){ var c=cs[i]; if(c.hp>0 && c.captured && Math.abs(g.x-c.x)<gpHalfW(c)) return true; } return false; }
+function gpAtk(k){ gpStats.atk[k]=(gpStats.atk[k]||0)+1; }
 function mkGnome(unit,x){ var u=GNOME_UNITS[unit];
-  return { kind:'gnome', unit:unit, def:{val:u.pts,meter:0,lock:u.lockT,wander:0}, sprite:u.sprite,
-    reach:u.reach, adv:u.adv, dmg:u.dmg, atkCd:u.cd, big:u.big||1, armor:!!u.armor, veh:!!u.veh, cheer:!!u.cheer,
-    x:x, homeX:x, y:groundY(), vx:0,vy:0, dir:x<W*0.5?1:-1, lock:0, lifting:false, gone:false, fireCd:rnd(0.4,1.4), zd:zdepth(x) }; }   // zd = render-only crowd depth
-function mkDefender(sprite,x,hp,kind){
-  // the defence is authored in depth (hardware forward, soldiers mid, civilians safe in the
-  // centre) — give that layout a matching DRAW depth so the line reads as a line, not a row
-  var zd = kind==='hardware'?0.85 : kind==='soldier'?0.45 : kind==='civilian'?0.15 : 0.0;
-  return { kind:'defender', dkind:kind, protect:true, def:{val:0,meter:0,lock:1,wander:0}, sprite:sprite,
-    x:x, y:groundY(), vx:0,vy:0, dir:1, lock:0, lifting:false, gone:false, hp:hp, maxHp:hp, vanish:0, zd:zd }; }
-function spawnGnomeWave(n){
-  var live=0; for(var i=0;i<targets.length;i++){ var c=targets[i]; if(!c.gone && c.kind==='gnome' && !c.armor && !c.veh && !c.cheer) live++; }   // cap counts FOOT gnomes only (vehicles/cheer are separate)
-  for(var k=0;k<n;k++){ if(live>=GNOME_FOOT_CAP) break;
-    var left=chance(0.5), x=left? W*rnd(0.005,0.13) : W*(1-rnd(0.005,0.13));   // spread along the edge so they don't STACK on one spot
-    targets.push(mkGnome(gnomeFootUnit(),x)); live++; }
+  return { kind:'gnome', unit:unit, u:u, def:{val:u.pts,meter:0,lock:u.lockT,wander:0}, sprite:u.sprite, hp:u.hp, maxHp:u.hp,
+    armor:u.ai==='armor', veh:(u.ai==='cart'||unit==='mower'), cheer:u.ai==='cheer', big:1, drawH:u.h,
+    x:x, homeX:x, y:groundY(), vx:0,vy:0, dir:x<W*0.5?1:-1, face:x<W*0.5?1:-1, flipX:x>=W*0.5, lock:0, lifting:false, gone:false,
+    fireCd:rnd(0.6,1.8), poseT:0, burst:0, burstT:0, shieldT:0, hexCd:rnd(2,5), casts:0, castT:0, climbT:0, climbTried:false,
+    stopK:rnd(0.78,1.0), stopJ:rnd(0,0.04), ph:Math.random()*6, dieT:0, flameT:0, flameTick:0, rammed:false, zd:zdepth(x) }; }
+function mkDefender(sprite,x,hp,kind,h,zd){
+  return { kind:'defender', dkind:kind, protect:true, def:{val:0,meter:0,lock:1,wander:0}, sprite:sprite, idleSp:sprite,
+    x:x, y:groundY(), vx:0,vy:0, dir:1, face:1, flipX:false, lock:0, lifting:false, gone:false, hp:hp, maxHp:hp, vanish:0,
+    zd:(zd!=null?zd:0.3), drawH:h||0.05, noPips:true, fireCd:rnd(0.3,1.4), poseT:0, st:'post', tx:x, burnT:0, stunT:0, patchT:0 }; }
+function gpPickUnit(){ var mix=GP_PHASES[gpPhase].mix, tot=0, k; for(k in mix) tot+=mix[k]; var r=Math.random()*tot;
+  for(k in mix){ r-=mix[k]; if(r<=0) return k; } return 'knife'; }
+function gpFootLive(){ var n=0; for(var i=0;i<targets.length;i++){ var c=targets[i]; if(!c.gone && c.kind==='gnome' && !c.dieT && !c.veh && !c.armor && !c.cheer && c.u.ai!=='mortar') n++; } return n; }
+function gpSpawn(unit,x){ var g=mkGnome(unit,x); targets.push(g); if(gpStats && unit!=='cheer') gpStats.spawned++; return g; }
+function spawnGnomeWave(n){ var live=gpFootLive();
+  for(var k=0;k<n && live<GP_FOOT_CAP;k++,live++) gpSpawn(gpPickUnit(), W*rnd(1.0,1.07)); }
+function gpTeleport(unit,x){ var g=gpSpawn(unit,x); g.face=1; g.flipX=false;
+  gpFx.push({kind:'tele',x:x,y:gpBodyY(g,0.5),t:0,life:0.6}); sfxT('snatch',0.3,0.35); return g; }
+// ---- setup ----
+function gpBuildFort(){
+  buildScenery([],0,0,[]);                                   // resets the pools + rolls the base moon
+  scenery=GP_FORT.map(function(p){ return { x:W*p.x, s:p.s, sc:p.sc||1, d:p.d, fl:false }; }); scenery.sort(function(a,b){return a.d-b.d;});
+  gpGate=mkDefender('fort_gate', W*GP_GATE_X, GP_GATE_HP, 'gate', 0.086, 0.02); targets.push(gpGate);
+  for(var i=0;i<GP_COVER.length;i++){ var cv=GP_COVER[i], c=mkDefender(cv.s, W*cv.x, cv.hp, 'cover', cv.h, 0.55); c.ph=cv.ph; c.aa=!!cv.aa; c.fireCd=2; targets.push(c); }
+  targets.push(mkDefender('gp_banner', W*0.976, 0,'banner', 0.10, 0.05)); targets.push(mkDefender('gp_banner', W*1.0, 0,'banner', 0.09, 0.0));   // the gnome standard on the golf course
 }
+function gpPosts(ph){                                          // deal 5 riflemen across this line's cover spans (any aspect ratio)
+  var cs=[], tot=0; for(var i=0;i<targets.length;i++){ var c=targets[i]; if(c.dkind==='cover' && c.ph===ph){ cs.push(c); tot+=gpHalfW(c); } }
+  cs.sort(function(a,b){return a.x-b.x;}); var out=[], left=5;
+  for(var j=0;j<cs.length;j++){ var c=cs[j], n=(j===cs.length-1)?left:Math.max(1,Math.round(5*gpHalfW(c)/tot)); left-=n;
+    var hw=gpHalfW(c)*0.78; for(var k=0;k<n;k++) out.push(c.x-hw+(n===1?hw:2*hw*k/(n-1))); }
+  return out; }
+function gpAssignPosts(ph){ var posts=gpPosts(ph), sol=[];
+  for(var i=0;i<targets.length;i++){ var c=targets[i]; if(c.dkind==='soldier' && !c.gone && c.vanish<=0) sol.push(c); }
+  sol.sort(function(a,b){return b.x-a.x;});
+  for(var j=0;j<sol.length;j++){ var s=sol[j]; s.tx=posts[Math.min(j,posts.length-1)]; if(s.st!=='wounded') s.st='move'; } }
 function startGunpowder(fresh){
   mode='gunpowder'; clock=0; if(fresh!==false){ score=0; hp=maxHP; }
   P=newPlayer(); R=null; targets=[]; jets=[]; shots=[]; fx=[]; shake=0; bonusKind=null;
-  meter=0; stageClock=GUNPOWDER_SECS; levelLen=GUNPOWDER_SECS; runActive=false; daveSpawned=true; moSpawned=true; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0; superT=0;
-  gpWaveT=0; gpBradley=false; gpVeh=false; gpFell=false;
-  // FORT GUNPOWDER backdrop — the base at night (reuse the military installation dressing)
-  buildScenery(BASE_PROPS, 0.02, 0.112, BASE_POOL);
-  // DEFENDERS — DEFENSE IN DEPTH from the edges inward: a forward HARDWARE line (3 hits each) soaks the
-  // first contact and buys time, armed SOLDIERS (2 hits) hold the middle, CIVILIANS (1 hit) safe in the
-  // dead center = the thing to save. Gnomes attack the NEAREST, so the line is chewed front-to-back.
-  targets.push(mkDefender('gp_aa_gun', W*0.13, 4,'hardware'));   // real painterly AA guns + humvees on the forward line (4 hits: they are meant to SOAK first contact and buy time)
-  targets.push(mkDefender('gp_aa_gun', W*0.87, 4,'hardware'));
-  targets.push(mkDefender('gp_vehicle', W*0.28, 4,'hardware'));
-  targets.push(mkDefender('gp_vehicle', W*0.72, 4,'hardware'));
-  targets.push(mkDefender(pick(['gp_soldier_a','gp_soldier_b','gp_soldier_c']), W*0.39, 2,'soldier'));
-  targets.push(mkDefender(pick(['gp_soldier_a','gp_soldier_b','gp_soldier_c']), W*0.61, 2,'soldier'));
-  targets.push(mkDefender('person', W*0.47, 1,'civilian'));
-  targets.push(mkDefender('person', W*0.53, 1,'civilian'));
-  gpTotal=liveDefenders().length;                           // 8 defenders — PERFECT = save them all
-  targets.push(mkDefender('gp_banner', W*0.045, 0,'banner')); // the PAX GNOMANIA standard planted at the horde's edges (decoration, hp0 = not counted/attacked)
-  targets.push(mkDefender('gp_banner', W*0.955, 0,'banner'));
-  targets.push(mkGnome('cheer', W*0.10)); targets.push(mkGnome('cheer', W*0.90));   // PAX cheer squad rallies by the standards (flavor — never attacks, beam for a bonus)
-  spawnGnomeWave(GNOME_OPENING);                             // the opening swarm masses at the edges
-  state='play'; flash('THE GUNPOWDER HORROR — SUCK UP THE GNOMES, SAVE THE BASE','#9affc0',2.4);
-  sayLater(pick(GNOME_UPRISING_BARKS),'#ffd23f',2.6);
+  meter=0; stageClock=GP_LEN; levelLen=GP_LEN; runActive=false; daveSpawned=true; moSpawned=true; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0; superT=0;
+  gpPhase=0; gpWaveT=0; gpFell=false; gpWon=false; gpShots=[]; gpFx=[]; gpAmb=[]; gpEvents={}; gpBan=null; gpBanT=0; gpFailT=0; gpFailWhy='';
+  gpScoreSet=false; gpEvac=null; gpFenceCut=false; gpWarnT=0; gpTally=null; gpCoT=9;
+  gpStats={ spawned:0, beamed:0, beamPts:0, lineKills:0, soldierShots:0, soldierHits:0, atk:{}, dmg:{}, lostAt:[], lostS:0, lostC:0, wounded:0, patched:0, phaseT:[0], failAt:0 };
+  gpBuildFort();
+  var posts=gpPosts(0);                                        // the garrison starts DUG IN on the wire
+  for(var i=0;i<5;i++){ var s=mkDefender('gp_guard', posts[i], GP_SOLDIER.hp, 'soldier', 0.075, 0.30+0.03*(i%3)); s.st='post'; targets.push(s); }
+  targets.push(mkDefender('gp_officer', W*GP_CO_X, GP_SOLDIER.hp, 'officer', 0.078, 0.26));
+  for(var j=0;j<GP_CIV_X.length;j++) targets.push(mkDefender(pick(['person','person_b','person_c']), W*GP_CIV_X[j], 2, 'civilian', 0.064, 0.14+0.05*(j%2)));
+  gpTotal=gpCounts().total;                                    // 10 — MUST SAVE GP_MUST_SAVE of them
+  targets.push(mkGnome('cheer', W*0.99));                       // the cheer squad rallies on the green (flavor — never attacks, beam for a bonus)
+  spawnGnomeWave(4);
+  gpSetPhase(0);
+  state='play'; sayLater(pick(GNOME_UPRISING_BARKS),'#ffd23f',3.4);
 }
-function liveDefenders(){ var d=[]; for(var i=0;i<targets.length;i++){ var c=targets[i]; if(!c.gone && c.protect && c.hp>0 && c.vanish<=0) d.push(c); } return d; }
-function gunpowderStep(dt){
-  // reinforcement waves march in until the last stretch (so the final wave is still killable)
-  if(stageClock>GNOME_WAVES_STOP){ gpWaveT+=dt; if(gpWaveT>=GNOME_WAVE_EVERY){ gpWaveT=0; spawnGnomeWave(GNOME_WAVE_SIZE); } }
-  // the gnome MOTOR POOL (golf cart + riding mower) rolls in at a third — the light-vehicle escalation
-  if(!gpVeh && stageClock<=GUNPOWDER_SECS*(1-GNOME_VEH_AT)){ gpVeh=true;
-    targets.push(mkGnome('cart', W*0.02)); targets.push(mkGnome('mower', W*0.98));
-    flash('GNOME MOTOR POOL ROLLING IN','#ff9d3a',1.4); shake=Math.max(shake,6); }
-  // the gnome-captured BRADLEYS grind in for the final third — the heavy climax
-  if(!gpBradley && stageClock<=GUNPOWDER_SECS*(1-GNOME_BRADLEY_AT)){ gpBradley=true;
-    for(var k=0;k<2;k++){ var x=(k%2===0)?W*0.03:W*0.97; targets.push(mkGnome('bradley',x)); }
-    flash('GNOME-CAPTURED BRADLEYS INBOUND','#ff5d6c',1.6); shake=Math.max(shake,10); }
-  var defs=liveDefenders();
-  for(var i=0;i<targets.length;i++){ var g=targets[i];
-    if(g.gone || g.kind!=='gnome' || g.lifting) continue;   // beamed/lifting gnomes don't advance
-    if(g.cheer){ g.x=g.homeX + Math.sin(clock*1.3+g.homeX)*W*0.014; g.dir=Math.cos(clock*1.3+g.homeX)>0?1:-1; continue; }   // cheer squad bobs by its banner, never advances/attacks
-    g.fireCd-=dt;
-    if(!defs.length) continue;
-    var near=defs[0], nd=Math.abs(defs[0].x-g.x); for(var j=1;j<defs.length;j++){ var d2=Math.abs(defs[j].x-g.x); if(d2<nd){ nd=d2; near=defs[j]; } }
-    if(nd > W*g.reach){ g.x += (g.adv*W*dt)*(near.x>g.x?1:-1); g.x=clamp(g.x,0,W); g.dir=(near.x>g.x?1:-1); }   // advance on the line
-    else if(g.fireCd<=0){ g.fireCd=g.atkCd; near.hp-=g.dmg; addFx(near.x,near.y-24,'spark','#ff5d6c',0.3); sfxT('hit',0.35,0.25);   // strike
-      if(near.hp<=0){ near.vanish=GNOME_VANISH; for(var m=defs.length-1;m>=0;m--) if(defs[m]===near) defs.splice(m,1);
-        var lost=near.dkind==='civilian'?'A CIVILIAN IS DOWN':near.dkind==='soldier'?'A SOLDIER IS DOWN':'HARDWARE LOST';
-        var left=defs.length; shake=Math.max(shake,7); sfxT('denied',0.4,0.3);
-        flash(left<=2?(lost+' — '+left+' LEFT, HOLD!'):(lost+'!'), left<=2?'#ff5d6c':'#ff9d3a', 1.2); } }
+function gpSetPhase(n){
+  var was=gpPhase; gpPhase=n; gpStats.phaseT[n]=gpEl();
+  var PH=GP_PHASES[n]; gpBan={title:PH.name, sub:PH.sub, col:PH.col}; gpBanT=3.0;
+  if(n>0){ for(var i=0;i<targets.length;i++){ var c=targets[i]; if(c.dkind==='cover' && c.ph<Math.min(n,2)) c.captured=true; } }   // the line they left is GNOME cover now
+  if(n>0 && n<3){ gpAssignPosts(n); sfx('run',0.45); shake=Math.max(shake,8); }
+  if(n===3) gpStartEvac();
+}
+// ---- the set pieces (each fires once; el = mission seconds) ----
+function gpOnce(k,at){ if(gpEvents[k] || gpEl()<at) return false; gpEvents[k]=true; return true; }
+function gpSetPieces(){
+  var t1=gpStats.phaseT[1], t2=gpStats.phaseT[2];
+  if(gpOnce('geese',1.5)) for(var i=0;i<5;i++) gpAmb.push({x:W*rnd(0.86,0.98), y:groundY()-rnd(0,20), vx:-W*rnd(0.10,0.16), vy:-H*rnd(0.06,0.11), f:Math.random()*6, s:rnd(0.026,0.036)});
+  if(gpOnce('flame1',16)){ gpSpawn('flame',W*1.03); flash('FLAMETHROWER ON THE WIRE — SUCK HIM UP','#ff9d3a',1.6); }
+  if(gpOnce('climb1',21)){ for(var c1=0;c1<3;c1++) gpSpawn('knife',W*rnd(0.83,0.87)).climber=true; flash('OUT OF THE TREELINE — THEY\'RE GOING OVER THE WIRE!','#ff9d3a',1.6); }   // wire-climbers: right on the fence, so the beam has to pick them off it
+  if(gpOnce('climb2',33)){ for(var c2=0;c2<3;c2++) gpSpawn('knife',W*rnd(0.83,0.88)).climber=true; }
+  if(gpOnce('mortar1',24)){ gpSpawn('mortar',W*1.04); flash('MORTAR TEAM ON THE NINTH GREEN','#ff9d3a',1.6); }
+  if(gpOnce('rpg1',40)){ gpSpawn('rpg',W*1.02); gpSpawn('rpg',W*1.06); flash('RPG TEAM — THEY\'RE GOING FOR THE GATE','#ff5d6c',1.6); }
+  if(gpPhase>=1){
+    if(gpOnce('motor',t1+6)){ gpSpawn('cart',W*1.04); gpSpawn('mower',W*1.09); flash('GNOME MOTOR POOL ROLLING IN','#ff9d3a',1.4); shake=Math.max(shake,6); }
+    if(gpOnce('wiz2',t1+13)){ gpSpawn('wizard',W*1.02); gpSpawn('wizard',W*1.06); flash('WIZARDS — LIGHTNING GOES OVER THE SANDBAGS','#b388ff',1.8); }
+    if(gpOnce('mortar2',t1+22)) gpSpawn('mortar',W*1.04);
+    if(gpOnce('cart2',t1+34)) gpSpawn('cart',W*1.04);
   }
-  for(var i=0;i<targets.length;i++){ var c=targets[i]; if(c.vanish>0){ c.vanish-=dt; if(c.vanish<=0){ c.gone=true; c.respawn=1e9; addFx(c.x,c.y-20,'boom','#ff7a3a',0.5); } } }
-  // end conditions: base overrun (all defenders lost) -> fall; else the clock decides
-  if(!gpFell && liveDefenders().length===0){ gpFell=true; stageClock=Math.min(stageClock,1.2); }
+  if(gpPhase>=2){
+    if(gpOnce('brad1',t2+1)){ gpSpawn('bradley',W*1.06); flash('GNOME-CAPTURED BRADLEY INBOUND','#ff5d6c',1.6); shake=Math.max(shake,10); }
+    // THE LEFT FLANK is TELEGRAPHED: the wire-cutters spark at the fence for ~3s (and it's called out) BEFORE anyone comes
+    // through, and they walk in from off-screen. (First cut: they teleported in on top of the civilians — the battery showed
+    // every competent/expert loss landing in the same two seconds, i.e. a loss the player could not see coming.)
+    if(gpOnce('flank1warn',t2+5)){ gpFenceCut=true; gpWarnT=3.0; flash('WIRE CUTTERS ON THE LEFT FLANK — GET OVER THERE!','#ff5d6c',2.2); }
+    if(gpOnce('flank1',t2+8)){ gpFlank(['wizard','wizard','knife','knife']); flash('THEY\'RE THROUGH THE WIRE — PROTECT THE CIVILIANS','#ff5d6c',1.8); shake=Math.max(shake,8); }
+    if(gpOnce('brad2',t2+18)){ gpSpawn('bradley',W*1.06); flash('SECOND BRADLEY','#ff5d6c',1.2); }
+    if(gpOnce('flank2warn',t2+26)){ gpWarnT=3.0; flash('MORE CUTTERS ON THE WIRE — LEFT FLANK!','#ff5d6c',1.8); }
+    if(gpOnce('flank2',t2+29)){ gpFlank(['knife','knife','flame','knife']); }
+  }
 }
+function gpFlank(units){ for(var i=0;i<units.length;i++){ var g=gpSpawn(units[i], -W*(0.015+0.03*i)); g.face=1; g.flipX=false; g.fireCd=rnd(1.6,2.6); g.hexCd=Math.max(g.hexCd,3); }
+  gpFx.push({kind:'tele',x:W*0.02,y:groundY()-H*0.03,t:0,life:0.6,col:'#b388ff'}); sfxT('snatch',0.3,0.35); }
+function gpStartEvac(){ gpEvac=mkDefender('gp_vehicle', -W*0.09, 999, 'evac', 0.08, 0.12); gpEvac.st='in'; gpEvac.tx=W*0.115; gpEvac.loadT=0; targets.push(gpEvac);
+  sayLater('CO: CIVILIANS FIRST! MOVE, MOVE!','#7fe9ff',1.4); }
+// ---- damage ----
+function gpHurt(d,amt,kind,quiet,src){
+  if(!d || d.gone || d.vanish>0 || d.aboard || d.dkind==='evac' || d.dkind==='banner') return;
+  if(gpIsPerson(d)){
+    var cov=gpCovered(d), m = kind==='direct'?(cov?GP_SOLDIER.cover:1) : kind==='blast'?(cov?0.6:1) : kind==='fire'?(cov?0.75:1) : 1;
+    d.hp-=amt*m; if(gpStats){ var sk2=src||kind; gpStats.dmg[sk2]=(gpStats.dmg[sk2]||0)+amt*m; } if(!quiet){ d.hitT=0.18; addFx(d.x+rnd(-4,4), gpBodyY(d,0.55), 'spark', '#ff5d6c', 0.25); }
+    if(d.hp<=0){
+      if(d.dkind!=='civilian' && d.st!=='wounded'){ d.st='wounded'; d.hp=1.5; d.patchT=0; d.burnT=0; gpStats.wounded++;
+        flash((d.dkind==='officer'?'THE CO IS HIT':'SOLDIER WOUNDED')+' — FALLING BACK TO THE AID POST','#ff9d3a',1.1); sfxT('hit',0.3,0.3); }
+      else { d.hp=0; d.vanish=GNOME_VANISH; if(d.dkind==='civilian') gpStats.lostC++; else gpStats.lostS++; gpStats.lostAt.push(Math.round(gpEl())+(d.dkind==='civilian'?'c':'s')+':'+(src||kind));
+        var o=gpCounts(), left=o.alive-1; shake=Math.max(shake,7); sfxT('denied',0.3,0.4);
+        flash((d.dkind==='civilian'?'A CIVILIAN IS DOWN':d.dkind==='officer'?'THE CO IS DOWN':'A SOLDIER IS DOWN')+' — '+left+' LEFT · MUST SAVE '+GP_MUST_SAVE, left<=GP_MUST_SAVE?'#ff5d6c':'#ff9d3a',1.6); }
+    }
+    return; }
+  // structures: gate / cover / the AA gun
+  if(d.hp<=0) return;
+  d.hp-=amt*(kind==='melee'?0.75:kind==='fire'?0.8:1); d.hitT=0.15;
+  if(d.hp<=0){ d.hp=0; d.wrecked=true; d.wreckRot=rnd(-0.12,0.12); shake=Math.max(shake,9); sfxT('hit',0.2,0.45);
+    for(var k=0;k<3;k++) addFx(d.x+rnd(-20,20), gpBodyY(d,0.5)+rnd(-8,8), 'boom', '#ff7a3a', 0.6);
+    if(d===gpGate){ flash('THE GATE IS DOWN!','#ff5d6c',1.6); }
+    else if(!d.captured) flash((d.aa?'THE AA GUN':d.sprite==='gp_vehicle'?'THE HUMVEE':'THE SANDBAGS')+' — DESTROYED','#ff9d3a',1.1); }
+}
+function gpBlast(x,r,dmg,sdmg,kind,src){
+  for(var i=0;i<targets.length;i++){ var c=targets[i]; if(c.gone || c.kind!=='defender') continue;
+    var dx=Math.abs(c.x-x), reach=r+(c.dkind==='cover'||c.dkind==='gate'?gpHalfW(c)*0.6:0);
+    if(dx<reach) gpHurt(c, gpIsPerson(c)?dmg*(1-0.5*dx/Math.max(1,reach)):sdmg, kind||'blast', false, src); }
+  addFx(x, groundY()-8, 'boom', '#ff9d3a', 0.6); addFx(x, groundY()-14, 'smoke', '#9aa', 0.8); shake=Math.max(shake,5); sfxT('hit',0.18,0.32);
+}
+function gpHurtGnome(g,dmg,fromX,src){
+  if(g.gone || g.dieT>0 || g.lifting) return false;
+  if(g.shieldT>0 && src!=='aa'){ gpFx.push({kind:'fizz',x:g.x,y:gpBodyY(g,0.5),t:0,life:0.3}); return false; }
+  if(g.u.armor && src!=='aa') dmg*=g.u.armor;
+  g.hp-=dmg; g.hitT=0.16; var away=(g.x>=fromX?1:-1);
+  if(!g.armor) g.x=clamp(g.x+away*W*0.007, -W*0.05, W*1.1);       // KNOCKBACK — the hit reads
+  addFx(g.x, gpBodyY(g,0.5), 'spark', '#ffd27a', 0.22);
+  if(g.hp<=0){ g.dieT=0.7; g.protect=true; g.dieDir=away; gpStats.lineKills++; addFx(g.x, gpBodyY(g,0.4), 'snatch', '#ff9d5a', 0.35); return true; }
+  return true; }
+// ---- projectiles (the ground war has its OWN list: shots[] is the anti-saucer list and would hit the UFO) ----
+function gpShot(kind,x0,y0,x1,y1,speed,o){ if(gpShots.length>=180) gpShots.shift();
+  var d=Math.hypot(x1-x0,y1-y0), s={kind:kind,x0:x0,y0:y0,x1:x1,y1:y1,x:x0,y:y0,px:x0,py:y0,t:0,T:o&&o.T?o.T:Math.max(0.05,d/speed)};
+  for(var k in (o||{})) s[k]=o[k]; gpShots.push(s); return s; }
+function gpMuzzle(x,y,col){ gpFx.push({kind:'muzzle',x:x,y:y,t:0,life:0.08,col:col||'#ffe7a0'}); }
+function gpUpdateShots(dt){
+  for(var i=gpShots.length-1;i>=0;i--){ var s=gpShots[i]; s.px=s.x; s.py=s.y; s.t+=dt;
+    if(s.kind==='hex'){                                          // the wizard's hex HOMES on the saucer — warble through it
+      var dx=P.x-s.x, dy=P.y-s.y, L=Math.hypot(dx,dy)||1, sp=W*0.42; s.vx=(s.vx||dx/L*sp)*0.9+dx/L*sp*0.1; s.vy=(s.vy||dy/L*sp)*0.9+dy/L*sp*0.1;
+      s.x+=s.vx*dt; s.y+=s.vy*dt; if(chance(0.5)) gpFx.push({kind:'spark2',x:s.x,y:s.y,t:0,life:0.3,col:'#b388ff'});
+      if(L<SAUCER_W()*0.42){ if(warbling()){ gpFx.push({kind:'fizz',x:s.x,y:s.y,t:0,life:0.35}); sfxT('deflect',0.2,0.6); }
+        else if(!GOD){ P.stun=Math.max(P.stun,0.9); planting=false; flash('HEXED! — WARBLE THROUGH WIZARD FIRE','#b388ff',1.0); sfxT('hit',0.3,0.35); addFx(P.x,P.y,'emp','#b388ff',0.45); gpAtk('hexHit'); }
+        gpShots.splice(i,1); continue; }
+      if(s.t>3.2){ gpShots.splice(i,1); } continue; }
+    var u=clamp(s.t/s.T,0,1); s.x=s.x0+(s.x1-s.x0)*u; s.y=s.y0+(s.y1-s.y0)*u-(s.arc||0)*4*u*(1-u);
+    if(s.kind==='shell' && chance(0.4)) gpFx.push({kind:'smoke',x:s.x,y:s.y,t:0,life:0.5});
+    if(s.kind==='rocket' && chance(0.7)) addFx(s.x,s.y,'smoke','#c9b0a0',0.4);
+    if(s.kind==='orb' && chance(0.8)) gpFx.push({kind:'spark2',x:s.x,y:s.y,t:0,life:0.35,col:'#8fd8ff'});
+    if(u<1) continue;
+    // arrival
+    if(s.side==='us'){ if(s.tgt && gpHurtGnome(s.tgt,s.dmg,s.x0,s.src)) gpStats.soldierHits++; else if(!s.tgt) gpFx.push({kind:'dust',x:s.x1,y:groundY()+4,t:0,life:0.35}); }
+    else if(s.blast){ if(s.kind==='orb'){ gpFx.push({kind:'bolt',x:s.x1,t:0,life:0.42}); sfxT('snatch',0.25,0.25); }
+      gpBlast(s.x1, s.blast*W, s.dmg, s.sdmg||0, s.dk||'blast', s.src); }
+    else { if(s.tgt) gpHurt(s.tgt, s.dmg, s.dk||'direct', false, s.src); else gpFx.push({kind:'dust',x:s.x1,y:groundY()+4,t:0,life:0.3}); }
+    gpShots.splice(i,1); }
+}
+// ---- soldiers, civilians, structures ----
+function gpSoldierTarget(c){ var best=null, bd=W*GP_SOLDIER.range, gx=W*GP_GATE_X;
+  for(var i=0;i<targets.length;i++){ var g=targets[i]; if(g.gone||g.kind!=='gnome'||g.dieT>0||g.cheer||g.lifting||g.x>W*1.0) continue;
+    var d=Math.abs(g.x-c.x)-(g.x<gx?W*0.04:0)-(g.climbT>0?W*0.05:0);       // inside the wire / on the wire = shoot it first
+    if(d<bd){ bd=d; best=g; } }
+  return best; }
+function gpSoldierFire(c,tg){ gpStats.soldierShots++;
+  var d=Math.abs(tg.x-c.x), acc=GP_SOLDIER.acc*(1-0.35*d/(W*GP_SOLDIER.range))*(gpInCover(tg)?0.5:1), hit=Math.random()<acc;
+  var hh=H*c.drawH*zdS(c), mx=c.x+c.face*hh*0.42, my=gpBodyY(c,0.70);
+  gpShot('bullet', mx, my, tg.x+(hit?0:rnd(-0.012,0.012)*W), gpBodyY(tg,0.45)+(hit?0:rnd(-12,8)), W*1.7, {side:'us', tgt:hit?tg:null, dmg:GP_SOLDIER.dmg, col:'#fff2a0'});
+  gpMuzzle(mx,my,'#ffe7a0'); c.poseT=0.3; sfxT('deflect',0.14,0.09); }
+function gpBurn(c,dt){ if(c.burnT>0){ c.burnT-=dt; gpHurt(c,0.3*dt,'burn',true); if(chance(0.5)) gpFx.push({kind:'flame',x:c.x+rnd(-6,6),y:gpBodyY(c,rnd(0.2,0.8)),vx:rnd(-10,10),vy:-rnd(20,45),t:0,life:0.4,r:rnd(3,6)}); } }
+function gpDefender(c,dt){
+  if(c.hitT>0) c.hitT-=dt;
+  if(c.dkind==='soldier' || c.dkind==='officer'){
+    if(c.vanish>0) return; c.fireCd-=dt; if(c.poseT>0)c.poseT-=dt; gpBurn(c,dt); if(c.vanish>0) return;
+    if(c.st==='wounded'){ var ax=W*GP_AID_X+(c.dkind==='officer'?-W*0.01:0), dd=ax-c.x;   // limp to the aid post at the barracks; 8s there = patched up
+      if(Math.abs(dd)>W*0.008){ c.x+=Math.sign(dd)*W*0.028*dt; c.patchT=0; } else { c.patchT+=dt;
+        if(c.patchT>8){ c.st=(c.dkind==='officer')?'post':'move'; c.hp=2; c.patchT=0; gpStats.patched++; if(c.dkind==='soldier') c.tx=gpPosts(Math.min(gpPhase,2))[(Math.random()*5)|0];
+          flash('PATCHED UP — BACK ON THE LINE','#9affc0',1.0); } }
+      c.sprite='gp_wounded'; c.flipX=dd<0; return; }
+    if(c.dkind==='officer'){ c.sprite='gp_officer'; c.flipX=false; gpCoT-=dt; if(gpCoT<=0){ gpCoT=rnd(14,20); if(state==='play' && msgT<=0) flash(pick(GP_CO_BARKS),'#bdf2cf',1.4); } return; }
+    if(c.st==='move'){ var d=c.tx-c.x; if(Math.abs(d)<W*0.004){ c.x=c.tx; c.st='post'; }
+      else { c.x+=Math.sign(d)*Math.min(Math.abs(d), W*GP_SOLDIER.run*dt); c.face=Math.sign(d); c.sprite='gp_run'; c.flipX=c.face<0;
+        if(c.fireCd<=0){ var tq=gpSoldierTarget(c); if(tq && Math.abs(tq.x-c.x)<W*0.12){ c.fireCd=GP_SOLDIER.cd*1.6; gpSoldierFire(c,tq); } }   // snap shots on the run
+        return; } }
+    var tg=gpSoldierTarget(c);
+    if(tg){ c.face=tg.x>=c.x?1:-1; if(c.fireCd<=0){ c.fireCd=GP_SOLDIER.cd*rnd(0.8,1.25); gpSoldierFire(c,tg); } }
+    c.sprite=(tg||c.poseT>0)?'gp_aim':c.idleSp; c.flipX=(c.sprite==='gp_aim')?(c.face>0):(c.face<0);
+    return; }
+  if(c.dkind==='civilian'){ if(c.vanish>0||c.aboard) return; gpBurn(c,dt);
+    if(gpEvac && gpEvac.st==='load' && c.boardOrder!=null && gpEvac.loadT>=c.boardOrder*0.9){   // EVAC — run for the humvee
+      var dx=gpEvac.x-c.x; if(Math.abs(dx)<W*0.012){ c.aboard=true; c.gone=true; c.respawn=1e9; gpFx.push({kind:'tele',x:c.x,y:gpBodyY(c,0.5),t:0,life:0.4,col:'#7fe9ff'});
+        var o=gpCounts(); flash('CIVILIAN ABOARD — '+o.aboard+'/'+o.cT,'#7fe9ff',0.9); sfxT('pickup',0.2,0.4); return; }
+      c.x+=Math.sign(dx)*W*0.06*dt; c.flipX=dx<0; return; }
+    var th=null, td=W*0.075; for(var q=0;q<targets.length;q++){ var gq=targets[q]; if(gq.kind!=='gnome'||gq.gone||gq.dieT>0||gq.lifting||gq.cheer) continue; var dq=Math.abs(gq.x-c.x); if(dq<td){ td=dq; th=gq; } }
+    if(th){ var away=(c.x>=th.x?1:-1); c.x=clamp(c.x+away*W*0.055*dt, W*0.02, W*0.40); c.flipX=away<0; c.fleeing=true; return; }   // a gnome on them: RUN (toward the soldiers)
+    if(c.homeX==null) c.homeX=c.x; if(c.fleeing && Math.abs(c.x-c.homeX)>W*0.004){ var hd=c.homeX-c.x; c.x+=Math.sign(hd)*Math.min(Math.abs(hd),W*0.02*dt); c.flipX=hd<0; return; }
+    c.fleeing=false; c.flipX=(Math.sin(clock*0.7+c.x)>0.6);        // cowering by the barracks, glancing around
+    return; }
+  if(c.dkind==='cover' && c.aa && c.hp>0 && !c.captured && gpPhase>=2){   // the AA gun levels its barrels at the armour
+    c.fireCd-=dt; if(c.fireCd<=0){ var best=null, bd=W*0.5;
+      for(var i=0;i<targets.length;i++){ var g=targets[i]; if(g.gone||g.kind!=='gnome'||g.dieT>0||g.lifting||g.cheer||g.x>W) continue;
+        var pr=(g.armor||g.veh||g.u.ai==='mortar')?0.25:1, d2=Math.abs(g.x-c.x)*pr; if(d2<bd){ bd=d2; best=g; } }
+      if(best){ c.fireCd=2.4; var mx=c.x+gpHalfW(c)*0.8*(best.x>c.x?1:-1), my=gpBodyY(c,0.8);
+        gpShot('cannon',mx,my,best.x,gpBodyY(best,0.4),W*1.4,{side:'us',tgt:best,dmg:best.armor?2.5:2,src:'aa',col:'#ffd27a'}); gpMuzzle(mx,my,'#ffb066'); sfxT('rocket',0.3,0.25); gpAtk('aa'); }
+      else c.fireCd=0.6; } }
+  if(c.dkind==='evac'){
+    if(c.st==='in'){ var d3=c.tx-c.x; c.x+=Math.sign(d3)*Math.min(Math.abs(d3),W*0.14*dt); c.flipX=false;
+      if(Math.abs(d3)<2){ c.st='load'; c.loadT=0; var civs=gpPeople().filter(function(p){return p.dkind==='civilian';}).sort(function(a,b){return a.x-b.x;});
+        for(var k=0;k<civs.length;k++) civs[k].boardOrder=k; flash('CONVOY IN — CIVILIANS, MOVE!','#7fe9ff',1.2); } }
+    else if(c.st==='load'){ c.loadT+=dt; if(gpEl()>=GP_LEN-3.5){ c.st='out'; flash('CONVOY ROLLING OUT','#7fe9ff',1.2); } }
+    else if(c.st==='out'){ c.x-=W*0.16*dt; c.flipX=true; if(c.x<-W*0.12){ c.gone=true; c.respawn=1e9; } } }
+}
+// ---- the gnomes ----
+function gpGnomeTarget(g){ var best=null, bd=1e9;
+  for(var i=0;i<targets.length;i++){ var c=targets[i]; if(!gpIsPerson(c)||c.gone||c.vanish>0) continue; var d=Math.abs(c.x-g.x); if(d<bd){ bd=d; best=c; } }
+  return best; }
+function gpStructTarget(g,maxD){ var best=null, bd=maxD;
+  for(var i=0;i<targets.length;i++){ var c=targets[i]; if(c.gone||c.hp<=0||c.captured||!(c.dkind==='cover'||c.dkind==='gate')) continue;
+    var d=Math.abs(c.x-g.x); if(d<bd){ bd=d; best=c; } }
+  return best; }
+function gpGateBlocks(g){ return gpGate && gpGate.hp>0 && g.x>W*GP_GATE_X-2; }
+function gpAdvance(g,destX,stop,dt){ var d=destX-g.x, s=(d>=0?1:-1); if(Math.abs(d)<=stop){ g.face=s; return false; }
+  var nx=g.x+s*Math.min(Math.abs(d)-stop, g.u.spd*W*dt*GP_SURGE[gpPhase]);
+  if(gpGateBlocks(g)) nx=Math.max(nx, W*(GP_GATE_X+0.012+g.stopJ));   // the gate holds them on the wire
+  var moved=Math.abs(nx-g.x)>0.01; g.x=nx; g.face=s; return moved; }
+function gpWalkSprite(g,moving){ var u=g.u; if(g.poseT>0 && u.pose && u.pose.atk) return u.pose.atk;
+  if(moving && u.pose && u.pose.walk && Math.floor(clock*5+g.ph)%2) return u.pose.walk; return u.sprite; }
+function gpGnomeShot(g,tgt){ var u=g.u, hit=Math.random()<u.acc, hh=H*u.h*zdS(g), mx=g.x+g.face*hh*0.6, my=gpBodyY(g,0.55);
+  gpShot('bullet', mx, my, tgt.x+(hit?0:rnd(-0.015,0.015)*W), gpBodyY(tgt,0.5)+(hit?0:rnd(-10,10)), W*1.3, {side:'gn', tgt:hit?tgt:null, dmg:u.dmg, dk:'direct', col:'#ff9d5a', src:g.unit});
+  gpMuzzle(mx,my,'#ffb070'); g.poseT=0.2; gpAtk(g.unit); sfxT('deflect',0.2,0.06); }
+function gpFlameTick(g){ var u=g.u, reach=u.range*W*1.15, x0=g.x;
+  for(var i=0;i<targets.length;i++){ var c=targets[i]; if(c.gone||c.kind!=='defender'||c.dkind==='evac'||c.dkind==='banner') continue;
+    var dx=(c.x-x0)*g.face, half=(c.dkind==='cover'||c.dkind==='gate')?gpHalfW(c):0;
+    if(dx>-half && dx-half<reach){ gpHurt(c, u.dmg, 'fire', true, 'flame'); if(gpIsPerson(c)) c.burnT=Math.max(c.burnT||0,u.burn); } } }
+function gpGnome(g,dt){
+  var u=g.u; if(g.hitT>0) g.hitT-=dt;
+  if(g.dieT>0){ g.dieT-=dt; if(g.dieT<=0){ g.gone=true; g.respawn=1e9; } return; }
+  if(g.lifting && g.lock>0) return;
+  g.fireCd-=dt; if(g.poseT>0) g.poseT-=dt; if(g.shieldT>0) g.shieldT-=dt; g.hexCd-=dt;
+  var moving=false, tgt=gpGnomeTarget(g), gx=W*GP_GATE_X;
+  if(u.ai==='cheer'){ g.x=g.homeX+Math.sin(clock*1.3+g.homeX)*W*0.012; g.face=-1; g.flipX=true; return; }
+  if(u.ai==='melee'){
+    if(g.climbT>0){ g.climbT-=dt; g.sprite='gn_climb'; g.flipX=false; g.face=-1; if(g.climbT<=0){ g.x=gx-W*0.02; gpAtk('climb'); flash('ONE\'S OVER THE WIRE!','#ff9d3a',0.8); } return; }
+    var atGate=gpGateBlocks(g) && g.x<=W*(GP_GATE_X+0.016+g.stopJ);
+    if(atGate){ g.face=-1;
+      if(u.climb && !g.climbTried){ g.climbTried=true; if(g.climber || Math.random()<u.climb){ g.climbT=3.2; g.x=gx+W*0.004; return; } }
+      if(g.fireCd<=0){ g.fireCd=u.cd; gpHurt(gpGate,u.dmg*1.5,'melee'); g.poseT=0.3; gpAtk('gate'); addFx(gx+W*0.01,gpBodyY(gpGate,0.5),'spark','#ffd27a',0.2); } }
+    else if(tgt){ var reach=u.reach*W;
+      if(Math.abs(tgt.x-g.x)>reach) moving=gpAdvance(g,tgt.x,reach*0.85,dt);
+      else { g.face=tgt.x>=g.x?1:-1; if(g.fireCd<=0){ g.fireCd=u.cd*rnd(0.85,1.15); gpHurt(tgt,u.dmg,'melee',false,g.unit); g.poseT=0.3; gpAtk(g.unit==='mower'?'mower':'slash'); } } }
+  }
+  else if(u.ai==='gun'){
+    if(tgt){ var rng=u.range*W, d=Math.abs(tgt.x-g.x);
+      if(d>rng*g.stopK) moving=gpAdvance(g,tgt.x,rng*g.stopK,dt);
+      d=Math.abs(tgt.x-g.x);
+      if(d<=rng){ g.face=tgt.x>=g.x?1:-1;
+        if(g.burst>0){ g.burstT-=dt; if(g.burstT<=0){ g.burst--; g.burstT=0.11; gpGnomeShot(g,tgt); } }
+        else if(g.fireCd<=0){ g.fireCd=u.cd*rnd(0.85,1.2); g.burst=u.burst; g.burstT=0; } }
+      else if(gpGateBlocks(g) && g.fireCd<=0 && !moving){ g.fireCd=u.cd*1.5; gpHurt(gpGate,0.35,'direct'); g.poseT=0.2; gpAtk('gate'); } }   // nothing in range from the wire: chip the gate
+  }
+  else if(u.ai==='flame'){
+    if(g.flameT>0){ g.flameT-=dt; g.flameTick-=dt; g.sprite=u.pose.atk; g.flipX=g.face<0;
+      var hh=H*u.h*zdS(g), nx=g.x+g.face*hh*1.05, ny=gpBodyY(g,0.5);
+      for(var f=0;f<3;f++) gpFx.push({kind:'flame',x:nx,y:ny+rnd(-3,3),vx:g.face*W*rnd(0.07,0.11),vy:rnd(-18,10),t:0,life:rnd(0.45,0.7),r:rnd(4,8)});
+      if(g.flameTick<=0){ g.flameTick=0.2; gpFlameTick(g); }
+      return; }
+    var ft=null, fd=1e9;
+    if(gpGateBlocks(g)){ ft=gpGate; fd=Math.abs(g.x-gx); } else if(tgt){ ft=tgt; fd=Math.abs(tgt.x-g.x); }
+    if(ft){ var rr=u.range*W*0.9;
+      if(fd>rr && !(ft===gpGate && g.x<=W*(GP_GATE_X+0.016+g.stopJ))) moving=gpAdvance(g,ft.x,rr,dt);
+      else { g.face=ft.x>=g.x?1:-1; if(ft===gpGate) g.face=-1; if(g.fireCd<=0){ g.fireCd=u.cd; g.flameT=1.3; g.flameTick=0; gpAtk('flame'); sfxT('rocket',0.4,0.2); } } }
+  }
+  else if(u.ai==='wizard'){
+    if(g.castT>0){ g.castT-=dt; g.sprite=g.castKind==='hex'?u.pose.hex:(g.castT>0.3?u.pose.aim:u.pose.atk); g.flipX=g.face<0;   // the hex: he levels the blunderbuss at the SAUCER
+      if(!g.castFired && g.castT<=0.3){ g.castFired=true; var hh2=H*u.h*zdS(g), sx=g.x+g.face*hh2*0.35, sy=gpBodyY(g,0.98);
+        if(g.castKind==='hex'){ gpShot('hex',sx,sy,P.x,P.y,1,{T:9}); gpAtk('hex'); sfxT('warble',0.3,0.3); }
+        else if(g.castKind==='shield'){ var n=0; for(var i=0;i<targets.length && n<4;i++){ var o=targets[i]; if(o.kind==='gnome' && !o.gone && !o.dieT && !o.cheer && Math.abs(o.x-g.x)<W*0.09){ o.shieldT=4.0; n++; } }
+          gpFx.push({kind:'tele',x:g.x,y:gpBodyY(g,0.5),t:0,life:0.5,col:'#8fd8ff'}); gpAtk('shield'); }
+        else if(g.castTgt && !g.castTgt.gone){ gpShot('orb',sx,sy,g.castTgt.x,groundY()+4,W*0.55,{side:'gn',arc:H*0.14,blast:0.03,dmg:u.dmg,sdmg:2,dk:'magic',src:'wizard'}); gpAtk('bolt'); } }
+      return; }
+    if(planting && P.stun<=0 && g.hexCd<=0 && Math.abs(P.x-g.x)<W*0.22 && g.x<W){ g.hexCd=6.5; g.castT=0.65; g.castKind='hex'; g.castFired=false; g.face=P.x>=g.x?1:-1; return; }   // the beam is on his kin — hex the saucer
+    if(tgt){ var wr=u.range*W*g.stopK, wd=Math.abs(tgt.x-g.x);
+      if(wd>wr) moving=gpAdvance(g,tgt.x,wr,dt);
+      else if(g.fireCd<=0){ g.fireCd=u.cd*rnd(0.9,1.2); g.casts++; g.face=tgt.x>=g.x?1:-1; g.castFired=false; g.castT=0.8; g.castTgt=tgt;
+        var mates=0; for(var j=0;j<targets.length;j++){ var m=targets[j]; if(m!==g && m.kind==='gnome' && !m.gone && !m.dieT && !m.cheer && Math.abs(m.x-g.x)<W*0.09) mates++; }
+        g.castKind=(g.casts%3===0 && mates>=2)?'shield':'bolt'; } }
+  }
+  else if(u.ai==='mortar'){
+    var home=W*0.925; if(g.x>home) moving=gpAdvance(g,home,0,dt);
+    else if(tgt && g.fireCd<=0 && tgt.x<g.x){ g.fireCd=u.cd*rnd(0.9,1.15); var lx=tgt.x+rnd(-0.02,0.02)*W;
+      gpShot('shell', g.x-W*0.01, gpBodyY(g,0.8), lx, groundY()+4, 1, {T:1.9, arc:H*0.55, side:'gn', blast:0.045, dmg:u.dmg, sdmg:4, dk:'blast', src:'mortar'});
+      gpMuzzle(g.x-W*0.01,gpBodyY(g,0.8),'#ffd27a'); g.poseT=0.2; gpAtk('mortar'); sfxT('rocket',0.5,0.22); }
+    g.face=-1;
+  }
+  else if(u.ai==='rpg'){
+    var st=null; if(gpGateBlocks(g)) st=gpGate; else st=gpStructTarget(g,W*0.45); if(!st) st=tgt;
+    if(st){ var rr2=u.range*W*g.stopK, sd=Math.abs(st.x-g.x);
+      if(sd>rr2) moving=gpAdvance(g,st.x,rr2,dt);
+      else if(g.fireCd<=0){ g.fireCd=u.cd*rnd(0.9,1.2); g.face=st.x>=g.x?1:-1; var hh3=H*u.h*zdS(g), rx=g.x+g.face*hh3*0.8, ry=gpBodyY(g,0.6);
+        gpShot('rocket', rx, ry, st.x, gpBodyY(st,0.5), W*0.55, {side:'gn', blast:0.03, dmg:1.2, sdmg:u.dmg, dk:'blast', src:'rpg'}); gpMuzzle(rx,ry,'#ffb03a'); g.poseT=0.35; gpAtk('rpg'); sfxT('rocket',0.3,0.35); } }
+  }
+  else if(u.ai==='cart'){
+    if(!g.rammed){ var ct=gpStructTarget(g,W*2); if(!ct || (tgt && Math.abs(tgt.x-g.x)<Math.abs(ct.x-g.x))) ct=tgt;
+      if(ct){ var reach2=u.reach*W+(ct.dkind?(gpHalfW(ct)*(ct.dkind==='cover'||ct.dkind==='gate'?0.8:0)):0);
+        if(Math.abs(ct.x-g.x)>reach2) moving=gpAdvance(g,ct.x,reach2,dt);
+        else { g.rammed=true; gpHurt(ct,u.dmg,'melee',false,'cart'); for(var r2=0;r2<2;r2++) gpSpawn('knife', g.x+W*0.012*(r2+1)).face=-1;
+          gpAtk('ram'); flash('GOLF CART RAMMED THE LINE — RIDERS OFF!','#ff9d3a',1.1); shake=Math.max(shake,8); sfxT('hit',0.2,0.4); g.face=1; } } }
+    else { g.x+=W*u.spd*dt*g.face; moving=true; if(g.x>W*1.1){ g.gone=true; g.respawn=1e9; } }
+  }
+  else if(u.ai==='armor'){
+    var bt=gpStructTarget(g,W*u.range); if(!bt && tgt && Math.abs(tgt.x-g.x)<W*u.range) bt=tgt;
+    if(!bt){ var dest=tgt?tgt.x:W*0.3; moving=gpAdvance(g,dest,W*u.range*0.9,dt); }
+    else if(g.fireCd<=0){ g.fireCd=u.cd*rnd(0.9,1.15); g.face=bt.x>=g.x?1:-1; var hh4=H*u.h*zdS(g), bx=g.x+g.face*hh4*0.9, by=gpBodyY(g,0.62);
+      gpShot('cannon', bx, by, bt.x, gpBodyY(bt,0.45), W*1.3, {side:'gn', blast:0.035, dmg:u.dmg, sdmg:6, dk:'blast', col:'#ffd27a', src:'bradley'}); gpMuzzle(bx,by,'#ffd27a'); shake=Math.max(shake,4); gpAtk('cannon'); }
+  }
+  if(u.ai!=='flame' || g.flameT<=0){ if(u.ai!=='wizard' || g.castT<=0){ g.sprite=gpWalkSprite(g,moving); } }
+  if(u.ai==='gun' && u.pose && u.pose.aim && !moving && g.poseT<=0 && tgt && Math.abs(tgt.x-g.x)<=u.range*W) g.sprite=u.pose.aim;
+  g.flipX=g.face<0;
+}
+// ---- the step ----
+function gunpowderStep(dt){
+  if(!gpScoreSet){ gpScoreSet=true; gpScore0=score; }
+  if(targets.length>34){ var kept=[]; for(var i=0;i<targets.length;i++){ var c=targets[i]; if(!(c.gone && c.kind==='gnome')) kept.push(c); } targets=kept; }   // beamed / downed gnomes leave the list (a 170s mission spawns ~150)
+  var el=gpEl();
+  var want = el>=GP_PHASE_AT[3]?3 : el>=GP_PHASE_AT[2]?2 : (el>=GP_PHASE_AT[1] || (gpGate && gpGate.hp<=0))?1 : 0;
+  if(want>gpPhase){
+    if(gpPhase===0 && gpGate && gpGate.hp>0){ gpBlast(gpGate.x, W*0.03, 0.5, 999, 'blast'); flash('MORTARS ON THE GATE — IT\'S GONE!','#ff5d6c',1.6); }   // a held gate still falls at 55s: the structure is a MOVE, not a pass/fail
+    gpSetPhase(gpPhase+1); }
+  gpSetPieces();
+  if(el<GP_WAVES_STOP){ gpWaveT+=dt; var PH=GP_PHASES[gpPhase]; if(gpWaveT>=PH.every){ gpWaveT=0; spawnGnomeWave(PH.size); } }
+  if(gpBanT>0) gpBanT-=dt;
+  if(gpWarnT>0){ gpWarnT-=dt; if(chance(0.6)) gpFx.push({kind:'spark2',x:W*rnd(0.005,0.07),y:groundY()-H*rnd(0.01,0.06),t:0,life:0.3,col:'#ffd27a'}); }
+  for(var j=0;j<targets.length;j++){ var t2=targets[j]; if(t2.gone) continue; if(t2.kind==='gnome') gpGnome(t2,dt); else if(t2.kind==='defender') gpDefender(t2,dt); }
+  gpUpdateShots(dt);
+  for(var f=gpFx.length-1;f>=0;f--){ var e=gpFx[f]; e.t+=dt; if(e.vx){ e.x+=e.vx*dt; e.y+=(e.vy||0)*dt; } if(e.t>e.life) gpFx.splice(f,1); }
+  if(gpFx.length>260) gpFx.splice(0,gpFx.length-260);
+  for(var a=gpAmb.length-1;a>=0;a--){ var gs=gpAmb[a]; gs.x+=gs.vx*dt; gs.y+=gs.vy*dt; gs.vy+=H*0.004*dt; gs.f+=dt*9; if(gs.x<-W*0.1||gs.y<-H*0.1) gpAmb.splice(a,1); }
+  for(var k=0;k<targets.length;k++){ var d=targets[k]; if(d.vanish>0){ d.vanish-=dt; if(d.vanish<=0){ d.gone=true; d.respawn=1e9; addFx(d.x,gpBodyY(d,0.5),'boom','#ff7a3a',0.5); } } }
+  var o=gpCounts(); if(state==='play' && o.alive<GP_MUST_SAVE) gpFail(o);
+}
+function gpFail(o){ gpFell=true; state='gpfail'; gpFailT=0; idleT=0; planting=false; held={}; msg=''; msgT=0; gpStats.failAt=gpEl();
+  gpFailWhy='ONLY '+o.alive+' LEFT ALIVE — YOU HAD TO SAVE '+GP_MUST_SAVE; sfx('denied',0.6); shake=12; }
+function gpWin(){ if(state!=='play') return; var o=gpCounts(), perfect=(o.alive>=o.total);
+  var bonus=o.s*GP_SAVE_SOLDIER+o.c*GP_SAVE_CIV+(perfect?BONUS_PERFECT:0); score+=bonus; gpWon=true;
+  gpTally={ s:o.s, sT:o.sT, c:o.c, cT:o.cT, w:o.w, beamed:gpStats.beamed, beamPts:gpStats.beamPts, line:gpStats.lineKills, bonus:bonus, perfect:perfect };
+  msg=''; msgT=0;
+  resKind='gunpowder'; resBonus=bonus; resPerfect=perfect; advanceSegment(); }
+function gpRetry(){ score=gpScore0; held={}; planting=false; sfx('launch',0.6); startGunpowder(false); }
+function gpExit(){ held={}; planting=false; if(soloStage){ backToFront(); return; } resKind='gunpowder'; resBonus=0; resPerfect=false; gpTally=null; advanceSegment(); }
+// ---- the player bot (dev ?bot + the headless battery): skill = beam speed + target sense ----
+function gpThreat(g){ if(g.gone||g.dieT>0||g.cheer||g.protect||g.x>W*0.99||g.x<W*0.01) return -1;
+  var u=g.u, near=1e9, ps=gpPeople(); for(var i=0;i<ps.length;i++){ var d=Math.abs(ps[i].x-g.x); if(d<near) near=d; }
+  var s=({flame:3,wizard:3,mortar:2.6,armor:2.6,rpg:2.2,cart:2.4,gun:1.2,melee:1.0})[u.ai]||1;
+  if(u.ai==='gun' && g.unit==='rifle') s+=0.6; if(g.climbT>0) s+=2.5; if(g.lifting) s+=4;
+  return s+clamp(1-near/(W*0.3),0,1)*3; }
+var gpBot={tgt:null, wait:0};
+function gpBotStep(dt,sk){
+  if(state!=='play'||!P) return;
+  if(sk.warble){ for(var i=0;i<gpShots.length;i++){ var s=gpShots[i]; if(s.kind==='hex' && Math.hypot(s.x-P.x,s.y-P.y)<W*0.09 && clock>P.warbleCd){ P.warbleU=clock+0.6; P.warbleCd=clock+2; planting=false; break; } } }
+  var b=gpBot; if(b.tgt && (b.tgt.gone||b.tgt.dieT>0||b.tgt.protect)) b.tgt=null;
+  if(!b.tgt){ if(b.wait>0){ b.wait-=dt; planting=false; return; } b.wait=sk.react||0;
+    var best=null, bs=-1e9; for(var j=0;j<targets.length;j++){ var g=targets[j]; if(g.kind!=='gnome') continue; var th=gpThreat(g); if(th<0) continue;
+      var sc=sk.smart? th-Math.abs(g.x-P.x)/(W*0.35) : -Math.abs(g.x-P.x)/W+Math.random()*0.6; if(sc>bs){ bs=sc; best=g; } }
+    b.tgt=best; }
+  if(!b.tgt){ planting=false; return; }
+  var dx=b.tgt.x-P.x, bandMid=(band().top+band().bot)/2;
+  if(Math.abs(dx)<W*0.025 && P.stun<=0){ planting=true; P.tx=P.x; }
+  else { planting=false; P.tx=clamp(P.tx+clamp(dx,-sk.speed*W*dt,sk.speed*W*dt),W*0.05,W*0.95); }
+  P.ty=bandMid+H*0.08; }
+var GP_SKILL={ idle:null, lazy:{speed:0.22,react:1.4,smart:false,warble:false}, competent:{speed:0.36,react:0.25,smart:true,warble:true}, expert:{speed:0.5,react:0.1,smart:true,warble:true} };
 // BONUS sweep stage — no meter/jets/AA/run; beam the loot for points, clear it all = PERFECT.
 function startBonus(bi){
   if(bi===2){ startChampionLap(); return; }               // #1 CHAMPION LAP (CHEATS vault only — not in the arcade schedule)
-  var crab=(bi%2===1); mode='bonus'; bonusKind=crab?'crab':'backyard'; clock=0;
+  var crab=(bi%2===1); if(crab){ startClaw(false); return; }   // CLAW & ORDER is its own hostile mission now (startClaw) — the hull carries in
+  claw=null; mode='bonus'; bonusKind=crab?'crab':'backyard'; clock=0;
   P=newPlayer(); R=newRival(); targets=[]; jets=[]; shots=[]; fx=[]; shake=0; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0;
   meter=0; stageClock=BONUS_SECONDS; levelLen=BONUS_SECONDS; runActive=false; daveSpawned=true; moSpawned=true; superT=0;
-  // CLAW & ORDER (crab feast, waterfront) vs DAVE'S BACKYARD (homestead) — layered w/ a deep house behind
-  var bp = crab? [ {s:'it_house_11',d:0.5,sc:0.8}, {s:'tree',d:0.62}, {s:'it_bldg6',d:1.0}, {s:'tree',d:0.95} ]   // (water tower dropped — rural farm stretches only)
-               : [ {s:'it_house_3',d:0.5,sc:0.82}, {s:'tree',d:0.6}, {s:'it_house_8',d:1.0}, {s:'barn',d:0.9}, {s:'tree',d:1.0} ];
-  buildScenery(bp, 0.06, 0.205);
+  // DAVE'S BACKYARD — still the 20s sweep-for-PERFECT (CLAW & ORDER branched off above). The yard: BACKYARD_SCENE.
+  buildScenery([],0,0,[]);                                      // rolls the yard moon + resets the pools; the yard itself is COMPOSED, not dealt
+  scenery=BACKYARD_SCENE.map(function(p){ return { x:W*p.x, s:p.s, sc:p.sc||1, d:p.d, fl:!!p.fl }; }); scenery.sort(function(a,b){return a.d-b.d;});
   var loot=crab?CRAB_LOOT:BACKYARD_LOOT, boss=crab?['the_bull',1000,1.25]:['dave',1000,1.0];
   for(var i=0;i<loot.length;i++){ var it=loot[i]; targets.push(lootTarget(it[0],it[1],it[2], W*(0.08+0.84*(i+0.5)/loot.length), false)); }
   targets.push(lootTarget(boss[0],boss[1],boss[2], W*0.5, true));
@@ -972,7 +1324,7 @@ function startBonus(bi){
   sayLater(pick(crab?CRAB_FEAST_BARKS:BACKYARD_START_BARKS),'#ffd23f',2.2);
 }
 // #1 CHAMPION LAP — the calm victory pasture: a sparse peaceful field, no army, high-value herd + Dave hands over the crown.
-function startChampionLap(){ mode='bonus'; bonusKind='champ'; clock=0;   // 'champ' -> HUD reads CHAMPION LAP; music falls through to the calm backyard bed
+function startChampionLap(){ claw=null; mode='bonus'; bonusKind='champ'; clock=0;   // 'champ' -> HUD reads CHAMPION LAP; music falls through to the calm backyard bed
   P=newPlayer(); R=newRival(); targets=[]; jets=[]; shots=[]; fx=[]; shake=0; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0;
   meter=0; stageClock=BONUS_SECONDS; levelLen=BONUS_SECONDS; runActive=false; daveSpawned=true; moSpawned=true; superT=0;
   // #1 CHAMPION LAP — calm victory pasture, layered homesteads (deep house → near house + barn + trees)
@@ -987,6 +1339,250 @@ function bossName(sp){ return sp==='the_bull'?'THE BULL' : sp==='drl_g'?'DR. L' 
 function lootTarget(sp,val,h,x,isBoss){
   return { kind:'loot', def:{ val:val, meter:0, lock:isBoss?1.3:0.8, wander:0 }, sprite:sp, lootH:h,
     x:x, y:groundY(), vx:0,vy:0, dir:1, lock:0, lifting:false, gone:false, isMo:false, isBoss:!!isBoss }; }
+/* ---------- CLAW & ORDER — the HOSTILE crab-feast bonus (REBUILT 2026-10-14) ----------
+   Joe: "a very hostile bonus level where if you are not careful you can risk or reward." The crab house on the bay is
+   mid-feast, and the dock SHOOTS BACK. How it plays (CLAW_LEN 105s, no sweep-for-PERFECT any more):
+     THE HOLD    every grab goes into your HOLD, not your score. It is only yours once you BANK it at THE DROP (the
+                 green ring over the water, top-left). The clock running out banks whatever you carry ("LAST CALL").
+     THE STREAK  grabs chained inside CLAW_CHAIN seconds multiply: x1, x2, x3, x4. A hit, a bank or a gap breaks it —
+                 so banking is insurance that COSTS you the streak.
+     THE DOCK    a greed meter. Every grab raises it (val/25; the rival's thefts count half), it cools slowly, and a floor
+                 creeps up with the clock. CALM -> SORE -> ANGRY -> RIOT brings more townsfolk out of the crab house
+                 (they WALK out of the door / off the pier — nothing appears without warning) and faster fire.
+                 Below RIOT they only shoot at THIEVES (a saucer carrying a hold or beaming their food); at RIOT they shoot
+                 at anything in the sky, plus the OLD BAY BARRAGE: every gun on the dock telegraphs, then fires together.
+     THE FIRE    every shot is TELEGRAPHED (CLAW_TEL ~1s: a "!" over the shooter + the aim line, aim LOCKED where you were
+                 when it started — move after the "!" and it misses). Rock-salt shotgun (3-pellet fan), thrown mallets
+                 (lobbed, they arc), flare gun (slow, bright). WARBLE deflects any of it; a deflected round that lands on a
+                 townie knocks his hat off (RETURN TO SENDER +250, he ducks for a few seconds — no-damage, comic).
+     THE RISK    the cheap stuff sits at the quiet end of the dock; the bushels / coolers / restocked platters are on the
+                 crab-house porch where the guns are; THE BULL (a #1 jimmy, 2000) comes out at CLAW_BULL_AT with THE OWNER.
+                 A hit costs REAL HULL (it carries into the next zone) and SPILLS a third of the hold into the bay.
+     THE FAIL    hull gone = RUN OFF THE DOCK: the hold is lost, what you banked is kept, NO ship is lost, and you limp into
+                 the next zone on a patched hull (CLAW_PATCH). In the arcade run there is NO retry — the gamble is the point.
+                 From the CHEATS vault (practice) BEAM retries, like THE GUNPOWDER HORROR.
+     BAIL        park in THE DROP with an empty hold and it counts you out: take the money and run, hull as it is.
+     PERFECT     bank THE BULL without taking a single hit: +BONUS_PERFECT.
+   Pure web build. The townsfolk are pixel stand-ins (farmer = shotgun, person = mallets, person_b = flare / the owner)
+   until the painted feast crowd lands — docs/ART_REQUESTS_1014.md §4. */
+var CLAW_LEN=105, CLAW_CHAIN=4.0, CLAW_MULT_MAX=4, CLAW_SPILL=0.34, CLAW_BULL_AT=58, CLAW_BULL_VAL=2000, CLAW_PATCH=34;
+var CLAW_TEL=1.0, CLAW_VOLLEY_TEL=1.25, CLAW_VOLLEY_EVERY=9.0, CLAW_RESTOCK_EVERY=8.0, CLAW_RETURN=250, CLAW_DUCK=3.5;
+var CLAW_ANGER={ grab:1/22, rival:0.2, decay:1.0, floor:45, bull:100, rivalBull:30 };   // floor = where the meter can't cool below by the horn
+var CLAW_LV=[ { name:'CALM',  col:'#9affc0', at:0,  cd:6.5, max:1 },     // cd = each gun's reload · max = rounds being telegraphed at once (barrage exempt)
+              { name:'SORE',  col:'#ffd23f', at:25, cd:5.2, max:1 },
+              { name:'ANGRY', col:'#ff9d3a', at:50, cd:4.2, max:2 },
+              { name:'RIOT',  col:'#ff5d6c', at:70, cd:3.8, max:2 } ];
+var CLAW_LV_BARKS=['', 'HON! GET MY MALLET!', 'SOMEBODY GET THE TWELVE-GAUGE — ROCK SALT, HON!', 'THE WHOLE DOCK\'S UP! OLD BAY BARRAGE!'];
+var CLAW_WEAPON={ salt:{ n:3, spread:0.13, speed:470, col:'#ffe2a0' }, mallet:{ n:1, speed:400, grav:300 }, flare:{ n:1, speed:290, col:'#ff6a4a' } };
+// THE FEAST CROWD — tier = the dock level that brings them out; x = their post; from = where they walk in from (the crab
+// house door at 0.68, or off the pier's left end). h = draw height (fraction of H) — a little over a Gunpowder civilian.
+var CLAW_DOOR=0.68;
+var CLAW_TOWNIES=[ { sp:'farmer',   w:'salt',   tier:0, x:0.600, from:CLAW_DOOR, h:0.070 },   // the brother-in-law with the rock salt
+                   { sp:'person_b', w:'flare',  tier:0, x:0.275, from:-0.04,     h:0.068 },   // the waterman, out on the pier — covers the quiet end (and the drop)
+                   { sp:'person',   w:'mallet', tier:1, x:0.745, from:CLAW_DOOR, h:0.068 },
+                   { sp:'person',   w:'mallet', tier:1, x:0.820, from:CLAW_DOOR, h:0.066 },
+                   { sp:'farmer',   w:'salt',   tier:2, x:0.880, from:CLAW_DOOR, h:0.070 },
+                   { sp:'person',   w:'mallet', tier:2, x:0.505, from:CLAW_DOOR, h:0.066 },   // pushes up the dock toward the quiet end
+                   { sp:'person_b', w:'flare',  tier:3, x:0.935, from:CLAW_DOOR, h:0.068 } ];
+// THE SPREAD — cheap at the quiet (left) end, rich on the porch under the guns. [sprite, value, size-vs-cow, x]
+var CLAW_FEAST=[ ['lemons',100,0.55,0.10], ['old_bay',150,0.55,0.15], ['mallet',100,0.7,0.20], ['corn',150,0.7,0.33],
+                 ['lager',150,0.75,0.38], ['crab',200,0.85,0.44], ['crab_b',200,0.8,0.49], ['bushel',250,0.95,0.56],
+                 ['crab',200,0.85,0.63], ['tin_cooler',300,0.85,0.71], ['crab_b',200,0.8,0.78], ['bushel',250,0.95,0.86] ];
+var CLAW_RESTOCK=[ ['crab',300,0.85], ['crab_b',300,0.8], ['bushel',400,0.95], ['tin_cooler',450,0.85], ['crab',300,0.85] ];   // FRESH off the steamer = worth 1.5x — the porch pays
+// THE DOCK (scenery, fixed composition — the bay horizon strip + dock ground are drawn by drawBG/drawGround)
+var CLAW_SCENE=[ { s:'fishing_pier', x:0.255, d:0.62 }, { s:'crab_pots', x:0.43, d:0.72, sc:0.62 },
+                 { s:'crab_house', x:CLAW_DOOR, d:1.0 }, { s:'crab_pots', x:0.925, d:0.96, sc:0.55 } ];
+var CLAW_DROP={ x:0.065, dy:0.075, r:0.055 };    // the bank ring: x (of W), dy below band().top (of H), r = radius (of W)
+var claw=null, clawScore0=0, clawHp0=100, clawFailT=0, clawTally=null;
+function clawOn(){ return mode==='bonus' && bonusKind==='crab' && !!claw; }
+function clawEl(){ return CLAW_LEN-stageClock; }
+function clawDrop(){ return { x:W*CLAW_DROP.x, y:band().top+H*CLAW_DROP.dy, r:W*CLAW_DROP.r }; }
+function clawInDrop(s){ var d=clawDrop(); return !!s && Math.hypot(s.x-d.x, s.y-d.y)<d.r; }
+function clawMuzzle(c){ var h=H*c.drawH*zdS(c); return { x:c.x+(c.flipX?-1:1)*h*0.30, y:groundY()+6+zdY(c)-h*0.70 }; }
+function startClaw(fresh){
+  mode='bonus'; bonusKind='crab'; clock=0; if(fresh===true){ hp=maxHP; }
+  P=newPlayer(); R=newRival(); targets=[]; jets=[]; shots=[]; fx=[]; shake=0; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0;
+  meter=0; stageClock=CLAW_LEN; levelLen=CLAW_LEN; runActive=false; daveSpawned=true; moSpawned=true; superT=0;
+  clawScore0=score; clawHp0=hp; clawFailT=0; clawTally=null;
+  claw={ hold:0, holdN:0, banked:0, bankN:0, grabs:0, chain:0, lastGrab:-99, best:1, anger:0, lv:0, hits:0, spilled:0, lost:0,
+         tel:[], pend:[], fx:[], restockT:0, volleyT:CLAW_VOLLEY_EVERY*0.6, dropT:0, bailT:0, outcome:null,
+         bull:null, owner:null, bullHeld:false, bullBanked:false, bullBy:null, barrageSeen:false, flashLv:0,
+         st:{ tel:0, shots:0, volleys:0, kinds:{}, minTel:99, atP:0, hitsP:0, hitsR:0, returns:0, restocks:0, holdMax:0, banks:0, firstLv:[0,null,null,null] } };
+  buildScenery([],0,0,[]);                                          // rolls the bay moon + resets the scenery pools
+  scenery=CLAW_SCENE.map(function(p){ return { x:W*p.x, s:p.s, sc:p.sc||1, d:p.d, fl:false }; }); scenery.sort(function(a,b){return a.d-b.d;});
+  for(var i=0;i<CLAW_FEAST.length;i++){ var f=CLAW_FEAST[i], lt=lootTarget(f[0],f[1],f[2], W*f[3], false); lt.zd=0.16; targets.push(lt); }
+  for(var j=0;j<CLAW_TOWNIES.length;j++){ var T=CLAW_TOWNIES[j], tw=clawTownie(T); if(T.tier===0){ tw.x=W*T.x; tw.st='post'; tw.gone=false; } targets.push(tw); }
+  state='play'; flash('CLAW & ORDER — STEAL THE FEAST, BANK IT AT THE DROP','#ffd23f',2.4);
+  sayLater(pick(CRAB_FEAST_BARKS),'#ffd23f',2.6);
+}
+function clawTownie(T){
+  return { kind:'townie', protect:true, def:{val:0,meter:0,lock:1,wander:0}, sprite:T.sp, w:T.w, tier:T.tier, post:W*T.x, from:W*T.from,
+    x:W*T.from, y:groundY(), vx:0,vy:0, dir:1, flipX:false, lock:0, lifting:false, gone:true, respawn:1e9, zd:0.05, drawH:T.h, noPips:true,
+    st:'in', fireCd:rnd(1.2,2.6), duckT:0, hitT:0 }; }
+function clawLevel(a){ return a>=CLAW_LV[3].at?3 : a>=CLAW_LV[2].at?2 : a>=CLAW_LV[1].at?1 : 0; }
+function clawThief(s){
+  if(!s) return false;
+  var beaming = s.lock && !s.lock.gone && s.lock.kind==='loot';
+  return s===P ? (claw.hold>0 || !!beaming) : ((s.thiefU||0)>clawEl() || !!beaming); }
+function clawPickTarget(){
+  var riot=claw.lv>=3, p=P && (riot || clawThief(P)), r=R && R.stun<=0 && (riot || clawThief(R));
+  if(p && r) return Math.random()<0.65?P:R; return p?P : r?R : null; }
+function clawTelegraph(c,tgt,volley,spread){
+  var m=clawMuzzle(c), ay=tgt.y+(spread?rnd(-H*0.02,H*0.02):0), ax=tgt.x+(spread||0);
+  claw.tel.push({ who:c, tgt:tgt, ax:ax, ay:ay, t:0, T:volley?CLAW_VOLLEY_TEL:CLAW_TEL, volley:!!volley, mx:m.x, my:m.y });
+  claw.st.tel++; if(tgt===P) claw.st.atP++; c.aimT=volley?CLAW_VOLLEY_TEL:CLAW_TEL; }
+function clawFire(e){
+  var c=e.who; if(!c || c.st!=='post' || c.duckT>0) return;
+  var m=clawMuzzle(c), Wp=CLAW_WEAPON[c.w], dx=e.ax-m.x, dy=e.ay-m.y, L=Math.hypot(dx,dy)||1;
+  claw.st.minTel=Math.min(claw.st.minTel, e.t); claw.st.kinds[c.w]=(claw.st.kinds[c.w]||0)+1;
+  if(c.w==='mallet'){ var T=clamp(L/Wp.speed,0.55,1.35), vx=dx/T, vy=dy/T-0.5*Wp.grav*T;
+    shoot(m.x,m.y,vx,vy,'mallet','#c8a27a'); var s=shots[shots.length-1]; s.grav=Wp.grav; s.claw=true; s.life=2.6; s.tgt=e.tgt; s.ax=e.ax; s.ay=e.ay; claw.st.shots++; sfxT('deflect',0.2,0.25); }
+  else for(var k=0;k<Wp.n;k++){ var a=Math.atan2(dy,dx)+(Wp.n>1?(k-(Wp.n-1)/2)*Wp.spread:0)+rnd(-0.02,0.02), v=Wp.speed*rnd(0.95,1.05);
+    shoot(m.x,m.y,Math.cos(a)*v,Math.sin(a)*v, c.w, Wp.col); var s2=shots[shots.length-1]; s2.claw=true; s2.life=3.2; s2.tgt=e.tgt; s2.ax=e.ax; s2.ay=e.ay; claw.st.shots++; }
+  if(c.w==='salt') sfxT('rocket',0.12,0.30); else if(c.w==='flare') sfxT('rocket',0.2,0.22);
+  addFx(m.x,m.y,'spark',c.w==='flare'?'#ff6a4a':'#ffe7a0',0.22); c.poseT=0.3;
+}
+// the hat comes off: a WARBLE ricochet that drops onto a townie (called from the shots loop)
+function clawRicochet(sh){
+  for(var i=0;i<targets.length;i++){ var c=targets[i]; if(c.kind!=='townie' || c.st!=='post' || c.duckT>0) continue;
+    var hh=H*c.drawH*zdS(c), cy=groundY()+6-hh*0.55;
+    if(Math.abs(sh.x-c.x)<hh*0.45 && Math.abs(sh.y-cy)<hh*0.6){
+      c.duckT=CLAW_DUCK; c.hitT=0.3; claw.st.returns++; score+=CLAW_RETURN;
+      fx.push({x:c.x,y:cy-hh*0.3,kind:'pts',col:'#bfefff',t:0,life:0.95,val:CLAW_RETURN,big:false});
+      claw.fx.push({kind:'hat',x:c.x,y:cy-hh*0.45,vx:rnd(-60,60),vy:-220,t:0,life:1.2});
+      flash('RETURN TO SENDER  +'+CLAW_RETURN,'#bfefff',0.9); sfxT('deflect',0.2,0.6); return true; } }
+  return false; }
+function clawGrab(tg){
+  var el=clawEl(); claw.chain = (el-claw.lastGrab<=CLAW_CHAIN) ? claw.chain+1 : 1; claw.lastGrab=el;
+  var mult=Math.min(CLAW_MULT_MAX, claw.chain), pts=tg.def.val*mult; claw.best=Math.max(claw.best,mult);
+  claw.hold+=pts; claw.holdN++; claw.grabs++; claw.st.holdMax=Math.max(claw.st.holdMax,claw.hold);
+  claw.anger=clamp(claw.anger+Math.min(300,tg.def.val)*CLAW_ANGER.grab, 0, 100);   // a fresh platter pays more but riles no more than a cooler
+  if(tg===claw.bull){ claw.bullHeld=true; claw.bullBy='you'; claw.anger=CLAW_ANGER.bull; flash('THE BULL!  +'+pts+' — NOW GET IT HOME','#ffd23f',1.6); sayLater('THE OWNER: THAT WAS MY NUMBER-ONE JIMMY!','#ff9d3a',0.8); }
+  else flash('+'+pts+(mult>1?'  ×'+mult+' STREAK':'')+'  — IN THE HOLD', mult>1?'#ffd23f':'#9affc0', 0.7);
+  if(fx.length>=MAX_FX) fx.shift(); fx.push({x:P.x,y:P.y+SAUCER_W()*0.1,kind:'pts',col:mult>1?'#ffd23f':'#9affc0',t:0,life:0.95,val:pts,big:pts>=1000}); }
+function clawRivalGrab(tg){
+  claw.anger=clamp(claw.anger+Math.min(300,tg.def.val)*CLAW_ANGER.grab*CLAW_ANGER.rival, 0, 100); if(R) R.thiefU=clawEl()+3.0;
+  if(tg===claw.bull){ claw.bullBy='rival'; claw.anger=clamp(claw.anger+CLAW_ANGER.rivalBull,0,100); flash('THE RIVAL TOOK THE BULL!','#7fb0ff',1.4); } }
+function clawBank(){
+  var n=claw.hold; if(n<=0) return; score+=n; claw.banked+=n; claw.bankN++; claw.st.banks++; claw.hold=0; claw.holdN=0; claw.chain=0;
+  if(claw.bullHeld){ claw.bullHeld=false; claw.bullBanked=true; }
+  var d=clawDrop(); addFx(d.x,d.y,'snatch','#39ff14',0.6); fx.push({x:d.x,y:d.y,kind:'pts',col:'#39ff14',t:0,life:1.1,val:n,big:n>=1000});
+  flash('BANKED  +'+n+'  — STREAK RESET','#39ff14',1.2); sfx('pickup',0.5); }
+// a townie round lands on the player (routed here from hitPlayer, AFTER the warble / invuln checks)
+function clawHit(){
+  claw.hits++; claw.st.hitsP++; hp-=34; P.stun=0.9; P.invuln=1.8; shake=16; planting=false;
+  var sp=Math.round(claw.hold*CLAW_SPILL); claw.hold-=sp; claw.spilled+=sp; claw.chain=0;
+  addFx(P.x,P.y,'boom','#ff7a3a',0.6); sfx('hit',0.5);
+  if(sp>0){ for(var k=0;k<Math.min(3,1+(sp/400|0));k++) claw.fx.push({kind:'spill',sp:pick(['crab','crab_b','lager','old_bay']),x:P.x+rnd(-12,12),y:P.y+SAUCER_W()*0.15,vx:rnd(-90,90),vy:rnd(-140,-60),rot:0,vr:rnd(-7,7),t:0,life:1.6});
+    flash('HIT — SPILLED '+sp+' INTO THE BAY','#ff9d3a',1.1); }
+  else flash('HIT — HULL '+Math.max(0,Math.round(hp)),'#ff9d3a',0.9);
+  if(hp<=0) clawSink(); }
+function clawSink(){
+  claw.outcome='sunk'; claw.lost=claw.hold; claw.hold=0; claw.chain=0; if(claw.bullHeld){ claw.bullHeld=false; claw.bullBy='lost'; }
+  hp=CLAW_PATCH; state='clawfail'; clawFailT=0; idleT=0; planting=false; held={}; msg=''; msgT=0; sfx('denied',0.6); shake=14;
+  clawTally=clawMakeTally(); }
+function clawMakeTally(){ var perfect=(claw.outcome!=='sunk' && claw.bullBanked && claw.hits===0);
+  return { outcome:claw.outcome, banked:claw.banked, bankN:claw.bankN, grabs:claw.grabs, best:claw.best, hits:claw.hits, spilled:claw.spilled, lost:claw.lost,
+    bull:claw.bullBanked?'banked':claw.bullBy==='rival'?'rival':claw.bullBy==='lost'?'lost':claw.bull?'escaped':'never', perfect:perfect,
+    bonus:perfect?BONUS_PERFECT:0, returns:claw.st.returns, at:+clawEl().toFixed(1), lv:claw.lv }; }
+function clawEnd(kind){ if(state!=='play') return;
+  if(kind==='time' && claw.hold>0){ flash('LAST CALL — HOLD BANKED','#39ff14',1.2); clawBank(); }
+  claw.outcome=kind; clawTally=clawMakeTally(); if(clawTally.perfect) score+=BONUS_PERFECT;
+  resKind='claw'; resBonus=claw.banked+clawTally.bonus; resPerfect=clawTally.perfect; msg=''; msgT=0; planting=false; advanceSegment(); }
+function clawRetry(){ score=clawScore0; hp=clawHp0; held={}; planting=false; sfx('launch',0.6); startClaw(false); }   // vault practice only
+function clawLimpOn(){ held={}; planting=false;                     // the arcade run: no retry — keep what you banked, take the patched hull into the next zone
+  if(soloStage){ backToFront(); return; }
+  resKind='claw'; resBonus=claw?claw.banked:0; resPerfect=false; sfx('transition',0.55); resLast=(segIdx+1>=SCHEDULE.length); proceedSegment(); }
+// ---- the step ----
+function clawStep(dt){
+  var el=clawEl(), c, i;
+  if(el-claw.lastGrab>CLAW_CHAIN && claw.chain>0){ if(claw.chain>1) flash('STREAK OVER','#9c89c4',0.6); claw.chain=0; }
+  // THE DOCK: greed in, slow cool-off, a floor that creeps up with the clock
+  var floor=CLAW_ANGER.floor*clamp(el/CLAW_LEN,0,1);
+  claw.anger=clamp(Math.max(floor, claw.anger-CLAW_ANGER.decay*dt), 0, 100);
+  var lv=clawLevel(claw.anger); if(claw.bull && !claw.bull.gone) lv=Math.max(lv,2);   // the owner guarding the Bull keeps the porch hot
+  if(lv>claw.lv){ if(claw.st.firstLv[lv]==null) claw.st.firstLv[lv]=+el.toFixed(1);
+    if(lv>claw.flashLv){ claw.flashLv=lv; flash('THE DOCK IS '+CLAW_LV[lv].name+' — '+CLAW_LV_BARKS[lv], CLAW_LV[lv].col, 1.8); shake=Math.max(shake,4+lv*2); } }
+  claw.lv=lv;
+  // the crowd: walk out of the door / off the pier when your greed calls them, take a post, telegraph, fire
+  var live=0; for(i=0;i<claw.tel.length;i++) if(!claw.tel[i].volley) live++;
+  for(i=0;i<targets.length;i++){ c=targets[i]; if(c.kind!=='townie') continue;
+    if(c.hitT>0) c.hitT-=dt; if(c.poseT>0) c.poseT-=dt; if(c.aimT>0) c.aimT-=dt;
+    if(c.st==='in'){ if(c.tier<=lv || c===claw.owner){ c.st='walk'; c.x=c.from; c.gone=false; } else continue; }
+    if(c.st==='walk'){ var dx=c.post-c.x, sp=W*0.075*dt; if(Math.abs(dx)<=sp){ c.x=c.post; c.st='post'; c.fireCd=rnd(0.6,1.4); } else c.x+=dx>0?sp:-sp; c.flipX=dx<0; continue; }
+    var tg=(P && clawThief(P))?P:(R && clawThief(R))?R:P; if(tg) c.flipX = tg.x<c.x;
+    if(c.duckT>0){ c.duckT-=dt; continue; }
+    var active = c.tier<=lv || c===claw.owner;
+    if(!active) continue;
+    c.fireCd-=dt;
+    if(c.fireCd<=0){ var aimed=false;
+      for(var q=0;q<claw.tel.length;q++) if(claw.tel[q].who===c) aimed=true;
+      if(!aimed && live<CLAW_LV[lv].max){ var t2=clawPickTarget(); if(t2){ clawTelegraph(c,t2,false,0); live++; } }
+      c.fireCd=CLAW_LV[lv].cd*rnd(0.8,1.25); } }
+  // OLD BAY BARRAGE (RIOT): every posted gun telegraphs together, fanned around you — read the gaps or WARBLE
+  if(lv>=3){ claw.volleyT-=dt; if(claw.volleyT<=0){ claw.volleyT=CLAW_VOLLEY_EVERY*rnd(0.9,1.15); var n=0;
+      for(i=0;i<targets.length;i++){ c=targets[i]; if(c.kind!=='townie'||c.st!=='post'||c.duckT>0) continue; var tv=clawPickTarget()||P;
+        clawTelegraph(c,tv,true,(n%2?1:-1)*W*0.09*Math.ceil(n/2)); n++; }   // fanned 0.09W apart: real gaps wider than the saucer's hit radius
+      if(n){ claw.st.volleys++; if(!claw.barrageSeen){ claw.barrageSeen=true; flash('OLD BAY BARRAGE! — THREAD IT OR WARBLE','#ff5d6c',1.6); } } } }
+  for(i=claw.tel.length-1;i>=0;i--){ var e=claw.tel[i]; e.t+=dt; var m=e.who?clawMuzzle(e.who):null; if(m){ e.mx=m.x; e.my=m.y; }
+    if(!e.who || e.who.duckT>0){ claw.tel.splice(i,1); continue; }
+    if(e.t>=e.T){ clawFire(e); claw.tel.splice(i,1); } }
+  // THE KITCHEN keeps the porch stocked (steam puff first, then the platter) — the longer you stay, the more there is
+  if(el>8 && el<CLAW_LEN-6){ claw.restockT+=dt;
+    if(claw.restockT>=CLAW_RESTOCK_EVERY){ claw.restockT=0; var porch=0; for(i=0;i<targets.length;i++){ c=targets[i]; if(c.kind==='loot' && !c.gone && c.x>W*0.52) porch++; }
+      if(porch<6){ var it=pick(CLAW_RESTOCK); claw.pend.push({ x:W*rnd(0.55,0.90), at:el+1.3, it:it, t:0 }); if(chance(0.5)) flash('FRESH '+(it[0]==='bushel'?'BUSHEL':it[0]==='tin_cooler'?'COOLER':'CRABS')+' ON THE PORCH','#ffd23f',1.0); } } }
+  for(i=claw.pend.length-1;i>=0;i--){ var pd=claw.pend[i]; pd.t+=dt; if(el>=pd.at){ var lt=lootTarget(pd.it[0],pd.it[1],pd.it[2],pd.x,false); lt.zd=0.16; targets.push(lt); claw.st.restocks++; claw.pend.splice(i,1); } }
+  // THE BULL comes out with THE OWNER (he walks out of the door first — then the Bull goes down on the porch next to him)
+  if(!claw.owner && el>=CLAW_BULL_AT-4){ claw.owner=clawTownie({ sp:'person_b', w:'flare', tier:9, x:CLAW_DOOR-0.035, from:CLAW_DOOR, h:0.082 }); targets.push(claw.owner);
+    flash('THE OWNER IS BRINGIN\' OUT THE BULL — #1 JIMMY, '+CLAW_BULL_VAL,'#ffd23f',2.0); }
+  if(!claw.bull && el>=CLAW_BULL_AT){ claw.bull=lootTarget('the_bull',CLAW_BULL_VAL,1.25,W*(CLAW_DOOR-0.08),true); claw.bull.zd=0.2; claw.bull.guarded=true; targets.push(claw.bull);   // guarded = the rival leaves it alone: the Bull is YOUR gamble, nobody else's
+    claw.fx.push({kind:'steam',x:claw.bull.x,y:groundY()-10,t:0,life:1.2}); sayLater('THE OWNER: NOBODY TOUCHES THE BULL!','#ff9d3a',0.6); }
+  // THE DROP: bank on contact; park there empty-handed to BAIL
+  if(P && clawInDrop(P)){ if(claw.hold>0){ clawBank(); claw.dropT=0; claw.bailT=0; }
+    else if(el>6){ claw.dropT+=dt; if(claw.dropT>1.2){ claw.bailT+=dt; if(claw.bailT>=3.0){ flash('TOOK THE MONEY AND RAN','#39ff14',1.4); clawEnd('bail'); return; } } } }
+  else { claw.dropT=0; claw.bailT=0; }
+  for(i=claw.fx.length-1;i>=0;i--){ var f=claw.fx[i]; f.t+=dt; if(f.vx!=null){ f.x+=f.vx*dt; f.y+=f.vy*dt; f.vy+=420*dt; if(f.vr) f.rot+=f.vr*dt; } if(f.t>f.life) claw.fx.splice(i,1); }
+  if(stageClock<=0) clawEnd('time');
+}
+// ---- the scripted player (dev ?bot&policy=, and the headless battery) ----
+var CLAW_SKILL={ idle:null,
+  careful:  { speed:0.40, dodge:true,  warble:true,  greed:0.25, bankAt:700,  bankLv:2, bull:false, bail:true },
+  greedy:   { speed:0.42, dodge:true,  warble:true,  greed:1.0,  bankAt:2400, bankLv:9, bull:true,  bail:false, bankHurt:true, sober:true },   // sober = plays it safe on its last hit
+  sober:    { speed:0.40, dodge:true,  warble:true,  greed:0.25, bankAt:700,  bankLv:2, bull:false, bail:false },   // greedy on its last hit: plays it safe, but stays to the horn
+  reckless: { speed:0.42, dodge:false, warble:false, greed:1.0,  bankAt:1e9,  bankLv:9, bull:true,  bail:false } };
+var clawBot={ tgt:null, side:0, sideT:0 };
+function clawBotStep(dt,sk){
+  if(state!=='play'||!P||!claw||!sk) { planting=false; return; }
+  if(sk.sober && hp<=34) sk=CLAW_SKILL.sober;
+  var b=band(), mid=(b.top+b.bot)/2, el=clawEl(), i, d=clawDrop();
+  // 1) DODGE — a telegraph aimed near you that's about to go off, or a live round closing in
+  if(sk.dodge){ var threat=null;
+    for(i=0;i<claw.tel.length;i++){ var e=claw.tel[i]; if(e.tgt!==P) continue; if(e.T-e.t<0.45 && Math.hypot(e.ax-P.x,e.ay-P.y)<SAUCER_W()*0.9){ threat=e; break; } }
+    for(i=0;i<shots.length && !threat;i++){ var s0=shots[i]; if(s0.claw && !s0.harmless && s0.tgt===P && s0.t<1.4 && Math.hypot(s0.ax-P.x,s0.ay-P.y)<SAUCER_W()*0.9) threat=s0.t>0.5?{shot:s0}:{aim:s0}; }
+    for(i=0;i<shots.length && !threat;i++){ var s=shots[i]; if(!s.claw||s.harmless||s.tgt!==P) continue; var rx=P.x-s.x, ry=P.y-s.y, vv=s.vx*s.vx+s.vy*s.vy||1, tt=(rx*s.vx+ry*s.vy)/vv;
+      if(tt>0 && tt<0.4){ var cx=s.x+s.vx*tt-P.x, cy=s.y+s.vy*tt-P.y; if(Math.hypot(cx,cy)<SAUCER_W()*0.5) threat={shot:s}; } }
+    if(threat){ planting=false;
+      if(threat.shot && sk.warble && clock>P.warbleCd){ P.warbleU=clock+0.6; P.warbleCd=clock+2.0; return; }
+      if(clawBot.sideT<=0){ clawBot.side=(P.x<W*0.5?1:-1); clawBot.sideT=0.5; }
+      P.tx=clamp(P.tx+clawBot.side*sk.speed*W*dt*1.4,W*0.05,W*0.95); P.ty=clamp(P.ty-H*0.4*dt,b.top,b.bot); clawBot.sideT-=dt; return; } }
+  clawBot.sideT=0;
+  // 2) BANK (or bail) — head for the drop
+  var wantBank = claw.hold>0 && (claw.hold>=sk.bankAt || claw.lv>=sk.bankLv || (hp<=34 && (sk.bail||sk.bankHurt)) || claw.bullHeld && sk.bankLv<9);
+  var wantBail = sk.bail && claw.hold===0 && hp<=34 && el>30;
+  if(wantBank || wantBail){ planting=false; P.tx=clamp(P.tx+clamp(d.x-P.tx,-sk.speed*W*dt,sk.speed*W*dt),W*0.05,W*0.95); P.ty=clamp(P.ty+clamp(d.y-P.ty,-H*0.5*dt,H*0.5*dt),b.top,b.bot); return; }
+  // 3) HUNT — value vs heat (careful weighs the porch guns; greedy chases value + the Bull)
+  if(clawBot.tgt && (clawBot.tgt.gone || (clawBot.tgt.lifting && clawBot.tgt.owner===2))) clawBot.tgt=null;
+  if(!clawBot.tgt){ var best=null, bs=-1e9;
+    for(i=0;i<targets.length;i++){ var c=targets[i]; if(c.kind!=='loot'||c.gone) continue; if(c===claw.bull && !sk.bull) continue;
+      var heat=clamp((c.x/W-0.4)/0.5,0,1)*(0.3+0.7*claw.lv/3), sc=c.def.val/300*(sk.greed) - heat*(1-sk.greed)*2.2 - Math.abs(c.x-P.x)/(W*0.5);
+      if(sc>bs){ bs=sc; best=c; } }
+    clawBot.tgt=best; }
+  var tg=clawBot.tgt; if(!tg){ planting=false; P.tx+= (W*0.3-P.tx)*Math.min(1,dt); P.ty=mid; return; }
+  var dx=tg.x-P.x;
+  if(Math.abs(dx)<W*0.025 && P.stun<=0){ planting=true; P.tx=P.x; }
+  else { planting=false; P.tx=clamp(P.tx+clamp(dx,-sk.speed*W*dt,sk.speed*W*dt),W*0.05,W*0.95); }
+  P.ty=clamp(P.ty+clamp(mid+H*0.06-P.ty,-H*0.5*dt,H*0.5*dt),b.top,b.bot);
+}
 
 /* ---------- audio (standalone — HTMLAudio crossfade beds + edge-fired one-shots; no manifest fetch so it works off file://) ---------- */
 var AUDIO_ON=true;
@@ -1031,7 +1627,7 @@ function audioDirector(){ var path=null,vol=0.5;
   }
   else if(state==='select'){ path=MUS.menu; vol=0.45; }
   else if(state==='play'){ path = (mode==='base'||mode==='gunpowder')?MUS.base : mode==='bonus'?(bonusKind==='crab'?MUS.crab:MUS.backyard) : (MUS.zones[level]||MUS.zones[0]); }
-  else if(state==='over'){ path=MUS.over; }
+  else if(state==='over'||state==='gpfail'||state==='clawfail'){ path=MUS.over; }
   else if(state==='clear'){ path=MUS.clear; }
   else if(state==='result'){ path=MUS.clear; }   // the between-stage tally rides the calm clear bed
   else if(state==='ending'){ path=MUS.clear; }   // calm bed under the credit page
@@ -1102,6 +1698,17 @@ addEventListener('keydown',function(e){
     if(k==='escape'||k==='f'||k==='x'||k==="'"){ enterAttract(); e.preventDefault(); return; }   // WARBLE (X/F) or ESC = stand down
     if(k===';'){ twoP=true; sfx('snatch',0.5); flash('PLAYER 2 IS IN','#3cc8ff',1.2); startRun(); e.preventDefault(); return; }
     if(e.key===' '||e.key==='Enter'){ twoP=false; sfx('launch',0.5); startRun(); e.preventDefault(); return; }
+    e.preventDefault(); return; }
+  // GUNPOWDER FAILED card: BEAM (Space/Enter/Z, click, stick A) = RETRY from phase I · WARBLE (X/F, stick B) or ESC (stick START) = leave.
+  // Held keys auto-repeat, and the player is usually HOLDING the beam when the fort falls -- so repeats are ignored and the card arms after 0.9s.
+  if(state==='gpfail'){ if(e.repeat || gpFailT<0.9){ e.preventDefault(); return; }
+    if(e.key===' '||e.key==='Enter'||k==='z'||k==='w'||k==='i'||k==='r') gpRetry();
+    else if(k==='escape'||k==='x'||k==='f') gpExit();
+    e.preventDefault(); return; }
+  // CLAW & ORDER — RUN OFF THE DOCK card: in the run BEAM limps on (no retry — the gamble is the point); from the vault BEAM retries, WARBLE/ESC leaves.
+  if(state==='clawfail'){ if(e.repeat || clawFailT<0.9){ e.preventDefault(); return; }
+    if(e.key===' '||e.key==='Enter'||k==='z'||k==='w'||k==='i'||k==='r'){ if(soloStage) clawRetry(); else clawLimpOn(); }
+    else if(k==='escape'||k==='x'||k==='f') clawLimpOn();
     e.preventDefault(); return; }
   // game over / cleared
   if(state==='over'||state==='clear'){ if(e.key===' '||e.key==='Enter'||k==='r'){
@@ -1264,7 +1871,7 @@ function updateRival(dt){
   var hot = stageOf()>=2;                                                                       // ORANGE/RED = the lethal onslaught is up
   // 1) PICK a target: prizes (Mo/Dave/boss) >> contest the player's lock >> nearest cow/loot (people only when behind)
   var want=null, wbest=1e9;
-  for(var i=0;i<targets.length;i++){ var c=targets[i]; if(c.gone||c.hidden||c.def.hazardGrab) continue;   // hidden critters aren't grabbable
+  for(var i=0;i<targets.length;i++){ var c=targets[i]; if(c.gone||c.hidden||c.protect||c.guarded||c.def.hazardGrab) continue;   // hidden critters, protected townsfolk and CLAW & ORDER's guarded Bull (the player's gamble) are off the rival's list
     if(c.kind==='person' && !behind) continue;
     if(c===P.lock && (hot || clock<(R.contestCd||0))) continue;   // DEATH-SPIRAL FIX: under heat (ORANGE/RED) or during the re-contest cooldown, the rival won't grind on YOUR catch — it grabs elsewhere or bails to dodge, opening your window (greed still punished in the calm GREEN/YELLOW)
     var d=Math.abs(c.x-R.x);
@@ -1308,6 +1915,7 @@ function disableJet(je){ if(!je || je.disabled || je.horizon) return; je.disable
 function hitPlayer(){
   if(GOD){ addFx(P.x,P.y,'spark','#39ff14',0.3); return; }                 // THEORISTS SAY YES — invincible + infinite lives (cheat)
   if(warbling()||P.invuln>0) { addFx(P.x,P.y,'spark','#9affc0',0.3); return; }
+  if(clawOn()){ clawHit(); return; }                                       // CLAW & ORDER: real hull + a spilled hold, never a lost ship
   hp-=34; P.stun=1.1; P.invuln=2.0; shake=18; addFx(P.x,P.y,'boom','#ff7a3a',0.6); sfx('hit',0.5);
   if(hp<=0){ lives--;
     if(lives>0){ hp=maxHP; P.invuln=2.4; P.stun=0.6; addFx(P.x,P.y,'snatch','#7fe9ff',0.6); flash('SHIP DOWN — '+lives+' LEFT','#ff9d3a',1.4); if(level>=1) sayLater(pick(EXPLOSION_BARKS),'#ffd23f',0.7); }   // Dave cheers the shootdown (later zones)
@@ -1332,8 +1940,9 @@ function abduct(tg,who){
   who=who||1; var isR=(who===2&&R), sh=isR?R:P;
   if(tg.def.hazardGrab){ if(!isR){ flash('THAT WAS HARDWARE!','#ff5d6c',1.0); sfx('denied',0.5); } hitShip(sh,who); tg.gone=true; tg.respawn=rnd(2,3.5); tg.lock=0; tg.lifting=false; tg.owner=0; return; }
   if(tg.def.repair){ if(!isR){ hp=maxHP; P.invuln=Math.max(P.invuln,1.0); flash('HULL RESTORED','#39ff14',1.0); } addFx(sh.x,sh.y,'snatch','#39ff14',0.6); sfx('pickup',0.45); tg.gone=true; tg.respawn=rnd(4,7); tg.lock=0; tg.lifting=false; tg.owner=0; return; }
-  if(isR) rivalScore+=tg.def.val; else score+=tg.def.val;
-  if(tg.def.val>0){ if(fx.length>=MAX_FX)fx.shift(); fx.push({x:sh.x,y:sh.y+SAUCER_W()*0.1,kind:'pts',col:isR?'#7fb0ff':'#ffe23a',t:0,life:0.95,val:tg.def.val,big:tg.def.val>=1000}); }   // floating +POINTS so each grab's value READS (cow 100 / person 300 / farmer 250 / Dave 2000 / Mo 3000)
+  var _claw=clawOn() && tg.kind==='loot';                          // CLAW & ORDER: your grabs go into the HOLD (clawGrab), not the score
+  if(isR){ rivalScore+=tg.def.val; if(_claw) clawRivalGrab(tg); } else if(_claw) clawGrab(tg); else score+=tg.def.val;
+  if(tg.def.val>0 && !(_claw && !isR)){ if(fx.length>=MAX_FX)fx.shift(); fx.push({x:sh.x,y:sh.y+SAUCER_W()*0.1,kind:'pts',col:isR?'#7fb0ff':'#ffe23a',t:0,life:0.95,val:tg.def.val,big:tg.def.val>=1000}); }   // floating +POINTS so each grab's value READS (cow 100 / person 300 / farmer 250 / Dave 2000 / Mo 3000)
   meter=clamp(meter+tg.def.meter,0,100); addFx(sh.x,sh.y,'snatch', isR?'#7fb0ff':'#7fe9ff',0.5);
   sfx(tg.def.meter<0?'brisket':(tg.kind==='cow'||tg.isMo)?'cow':'pickup', isR?0.4:0.7);
   if(tg.isMo){ flash(isR?'RIVAL SNATCHED MO!':MO_CAUGHT_BARK, isR?'#7fb0ff':'#ffd23f',1.6); sayLater(pick(DAVE_MO_BARKS),'#ffd23f',1.5); }   // Dave's one Dairy Flats beat: he reacts to Mo
@@ -1345,7 +1954,8 @@ function abduct(tg,who){
     else flash(level>=1?pick(DAVE_OUTRAGE_BARKS):'BRISKET — COOLED', level>=1?'#ffd23f':'#9affc0',1.0);
   }
   if(tg.def.selfstun){ sh.stun=Math.max(sh.stun,0.5); if(!isR) flash((tg.kind==='soldier'?'SOLDIER':'FARMER')+' GOT YOU','#ff9d3a',0.8); }
-  if(tg.kind==='loot' && !isR){ flash((tg.isBoss?bossName(tg.sprite)+'!  +':'+')+tg.def.val, tg.isBoss?'#ffd23f':'#9affc0', tg.isBoss?1.2:0.6); }
+  if(tg.kind==='loot' && !isR && !_claw){ flash((tg.isBoss?bossName(tg.sprite)+'!  +':'+')+tg.def.val, tg.isBoss?'#ffd23f':'#9affc0', tg.isBoss?1.2:0.6); }
+  if(tg.kind==='gnome' && mode==='gunpowder' && gpStats && !isR){ gpStats.beamed++; gpStats.beamPts+=tg.def.val; }   // the beam's tally (soldier kills pay nothing)
   if(tg.isMo || tg.kind==='loot' || tg.kind==='gnome'){ tg.gone=true; tg.respawn=1e9; }   // Mo + bonus loot + gnomes are one-and-done (no cow respawn)
   else { tg.gone=true; tg.respawn=rnd(1.6,3.2); }
   tg.lock=0; tg.lifting=false; tg.owner=0;
@@ -1371,6 +1981,8 @@ function update(dt){
   if(state==='initials'){ idleT+=dt; if(msgT>0)msgT-=dt; if(idleT>30) confirmInitials(); return; }   // afk -> auto-lock the initials
   if(state==='board'){ boardT+=dt; if(msgT>0)msgT-=dt; if(boardT>10) enterFront(); return; }
   if(state==='result'){ resT+=dt; if(msgT>0)msgT-=dt; if(shake>0)shake*=0.9; if(resT>=RESULT_HOLD) proceedSegment(); return; }   // tally auto-advances (BEAM skips it)
+  if(state==='gpfail'){ gpFailT+=dt; idleT+=dt; if(msgT>0)msgT-=dt; if(shake>0)shake*=0.9; for(var _f=gpFx.length-1;_f>=0;_f--){ gpFx[_f].t+=dt; if(gpFx[_f].t>gpFx[_f].life) gpFx.splice(_f,1); } return; }   // GUNPOWDER FAILED card: frozen field, retry prompt
+  if(state==='clawfail'){ clawFailT+=dt; idleT+=dt; if(msgT>0)msgT-=dt; if(shake>0)shake*=0.9; return; }   // CLAW & ORDER: RUN OFF THE DOCK card
   if(state!=='play'){ if(state==='select'||state==='over'||state==='clear')idleT+=dt; if(msgT>0)msgT-=dt; if(shake>0)shake*=0.9; return; }
   idleT=0;   // playing — reset the attract idle timer (so it counts from the game-over screen)
   while(score>=nextExtra && lives<99){ lives++; nextExtra+=EXTRA_LIFE; flash('★ EXTRA SHIP ★','#39ff14',1.5); sfx('pickup',0.55); }   // arcade extra-life reward
@@ -1414,13 +2026,9 @@ function update(dt){
   }
 
   // clock -> stage clear / advance the schedule
-  if(mode==='gunpowder'){ gunpowderStep(dt);
-    if(stageClock<=0){ var saved=liveDefenders().length, allSaved=(saved>=gpTotal);
-      score+=saved*GNOME_SAVE_BONUS; if(allSaved){ score+=BONUS_PERFECT; }
-      flash(saved===0?'GUNPOWDER FELL — the gnomes took the base':allSaved?('PERFECT — BASE HELD!  +'+(BONUS_PERFECT+gpTotal*GNOME_SAVE_BONUS)):('BASE HELD — '+saved+'/'+gpTotal+' SAVED  +'+(saved*GNOME_SAVE_BONUS)), saved===0?'#ff5d6c':'#9affc0',2.0);
-      resKind='gunpowder'; resBonus=saved*GNOME_SAVE_BONUS+(allSaved?BONUS_PERFECT:0); resPerfect=allSaved;
-      advanceSegment(); } }
+  if(mode==='gunpowder'){ gunpowderStep(dt); if(state==='play' && stageClock<=0) gpWin(); }   // FAIL is decided inside the step (people < GP_MUST_SAVE)
   else if(mode==='base'){ if(stageClock<=0){ score+=3000; if(twoP) rivalScore+=3000; flash('BASE CLEARED  +3000','#9affc0',1.6); resKind='base'; resBonus=3000; resPerfect=false; advanceSegment(); } }   // 2P: both humans cleared -> both banked
+  else if(clawOn()){ clawStep(dt); }   // CLAW & ORDER: bank / bail / sink / last call are all decided inside the step
   else if(mode==='bonus'){
     var lootLeft=0; for(var i=0;i<targets.length;i++) if(!targets[i].gone) lootLeft++;
     if(lootLeft===0){ score+=BONUS_PERFECT; if(twoP) rivalScore+=BONUS_PERFECT; flash('PERFECT!  +'+BONUS_PERFECT,'#ffd23f',1.8); resKind='bonus'; resBonus=BONUS_PERFECT; resPerfect=true; advanceSegment(); }   // all loot swept -> the advertised reward
@@ -1472,7 +2080,7 @@ function update(dt){
       if(dxp<bestD && P.y<c.y){ bestD=dxp; pT=i; } }
   }
   if(R && R.beamOn && R.stun<=0){
-    var bestDr=W*0.06; for(var i=0;i<targets.length;i++){ var c=targets[i]; if(c.gone||c.hidden||c.protect) continue; var dxr=Math.abs(c.x-R.x);
+    var bestDr=W*0.06; for(var i=0;i<targets.length;i++){ var c=targets[i]; if(c.gone||c.hidden||c.protect||c.guarded) continue; var dxr=Math.abs(c.x-R.x);
       if(dxr<bestDr && R.y<c.y){ bestDr=dxr; rT=i; } }
   }
   if(pT>=0 && pT===rT){                                              // CROSSED BEAMS — the ESTABLISHED claim holds
@@ -1563,16 +2171,18 @@ function update(dt){
     if(sh.kind==='missile' && !sh.harmless){ var mt=sh.tgt||P, dx=mt.x-sh.x, dy=mt.y-sh.y, L4=Math.hypot(dx,dy)||1, turn=160;   // home on the ship it was fired at (either invader)
       sh.vx+=dx/L4*turn*dt; sh.vy+=dy/L4*turn*dt; var sp=Math.hypot(sh.vx,sh.vy); if(sp>300){sh.vx*=300/sp;sh.vy*=300/sp;}
       if(chance(0.5 - stageOf()*0.13)) addFx(sh.x,sh.y,'smoke','#9aa',0.45); }
+    if(sh.grav) sh.vy+=sh.grav*dt;                                  // CLAW & ORDER: thrown mallets arc
+    if(sh.kind==='flare' && chance(0.6)) addFx(sh.x,sh.y,'spark','rgba(255,110,70,0.8)',0.3);
     sh.x+=sh.vx*dt; sh.y+=sh.vy*dt;
     var radH = warbling()? SAUCER_W()*0.52 : SAUCER_W()*0.36;
-    if(!sh.harmless && Math.hypot(sh.x-P.x,sh.y-P.y) < radH){
+    if(!sh.harmless && !(sh.claw && sh.tgt!==P) && Math.hypot(sh.x-P.x,sh.y-P.y) < radH){   // CLAW & ORDER: a townie's round only threatens the saucer it was AIMED at (the aim line tells you)
       if(warbling()){ var dxx=sh.x-P.x, dyy=sh.y-P.y, LL=Math.hypot(dxx,dyy)||1, spd=Math.hypot(sh.vx,sh.vy)||320;
         sh.vx=dxx/LL*spd*1.15+rnd(-50,50); sh.vy=dyy/LL*spd*1.15-50; sh.harmless=true; sh.ricochet=true; sh.by=1; sfxT('deflect',0.2,0.95); if(fx.length>=MAX_FX)fx.shift(); fx.push({x:sh.x,y:sh.y,kind:'ric',col:'#bfffe0',t:0,life:0.32,dx:sh.vx,dy:sh.vy}); }   // WARBLE DEFLECT -> ricochet spark (can shoo a plane off)
       else if(P.invuln>0){ shots.splice(s,1); }
       else { hitPlayer(); shots.splice(s,1); }
       continue;
     }
-    if(R && !sh.harmless){ var radHr = warblingS(R)? SAUCER_W()*0.52 : SAUCER_W()*0.36;     // shots hit the rival too
+    if(R && !sh.harmless && !(sh.claw && sh.tgt!==R)){ var radHr = warblingS(R)? SAUCER_W()*0.52 : SAUCER_W()*0.36;     // shots hit the rival too
       if(Math.hypot(sh.x-R.x,sh.y-R.y) < radHr){
         if(warblingS(R)){ var dxr=sh.x-R.x, dyr=sh.y-R.y, LR=Math.hypot(dxr,dyr)||1, spR=Math.hypot(sh.vx,sh.vy)||320;
           sh.vx=dxr/LR*spR*1.15+rnd(-50,50); sh.vy=dyr/LR*spR*1.15-50; sh.harmless=true; if(fx.length>=MAX_FX)fx.shift(); fx.push({x:sh.x,y:sh.y,kind:'ric',col:'#bfffe0',t:0,life:0.32,dx:sh.vx,dy:sh.vy}); }
@@ -1581,6 +2191,7 @@ function update(dt){
         continue;
       }
     }
+    if(sh.ricochet && clawOn() && clawRicochet(sh)){ shots.splice(s,1); continue; }   // CLAW & ORDER: a deflected round knocks a townie's hat off
     if(sh.ricochet){                                  // a deflected shot streaking off SHOOS a plane away (peel-off, never a kill)
       for(var jj=jets.length-1;jj>=0;jj--){ var jt=jets[jj]; if(jt.disabled||jt.horizon) continue;
         if(Math.hypot(sh.x-jt.x,sh.y-jt.y)<SAUCER_W()*0.4){ disableJet(jt);
@@ -1635,6 +2246,22 @@ function drawTruck(){
     ctx.fillStyle='#7a3f24'; ctx.fillRect(truck.x-tw/2,ty-th*0.3,tw,th*0.55); ctx.fillStyle='#ffb03a'; ctx.fillRect(truck.x+tw*0.1,ty-th*0.55,4,th*0.3); }
   ctx.fillStyle='#ffd23f'; ctx.font='800 11px system-ui'; ctx.textAlign='center'; ctx.fillText('DAVE', truck.x, ty-th*0.5-6);
 }
+// BELTWAY GANTRY (Joe 1014): the overhead sign bridge spans the road, scrolls with the traffic, one every ~1.6 screens.
+//   The art's panels are blank on purpose; the exits are lettered here (I-695 Baltimore). Render-only.
+var GANTRY_SIGNS=[['695 OUTER LOOP','TOWSON · EXIT 27'],['I-95 NORTH','WHITE MARSH · EXIT 31'],['695 INNER LOOP','PIKESVILLE · EXIT 20'],['I-83','HARRISBURG · EXIT 23']];
+function drawGantry(){ if(mode!=='campaign'||level!==4||!ok('beltway_gantry')) return;
+  var im=IMG.beltway_gantry, gy=groundY(), below=H-(gy+8), roadBot=gy+8+below*0.20+Math.max(H*0.085+8,below*0.62);
+  var gw=W*0.40, gh=gw*(im.naturalHeight/im.naturalWidth), period=W*1.6, off=((bandScroll*1.0)%period+period)%period;
+  for(var gx=-off; gx<W+gw; gx+=period){ var x=gx, y=roadBot-gh, n=Math.floor((bandScroll+gx+off)/period+0.5);
+    ctx.drawImage(im, x, y, gw, gh);
+    var sg=GANTRY_SIGNS[((n%GANTRY_SIGNS.length)+GANTRY_SIGNS.length)%GANTRY_SIGNS.length];
+    // panel boxes measured on the art (fractions of the image): left 0.215-0.535, right 0.572-0.86, rows 0.08-0.38
+    var P=[[0.215,0.535],[0.572,0.86]]; ctx.save(); ctx.textAlign='center'; ctx.fillStyle='#eef3ea';
+    for(var k=0;k<2;k++){ var cx=x+gw*(P[k][0]+P[k][1])/2, pw=gw*(P[k][1]-P[k][0]), lines=sg[k].split(' · ');
+      for(var li=0;li<lines.length;li++){ var t=lines[li], fs=gh*0.085; ctx.font='800 '+Math.round(fs)+'px "Helvetica Neue",Arial';
+        var tw=ctx.measureText(t).width; if(tw>pw*0.86){ fs*=pw*0.86/tw; ctx.font='800 '+Math.round(fs)+'px "Helvetica Neue",Arial'; }   // shrink to fit, never clip
+        ctx.fillText(t, cx, y+gh*(lines.length>1?0.19+li*0.12:0.25)); } }
+    ctx.restore(); } }
 function drawBand(){
   var L=LEVELS[level]; if(mode!=='campaign'||!L||!L.band) return;
   var im=IMG[L.band]; if(!im||!im.ok) return;
@@ -1781,6 +2408,13 @@ function drawGround(){
   var gg=ctx.createLinearGradient(0,gy+8,0,H);                      // far dark (horizon) -> near lighter (bottom) = a plane going back
   gg.addColorStop(0, urban?'#0d1620':'#0a1d10'); gg.addColorStop(1, urban?'#1a2632':'#123a1c');
   ctx.fillStyle=gg; ctx.fillRect(0,gy+8,W,below+2);
+  // MEADOW (Joe's 1014 grass strip): the country zones + bonus yards without a road get a painted moonlit field instead of the
+  //   flat fill. Its grass tips rise just over the ground line so props + loot sit IN it; scrolls with the foreground.
+  var baseGround=(mode==='base'||mode==='gunpowder');
+  var gName=baseGround?'ground_mud':(mode==='bonus'&&bonusKind==='crab')?'ground_dock':((mode==='campaign'&&level===1)?'ground_corn':'ground_pasture');   // CLAW & ORDER stands on the crab-house dock   // BASE + GUNPOWDER = rutted mud with puddles; CORN COUNTRY = stubble rows; else the meadow
+  if(!road && (!urban||baseGround) && ok(gName)){ var gpi=IMG[gName], gph=below*1.25, gpw=gph*(gpi.naturalWidth/gpi.naturalHeight), gtop=gy+8-gph*(gName==='ground_dock'?0.29:0.16);   // the dock's DECK (29% down, under the pilings) meets the ground line so the loot sits on the planks
+    var goff=((bandScroll*1.0)%gpw+gpw)%gpw;
+    for(var gx=-goff; gx<W+gpw; gx+=gpw-2) ctx.drawImage(gpi, gx, gtop, gpw, gph); }
   // MOONLIGHT SHEEN — a soft cool band just in front of the horizon where the moon catches the field/street (grounds the plane, breaks the flat fill)
   var sheen=ctx.createLinearGradient(0,gy+8,0,gy+8+below*0.42);
   sheen.addColorStop(0,'rgba('+(urban?'150,162,192':'120,150,150')+',0.06)'); sheen.addColorStop(1,'rgba(120,150,150,0)');
@@ -1793,6 +2427,19 @@ function drawGround(){
   if(road){
     var vergeH=below*0.20, roadTop=gy+8+vergeH, roadH=Math.max(H*0.085+8, below*0.62), roadBot=roadTop+roadH;
     ctx.fillStyle=urban?'#13251b':'#173a21'; ctx.fillRect(0,gy+8,W,vergeH);                 // grass verge — sets the street BACK from the buildings
+    // GRAVEL SHOULDER (Joe's 1014 strip) on the road zones outside Downtown: weeds at the ground line, gravel down to the asphalt
+    if(!(mode==='campaign'&&level===2) && ok('ground_shoulder')){ var shi=IMG.ground_shoulder, shSolid=SHOULDER_SOLID, shh=(vergeH+6)/(1-shSolid), shw=shh*(shi.naturalWidth/shi.naturalHeight);
+      var shoff=((bandScroll*1.0)%shw+shw)%shw;
+      for(var shx=-shoff; shx<W+shw; shx+=shw-2) ctx.drawImage(shi, shx, gy+8-shh*shSolid, shw, shh); }
+    // BELTWAY SOUND WALL (Joe 1014, night-graded): plain + ivy panels alternate along the far edge of the highway, scrolling with it
+    if(mode==='campaign'&&level===4&&ok('sound_wall')){ var swh=H*0.075, sws=['sound_wall','sound_wall_ivy'], swi=IMG.sound_wall, sww=swh*(swi.naturalWidth/swi.naturalHeight), swo=((bandScroll*1.0)%(sww*2)+sww*2)%(sww*2);
+      for(var swx=-swo, k=0; swx<W+sww; swx+=sww-2, k++){ var nm=sws[k%2]; if(ok(nm)) ctx.drawImage(IMG[nm], swx, roadTop-swh+4, sww, swh); }
+      // COBRA-HEAD LIGHTS (Joe 1014) stand at the wall line every ~0.45 screen, each throwing a soft sodium pool onto the asphalt
+      if(ok('highway_light')){ var hli=IMG.highway_light, hlh=H*0.30, hlw=hlh*(hli.naturalWidth/hli.naturalHeight), hp=W*0.45, ho=((bandScroll*1.0)%hp+hp)%hp;
+        for(var hx=-ho; hx<W+hlw; hx+=hp){ var lx=hx+hlw*0.70;
+          var pool=ctx.createRadialGradient(lx,roadTop+roadH*0.45,0,lx,roadTop+roadH*0.45,roadH*0.9); pool.addColorStop(0,'rgba(255,170,70,0.16)'); pool.addColorStop(1,'rgba(255,170,70,0)');
+          ctx.fillStyle=pool; ctx.fillRect(lx-roadH, roadTop, roadH*2, roadH);
+          ctx.drawImage(hli, hx, roadTop-hlh+6, hlw, hlh); } } }
     var asf=ctx.createLinearGradient(0,roadTop,0,roadBot); asf.addColorStop(0,'#21252c'); asf.addColorStop(1,'#2c313a');
     ctx.fillStyle=asf; ctx.fillRect(0,roadTop,W,roadH);                                     // asphalt
     ctx.strokeStyle='rgba(228,226,205,0.30)'; ctx.lineWidth=2;
@@ -2083,12 +2730,28 @@ function drawMoon(x,y,w){
   var d=w*50/78;                                                     // same disc size the 78px sprite drew at width w
   ctx.save(); ctx.imageSmoothingEnabled=false; ctx.globalAlpha=0.95; ctx.drawImage(cv, Math.round(x-d/2), Math.round(y-d/2), Math.round(d), Math.round(d)); ctx.restore();
 }
+// DAVE'S STATION (1014) — render-only light for the backyard props: a warm light pool on the ground, and the kettle grill's
+//   ember glow + a thin curl of smoke off the grate. Deterministic (t-driven), no RNG.
+function propLightPool(x,gy,rx,rgb,a){ ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.translate(x,gy+2); ctx.scale(1,0.28);
+  var g=ctx.createRadialGradient(0,0,0,0,0,rx); g.addColorStop(0,'rgba('+rgb+','+a+')'); g.addColorStop(1,'rgba('+rgb+',0)');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(0,0,rx,0,6.28); ctx.fill(); ctx.restore(); }
+function propGrillGlow(x,cy,h,w){ var gx=x-w*0.04, gyy=cy-h*0.13, fl=0.75+0.25*Math.sin(t*9)*Math.sin(t*3.7);
+  glow(gx, gyy, w*0.55*fl, 'rgba(255,120,40,'+(0.28*fl)+')'); propLightPool(x, cy+h/2, w*1.5, '255,140,60', 0.10*fl);
+  for(var k=0;k<4;k++){ var a=((t*0.45+k*0.25)%1); ctx.globalAlpha=(1-a)*0.22; ctx.fillStyle='#cfd6de';
+    ctx.beginPath(); ctx.arc(gx+Math.sin(a*5+k)*w*0.12, gyy-h*0.12-a*h*0.75, w*(0.06+a*0.14), 0, 6.28); ctx.fill(); } ctx.globalAlpha=1; }
 function drawBG(){
   var sky=ctx.createLinearGradient(0,0,0,H); sky.addColorStop(0,'#060a1c'); sky.addColorStop(.55,'#0a1320'); sky.addColorStop(.84,'#0b1a12'); sky.addColorStop(1,'#05110a');
   ctx.fillStyle=sky; ctx.fillRect(0,0,W,H);
   // DEEP star layer — dim, dense, 1px, slow shimmer: a far-field that the brighter stars sit IN FRONT of (star depth, not one flat plane)
   ctx.fillStyle='#7f95bb'; for(var i=0;i<150;i++){ var dx=(i*197%W), dy=(i*89%(H*0.62)); ctx.globalAlpha=0.05+0.09*Math.abs(Math.sin(i*1.7+t*0.6)); ctx.fillRect(dx,dy,1,1); } ctx.globalAlpha=1;
   ctx.fillStyle='#cfe8ff'; for(var i=0;i<90;i++){ var sx=(i*131%W), sy=(i*71%(H*0.55)); ctx.globalAlpha=0.3+0.5*Math.abs(Math.sin(i+t*1.1)); ctx.fillRect(sx,sy,1.6,1.6); } ctx.globalAlpha=1;
+  // MOONLIT CLOUD BAND (Joe's 1014 strip) — the rural skies + the bay/yard bonuses. The clusters are lit from ABOVE, so the band
+  //   sits just under the moon's usual spot and draws BEHIND the moon + its halo (the halo then washes over the nearest tops).
+  //   Faint, slow, tiled; render-only. Never over the city (DOWNTOWN / BELTWAY / OUTSKIRTS / the base get the amber haze instead).
+  var _cz=sceneZone(), _rural=(_cz==='DAIRY FLATS'||_cz==='CORN COUNTRY'||_cz==='COUNTY ROAD 9'||_cz==='backyard'||_cz==='champ'||_cz==='crab');
+  if(_rural && ok('clouds_moonlit')){ var cl=IMG['clouds_moonlit'], clh=H*0.19, clw=clh*(cl.naturalWidth/cl.naturalHeight), cly=H*0.155;
+    var cloff=((t*4+bandScroll*0.06)%clw+clw)%clw;
+    ctx.save(); ctx.globalAlpha=0.55; for(var clx=-cloff; clx<W+clw; clx+=clw-1) ctx.drawImage(cl, clx, cly, clw, clh); ctx.restore(); }
   var mnx=W*MOON.x, mny=H*MOON.y, mnr=clamp(W*0.08,70,130)*MOON.s, mlit=0.35+0.65*moonLit(), mgc=MOON.glow;
   var mglow=ctx.createRadialGradient(mnx,mny,mnr*0.35, mnx,mny,mnr*3.4);   // soft moon halo — warms the empty sky, reads as haze around the moon (dimmer for a thin moon)
   mglow.addColorStop(0,'rgba('+mgc+','+(0.11*mlit)+')'); mglow.addColorStop(0.5,'rgba('+mgc+','+(0.035*mlit)+')'); mglow.addColorStop(1,'rgba('+mgc+',0)');
@@ -2116,20 +2779,45 @@ function drawBG(){
   if(urbanZone||baseZone){ var lpg=ctx.createRadialGradient(W*0.5,gy,0,W*0.5,gy,W*0.62);
     lpg.addColorStop(0,'rgba(150,160,192,0.085)'); lpg.addColorStop(0.5,'rgba(130,142,178,0.032)'); lpg.addColorStop(1,'rgba(130,142,178,0)');
     ctx.fillStyle=lpg; ctx.fillRect(0,gy-H*0.55,W,H*0.55+8); }
+  // AMBER CITY HAZE (Joe's 1014 strip) — DOWNTOWN (2) + THE BELTWAY (4) only: sodium light-pollution glowing up from BEHIND the
+  //   distant skyline. Drawn here — after the sky, BEFORE the skyline strip and every building — at low alpha; in front it muddies them.
+  if(mode==='campaign' && (level===2||level===4) && ok('haze_city')){ var hzc=IMG['haze_city'], hch=H*0.25, hcw=hch*(hzc.naturalWidth/hzc.naturalHeight);
+    var hcoff=((bandScroll*0.18+t*2)%hcw+hcw)%hcw;
+    var hcb=gy-H*(level===4?0.085:0.13);                                  // the glow's bright foot sits at ROOF height (Beltway: just over the sound wall) so it shows between + above the buildings
+    ctx.save(); ctx.globalAlpha=level===4?0.40:0.34; for(var hcx=-hcoff; hcx<W+hcw; hcx+=hcw-1) ctx.drawImage(hzc, hcx, hcb-hch*0.94, hcw, hch);
+    ctx.fillStyle='rgb(170,106,74)'; ctx.fillRect(0, hcb-hch*0.06-1, W, gy-hcb+hch*0.06+1); ctx.restore(); }   // and the same amber carried down to the ground line, so no hard edge shows in the gaps
   var skName = baseZone?'it_sky_5_n' : (level===2?'it_sky_1_n':'it_sky_3_n');     // night-graded distant-city skyline per zone (Downtown / Beltway / base)
   if((urbanZone||baseZone) && ok(skName)){ var sk=IMG[skName], bh=H*0.17, bw=bh*(sk.naturalWidth/sk.naturalHeight);
     var soff=((bandScroll*0.30)%bw+bw)%bw;                                    // parallax: the distant city drifts at 0.30x the foreground scroll
-    ctx.save(); ctx.globalAlpha=0.5; for(var sx2=-soff; sx2<W+bw*0.5; sx2+=bw*0.92) ctx.drawImage(sk, sx2, gy-bh+8, bw, bh); ctx.restore(); }   // dim (0.5) + night-graded so the horizon city reads as cool distant haze between the buildings, not a warm box
+    ctx.save(); ctx.globalAlpha=0.5; for(var sx2=-soff; sx2<W+bw*0.5; sx2+=bw*0.92) ctx.drawImage(sk, sx2, gy-bh+8, bw, bh); ctx.restore(); }
+  // COUNTRY HORIZON (Joe's 1014 strips): the rural zones + the bonus yards had nothing between the moon and the barns. A far
+  //   treeline / hills / lit farmsteads strip sits on the ground line on the same slow parallax. Already painted dim + hazy, so
+  //   it draws near-full strength; the foreground props stand in front of it.
+  var hzName = (urbanZone||baseZone) ? null
+             : mode==='bonus' ? (bonusKind==='crab' ? 'water_bay' : 'horizon_hills')
+             : (mode==='campaign' ? RURAL_HZ[level] : null);
+  if(hzName && ok(hzName)){ var hzi=IMG[hzName], hh=H*(hzName==='water_bay'?0.30:0.19), hw=hh*(hzi.naturalWidth/hzi.naturalHeight);   // CLAW & ORDER: the bay (0.30) runs from the far shore lights down to the dock
+    var hoff=((bandScroll*0.30)%hw+hw)%hw;
+    ctx.save(); ctx.globalAlpha=0.9; for(var hx=-hoff; hx<W+hw; hx+=hw-2) ctx.drawImage(hzi, hx, gy-hh+6, hw, hh); ctx.restore(); }   // dim (0.5) + night-graded so the horizon city reads as cool distant haze between the buildings, not a warm box
+  var _fence=(mode==='gunpowder');
   for(var i=0;i<scenery.length;i++){ var p=scenery[i];                       // HEIGHT-keyed + bottom-anchored
+    if(_fence && p.d>=0.6){ _fence=false; gpDrawFence(gy); }               // GUNPOWDER: the perimeter wire runs BEHIND the compound, in front of the far base
     var im=IMG[p.s];
     // skip missing OR tiny PLACEHOLDER sprites (e.g. the 11x12 silo stub) — stretched to building
     // height they read as giant blurry white boxes. Only draw real art (>=24px on a side).
     if(!im || !im.ok || Math.max(im.naturalWidth, im.naturalHeight) < 24) continue;
     var dep=(p.d==null?1:p.d);                                              // DEPTH: far props read smaller, dimmer, raised toward the horizon (parallax world-building)
-    var ar=im.naturalWidth/im.naturalHeight, h=scnH(p.s)*p.sc*(0.58+0.42*dep), w=h*ar;
-    drawImg(p.s, p.x, gy-h/2+4-(1-dep)*H*0.05, w, 0, 0.5+0.45*dep, !!p.fl); }
+    var ar=im.naturalWidth/im.naturalHeight, h=scnH(p.s)*p.sc*(0.58+0.42*dep), w=h*ar, pcy=gy-h/2+4-(1-dep)*H*0.05;
+    var pn = /^smoker_/.test(p.s) ? ['smoker_c','smoker_b','smoker_a','smoker_b'][Math.floor(t*1.4)%4] : p.s;   // DAVE'S SMOKER breathes: the three plume frames cycle
+    if(p.s==='string_lights') propLightPool(p.x, gy, w*0.62, '255,196,110', 0.13+0.02*Math.sin(t*2.1));   // the patio pool under the Edison bulbs (drawn first: it lights the lawn, not the posts)
+    drawImg(pn, p.x, pcy, w, 0, 0.5+0.45*dep, !!p.fl);
+    if(p.s==='kettle_grill') propGrillGlow(p.x, pcy, h, w); }
+  if(_fence) gpDrawFence(gy);
   drawGround();
   drawBand();
+  drawGantry();
+  if(mode==='gunpowder') gpDrawGround();
+  if(clawOn()) clawDrawWorld();
 }
 // LIFT POSE — what a subject looks like riding the beam. One rule, called by BOTH draw paths
 // (drawTargets for the pre-lift frame, drawLifted for the in-front-of-the-beam frame) so they
@@ -2182,13 +2870,15 @@ function drawTargets(skipLift){
            : c.kind==='gnome'?S.people*(c.armor?1.55:(c.big||1))*0.9
            : c.kind==='defender'?(c.dkind==='hardware'?S.tank:c.dkind==='banner'?S.tank*1.7:S.people)
            : S.people;
+    if(c.drawH) hT=H*c.drawH;                                // GUNPOWDER units/structures carry their own height (fraction of H)
     if(c.isMo) hT*=1.18;
     hT *= zdS(c);                                            // nearer units draw bigger
     var sp = c.lifting && c.lock>0.05 ? liftSprite(c) : c.sprite;
-    var rot = c.lifting? Math.sin(clock*8)*0.18*c.lock : 0;
+    var rot = c.lifting? Math.sin(clock*8)*0.18*c.lock : c.dieT>0? (1-c.dieT/0.7)*1.45*(c.dieDir||1) : c.wrecked? (c.wreckRot||0) : 0;   // GUNPOWDER: a gnome the line drops topples over; a wrecked structure sags
     var im=IMG[sp], ar=(im&&im.ok)? im.naturalWidth/im.naturalHeight : 1.4, h=hT, w=h*ar;
     var cy = c.lifting? c.y : (groundY()+6 + zdY(c) - h/2);   // height-keyed + bottom-anchored (no float), stepped forward by its depth
     var al = c.vanish>0 ? (Math.floor(clock*22)%2?0.2:0.75) : (c.lifting?0.94:1);   // GUNPOWDER: an overrun defender blinks out
+    if(c.dieT>0) al=clamp(c.dieT/0.7*1.3,0,1); if(c.wrecked) al*=0.5; if(c.hitT>0 && Math.floor(clock*30)%2) al*=0.55;
     var noflip = c.kind==='tank' || (c.kind==='gnome'&&c.armor) || c.kind==='defender';
     if(!c.hidden && c.vanish<=0 && c.kind!=='loot'){                         // ground-contact shadow: root the unit into the plane; fades out as it lifts up the beam
       var shA=(c.lifting? 0.20*(1-clamp(c.lock*1.6,0,1)) : 0.22);
@@ -2196,11 +2886,11 @@ function drawTargets(skipLift){
     // FALLBACK IS LOAD-BEARING: an unloaded/typo'd sprite name used to draw as NOTHING, so a unit
     // could attack from thin air (the rpg/cart/mower/cheer gnomes shipped that way). Anything that
     // can't resolve now paints a red-hat silhouette — ugly on purpose, so it gets noticed in a frame.
-    if(!drawImg(sp, c.x, cy, w, rot, al, c.dir<0 && c.kind!=='cow' && !noflip, !noflip)){
+    if(!drawImg(sp, c.x, cy, w, rot, al, c.flipX!=null ? c.flipX : (c.dir<0 && c.kind!=='cow' && !noflip), !noflip)){
       ctx.globalAlpha=al; ctx.fillStyle='#2b2f3a'; ctx.fillRect(c.x-w*0.28, cy-h*0.30, w*0.56, h*0.80);   // body
       ctx.fillStyle='#c0392b'; ctx.beginPath(); ctx.moveTo(c.x, cy-h*0.62);                               // pointy hat
       ctx.lineTo(c.x+w*0.26, cy-h*0.26); ctx.lineTo(c.x-w*0.26, cy-h*0.26); ctx.fill(); ctx.globalAlpha=1; }
-    if(c.kind==='defender' && c.maxHp>1 && c.hp>0 && c.vanish<=0){                    // hardware HP pips
+    if(c.kind==='defender' && !c.noPips && c.maxHp>1 && c.hp>0 && c.vanish<=0){        // hardware HP pips
       var pw=6, pg=3, tot=c.maxHp*pw+(c.maxHp-1)*pg, px0=c.x-tot/2, py=cy-h/2-8;
       for(var pi=0;pi<c.maxHp;pi++){ ctx.fillStyle=pi<c.hp?'#39ff14':'#5a1c1c'; ctx.fillRect(px0+pi*(pw+pg),py,pw,4); } }
     if(!c.lifting && (c.isMo || (c.def.val>=2000 && c.kind!=='gnome') || c.isBoss)){ ctx.fillStyle='#ffd23f'; ctx.font='800 11px system-ui'; ctx.textAlign='center';
@@ -2224,6 +2914,7 @@ function drawLifted(){
            : c.kind==='gnome'?S.people*(c.armor?1.55:(c.big||1))*0.9
            : c.kind==='defender'?(c.dkind==='hardware'?S.tank:c.dkind==='banner'?S.tank*1.7:S.people)
            : S.people;
+    if(c.drawH) hT=H*c.drawH;
     if(c.isMo) hT*=1.18;
     hT *= zdS(c);
     hT *= 1.0 + 0.28*c.lock;                                        // "a little bigger" as it rides up so the catch reads
@@ -2235,7 +2926,7 @@ function drawLifted(){
     var g=ctx.createRadialGradient(c.x,c.y,0,c.x,c.y,gr); g.addColorStop(0,col); g.addColorStop(0.5,col); g.addColorStop(1,'rgba(0,0,0,0)');
     ctx.fillStyle=g; ctx.beginPath(); ctx.arc(c.x,c.y,gr,0,6.28); ctx.fill(); ctx.restore();
     var rot=Math.sin(clock*8)*0.18*c.lock, noflip=c.kind==='tank'||(c.kind==='gnome'&&c.armor)||c.kind==='defender';
-    drawImg(sp,c.x,c.y,w,rot,1,c.dir<0&&c.kind!=='cow'&&!noflip,!noflip);
+    drawImg(sp,c.x,c.y,w,rot,1,c.flipX!=null?c.flipX:(c.dir<0&&c.kind!=='cow'&&!noflip),!noflip);
     drawDaveHat(c,h);                                               // his cap comes off on the way up
   }
 }
@@ -2280,6 +2971,9 @@ function drawShots(){
     else if(sh.kind==='aa'){ glow(sh.x,sh.y,10,'rgba(255,106,122,0.85)'); }
     else if(sh.kind==='copshot'){ ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.globalAlpha=0.9; ctx.strokeStyle='#ff8a2a'; ctx.lineWidth=3; ctx.lineCap='round';   // a cop round: HOT ORANGE slug (jet tracers are pale yellow — tell them apart)
       ctx.beginPath(); ctx.moveTo(sh.x-sh.vx*0.04,sh.y-sh.vy*0.04); ctx.lineTo(sh.x,sh.y); ctx.stroke(); ctx.restore(); glow(sh.x,sh.y,6,'rgba(255,170,90,0.95)'); }                 // white core cut
+    else if(sh.kind==='mallet'){ if(!drawImg('mallet',sh.x,sh.y,sz().cow*0.55,sh.t*11,1)) glow(sh.x,sh.y,6,'#c8a27a'); }   // CLAW & ORDER: a thrown crab mallet, spinning
+    else if(sh.kind==='flare'){ glow(sh.x,sh.y,14,'rgba(255,90,60,0.85)'); glow(sh.x,sh.y,5,'rgba(255,230,200,1)'); }
+    else if(sh.kind==='salt'){ glow(sh.x,sh.y,5,'rgba(255,240,200,0.95)'); }   // rock salt
     else { glow(sh.x,sh.y,6,sh.col); }   // potshot etc. (white core cut)
   }
 }
@@ -2321,6 +3015,285 @@ function drawFx(){
   }
 }
 function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+/* ---------- THE GUNPOWDER HORROR — render (presentation only: reads the mission, never writes it) ---------- */
+// THE PERIMETER — a chain-link + barbed-wire run along the BACK of the compound (drawn between the far and mid scenery
+// layers), from the left edge to the gate complex. Outside the gate is the golf course: no fence. Procedural, so the
+// wizards' LEFT-FLANK cut can tear a real hole in it.
+var GP_BOLT=['fx_bolt_0','fx_bolt_1','fx_bolt_2','fx_bolt_3'];   // Joe's LIGHTNING BOLT STRIP, 4 frames
+function gpDrawFence(gy){
+  var d=0.64, base=gy+4-(1-d)*H*0.05, fh=H*0.062, x1=W*(GP_GATE_X-0.045), step=W*0.046;
+  ctx.save(); ctx.globalAlpha=0.62;
+  var cut0=W*0.0, cut1=W*0.075;
+  // mesh
+  ctx.strokeStyle='rgba(150,165,180,0.30)'; ctx.lineWidth=1; ctx.beginPath();
+  for(var x=-fh; x<x1; x+=9){ if(gpFenceCut && x>cut0-fh && x<cut1) continue;
+    var xa=Math.max(0,x), xb=Math.min(x1,x+fh); ctx.moveTo(xa, base-(xa-x)); ctx.lineTo(xb, base-(xb-x));
+    ctx.moveTo(xa, base-fh+(xa-x)); ctx.lineTo(xb, base-fh+(xb-x)); }
+  ctx.stroke();
+  // posts + top rail + the barbed strands
+  ctx.strokeStyle='#5d6670'; ctx.lineWidth=2.4; ctx.beginPath();
+  for(var px=step*0.3; px<=x1; px+=step){ ctx.moveTo(px,base+1); ctx.lineTo(px,base-fh-7); }
+  ctx.moveTo(gpFenceCut?cut1:0,base-fh); ctx.lineTo(x1,base-fh); ctx.stroke();
+  ctx.strokeStyle='rgba(170,180,190,0.55)'; ctx.lineWidth=1;
+  for(var s=0;s<3;s++){ ctx.beginPath(); var yy=base-fh-2-s*2.6;
+    for(var bx=(gpFenceCut?cut1:0); bx<x1; bx+=14){ ctx.moveTo(bx,yy); ctx.lineTo(bx+7,yy-1.2); ctx.lineTo(bx+14,yy); } ctx.stroke(); }
+  if(gpFenceCut){ ctx.strokeStyle='rgba(170,180,190,0.6)'; ctx.lineWidth=1.2; ctx.beginPath();   // the wire they cut, curled back
+    for(var k=0;k<4;k++){ var cx=cut1-4-k*3, cy=base-fh*0.5+k*6; ctx.moveTo(cx,cy); ctx.quadraticCurveTo(cx+9,cy-9,cx+3,cy+6); } ctx.stroke(); }
+  ctx.restore();
+}
+// floodlight pools (night readability: the line and the barracks are LIT, the golf course is dark) + the ninth-green flag
+function gpDrawGround(){
+  var gy=groundY();
+  function pool(x,r,a){ var g=ctx.createRadialGradient(x,gy+10,0,x,gy+10,r); g.addColorStop(0,'rgba(255,236,190,'+a+')'); g.addColorStop(1,'rgba(255,236,190,0)');
+    ctx.save(); ctx.translate(x,gy+10); ctx.scale(1,0.22); ctx.translate(-x,-(gy+10)); ctx.fillStyle=g; ctx.fillRect(x-r,gy+10-r,r*2,r*2); ctx.restore(); }
+  pool(W*0.752,W*0.13,0.16); pool(W*0.865,W*0.10,0.10); pool(W*0.17,W*0.12,0.11); pool(W*0.47,W*0.10,0.07);
+  // SEARCHLIGHTS — the tower + the barracks roof sweep the sky (the empty night above the fort gets depth + menace; render-only)
+  var lights=[[W*0.838,gy-H*0.24,0.55,0.0],[W*0.16,gy-H*0.12,0.42,2.1],[W*0.565,gy-H*0.10,0.36,4.0]];
+  ctx.save(); ctx.globalCompositeOperation='lighter';
+  for(var li=0;li<lights.length;li++){ var L=lights[li], ang=-Math.PI/2+Math.sin(t*L[2]+L[3])*0.62, len=H*0.95, spread=0.055;
+    var ex=L[0]+Math.cos(ang)*len, ey=L[1]+Math.sin(ang)*len, lx=L[0]+Math.cos(ang-spread)*len, ly=L[1]+Math.sin(ang-spread)*len, rx=L[0]+Math.cos(ang+spread)*len, ry=L[1]+Math.sin(ang+spread)*len;
+    var sg=ctx.createLinearGradient(L[0],L[1],ex,ey); sg.addColorStop(0,'rgba(220,230,255,0.13)'); sg.addColorStop(1,'rgba(220,230,255,0)');
+    ctx.fillStyle=sg; ctx.beginPath(); ctx.moveTo(L[0],L[1]); ctx.lineTo(lx,ly); ctx.lineTo(rx,ry); ctx.closePath(); ctx.fill(); glow(L[0],L[1],6,'rgba(255,250,220,0.8)'); }
+  ctx.restore();
+  var fx0=W*0.905, fy=gy+2;                                  // the ninth green — where they came from
+  ctx.save(); ctx.globalAlpha=0.8; ctx.fillStyle='rgba(60,120,70,0.35)'; ctx.beginPath(); ctx.ellipse(fx0,fy+4,W*0.035,5,0,0,6.28); ctx.fill();
+  ctx.strokeStyle='#d8d8d0'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(fx0,fy+3); ctx.lineTo(fx0,fy-H*0.055); ctx.stroke();
+  ctx.fillStyle='#e0473c'; ctx.beginPath(); ctx.moveTo(fx0,fy-H*0.055); ctx.lineTo(fx0+12+Math.sin(t*3)*2,fy-H*0.05); ctx.lineTo(fx0,fy-H*0.044); ctx.fill(); ctx.restore();
+}
+function gpBar(x,y,w,f,col){ ctx.fillStyle='rgba(10,10,14,0.75)'; ctx.fillRect(x-w/2-1,y-1,w+2,6); ctx.fillStyle=col; ctx.fillRect(x-w/2,y,w*clamp(f,0,1),4); }
+function gpDrawFront(){
+  var i, c;
+  // shields (wizard) + burning people/cover
+  for(i=0;i<targets.length;i++){ c=targets[i]; if(c.gone) continue;
+    if(c.kind==='gnome' && c.shieldT>0 && !c.dieT){ var r=H*c.drawH*0.75; ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.globalAlpha=0.25+0.15*Math.sin(t*12+c.ph)*(c.shieldT<1?Math.sin(t*30):1);
+      ctx.strokeStyle='#8fd8ff'; ctx.lineWidth=2; ctx.beginPath(); ctx.ellipse(c.x,gpBodyY(c,0.5),r*0.8,r,0,0,6.28); ctx.stroke(); ctx.globalAlpha*=0.4; ctx.fillStyle='#8fd8ff'; ctx.fill(); ctx.restore(); }
+    if(c.kind==='gnome' && c.climbT>0){ ctx.fillStyle='#ffd23f'; ctx.font='800 10px ui-monospace'; ctx.textAlign='center'; ctx.fillText('OVER THE WIRE', c.x, gpBodyY(c,1.25)); }
+  }
+  // the gate's integrity (phase I) + damaged cover
+  if(gpGate && gpGate.hp>0 && gpPhase===0){ var gw=W*0.07; gpBar(gpGate.x, gpBodyY(gpGate,1.18), gw, gpGate.hp/gpGate.maxHp, gpGate.hp/gpGate.maxHp>0.5?'#9affc0':gpGate.hp/gpGate.maxHp>0.25?'#ffd23f':'#ff5d6c');
+    ctx.fillStyle='#dff7e4'; ctx.font='800 10px ui-monospace'; ctx.textAlign='center'; ctx.fillText('THE GATE', gpGate.x, gpBodyY(gpGate,1.18)-4); }
+  for(i=0;i<targets.length;i++){ c=targets[i]; if(c.gone||c.dkind!=='cover'||c.hp<=0||c.captured||c.hp>=c.maxHp) continue;
+    gpBar(c.x, gpBodyY(c,1.15), Math.min(gpHalfW(c)*1.4,W*0.05), c.hp/c.maxHp, '#ffd27a'); }
+  // people: hurt pips + the wounded / aid markers
+  for(i=0;i<targets.length;i++){ c=targets[i]; if(c.gone||c.vanish>0||!gpIsPerson(c)) continue; var top=gpBodyY(c,1.08);
+    if(c.st==='wounded'){ ctx.fillStyle=(Math.floor(t*4)%2)?'#ff9d3a':'#ffd23f'; ctx.font='800 10px ui-monospace'; ctx.textAlign='center'; ctx.fillText('✚ WOUNDED', c.x, top-2); }
+    else if(c.hp<c.maxHp){ gpBar(c.x, top, 22, c.hp/c.maxHp, c.hp/c.maxHp>0.5?'#9affc0':'#ff5d6c'); } }
+  // projectiles
+  for(i=0;i<gpShots.length;i++){ var s=gpShots[i];
+    if(s.kind==='bullet'){ ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.strokeStyle=s.col; ctx.lineWidth=2; ctx.globalAlpha=0.9; ctx.lineCap='round';
+      var ex=s.x-(s.x-s.px)*2.2, ey=s.y-(s.y-s.py)*2.2; ctx.beginPath(); ctx.moveTo(ex,ey); ctx.lineTo(s.x,s.y); ctx.stroke(); ctx.restore(); }
+    else if(s.kind==='cannon'){ ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.strokeStyle='#ffe2a0'; ctx.lineWidth=3.5; ctx.beginPath(); ctx.moveTo(s.px-(s.x-s.px)*1.5,s.py-(s.y-s.py)*1.5); ctx.lineTo(s.x,s.y); ctx.stroke(); ctx.restore(); glow(s.x,s.y,8,'rgba(255,210,120,0.9)'); }
+    else if(s.kind==='rocket'){ var a=Math.atan2(s.y-s.py,s.x-s.px); ctx.save(); ctx.translate(s.x,s.y); ctx.rotate(a); ctx.fillStyle='#8a8f6a'; roundRect(-9,-3,16,6,3); ctx.fill(); ctx.fillStyle='#ffb03a'; ctx.fillRect(-13,-2,4,4); ctx.restore(); }
+    else if(s.kind==='shell'){ ctx.fillStyle='#2a2c30'; ctx.beginPath(); ctx.arc(s.x,s.y,3.5,0,6.28); ctx.fill();
+      var pr=clamp(s.t/s.T,0,1), rr=10+14*(1-pr); ctx.save(); ctx.globalAlpha=0.35+0.5*(Math.floor(t*10)%2); ctx.strokeStyle='#ff5d6c'; ctx.lineWidth=2;   // the landing marker = the telegraph
+      ctx.beginPath(); ctx.ellipse(s.x1,groundY()+6,rr*1.6,rr*0.4,0,0,6.28); ctx.stroke(); ctx.restore(); }
+    else if(s.kind==='orb'){ glow(s.x,s.y,11,'rgba(143,216,255,0.95)'); glow(s.x,s.y,4,'#ffffff'); }
+    else if(s.kind==='hex'){ glow(s.x,s.y,10,'rgba(179,136,255,0.95)'); ctx.save(); ctx.strokeStyle='#e0c8ff'; ctx.globalAlpha=0.8; ctx.beginPath(); ctx.arc(s.x,s.y,6+2*Math.sin(t*20),0,6.28); ctx.stroke(); ctx.restore(); }
+  }
+  // fx
+  for(i=0;i<gpFx.length;i++){ var e=gpFx[i], p=e.t/e.life, a2=1-p;
+    if(e.kind==='flame'){ var rr2=(e.r||5)*(0.7+p*1.6); ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.globalAlpha=a2*0.85;
+      ctx.fillStyle=p<0.35?'#ffe27a':p<0.7?'#ff8a2a':'#c0392b'; ctx.beginPath(); ctx.arc(e.x,e.y,rr2,0,6.28); ctx.fill(); ctx.restore();
+      if(p>0.6){ ctx.globalAlpha=a2*0.4; ctx.fillStyle='#555'; ctx.beginPath(); ctx.arc(e.x,e.y-4,rr2*0.8,0,6.28); ctx.fill(); ctx.globalAlpha=1; } }
+    else if(e.kind==='muzzle'){ glow(e.x,e.y,9*a2+3,e.col); }
+    else if(e.kind==='dust'){ ctx.globalAlpha=a2*0.5; ctx.fillStyle='#9a8f7a'; ctx.beginPath(); ctx.arc(e.x,e.y-p*6,2+p*6,0,6.28); ctx.fill(); ctx.globalAlpha=1; }
+    else if(e.kind==='smoke'){ ctx.globalAlpha=a2*0.4; ctx.fillStyle='#8a8f96'; ctx.beginPath(); ctx.arc(e.x,e.y-p*8,2+p*7,0,6.28); ctx.fill(); ctx.globalAlpha=1; }
+    else if(e.kind==='spark2'){ glow(e.x,e.y,3+a2*5,e.col); }
+    else if(e.kind==='fizz'){ ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.globalAlpha=a2; ctx.strokeStyle='#bfefff'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(e.x,e.y,6+p*16,0,6.28); ctx.stroke(); ctx.restore(); }
+    else if(e.kind==='tele'){ ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.globalAlpha=a2; ctx.strokeStyle=e.col||'#b388ff'; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.ellipse(e.x,e.y,10+p*30,4+p*40,0,0,6.28); ctx.stroke(); ctx.restore(); glow(e.x,e.y,6+a2*14,e.col||'#b388ff'); }
+    else if(e.kind==='bolt'){ var fi=Math.min(3,(p*4)|0), bh=H*0.30, gy=groundY();   // Joe's lightning-bolt strip, striking from the sky
+      ctx.save(); ctx.globalCompositeOperation='lighter'; drawImg(GP_BOLT[fi], e.x, gy-bh*0.5, bh*0.42, 0, clamp(1.2-p,0,1)); ctx.restore(); glow(e.x,gy,18*a2+6,'rgba(143,216,255,0.8)'); }
+  }
+  // the geese of Gunpowder (render-only)
+  for(i=0;i<gpAmb.length;i++){ var gs=gpAmb[i]; drawImg(Math.floor(gs.f)%2?'fx_goose_a':'fx_goose_b', gs.x, gs.y, H*gs.s*1.6, 0, 0.85, true); }
+}
+function gpDrawBanner(){
+  if(!gpBan || gpBanT<=0) return; var a=clamp(Math.min(gpBanT, 3.0-gpBanT)*3,0,1), y=Math.max(132,H*0.165);   // under the HUD, above the flight band — never over the fight
+  ctx.save(); ctx.globalAlpha=a*0.6; ctx.fillStyle='rgba(2,6,12,0.85)'; ctx.fillRect(0,y-38,W,74);
+  ctx.globalAlpha=a; ctx.fillStyle=gpBan.col; ctx.fillRect(0,y-38,W,2); ctx.fillRect(0,y+34,W,2);
+  ctx.textAlign='center'; ctx.font='900 '+clamp(W*0.03,24,40)+'px system-ui'; ctx.shadowColor=gpBan.col; ctx.shadowBlur=16; ctx.fillText(gpBan.title, W/2, y+2); ctx.shadowBlur=0;
+  ctx.fillStyle='#dff7e4'; ctx.font='800 '+clamp(W*0.011,11,15)+'px ui-monospace'; ctx.fillText(gpBan.sub, W/2, y+24); ctx.restore();
+}
+function gpDrawHUD(){
+  var o=gpCounts(), my=H-30, warn=o.alive<=GP_MUST_SAVE, close=o.alive===GP_MUST_SAVE+1;
+  // the people strip: one pip per person (green fighting / orange wounded / cyan aboard / dark red lost)
+  var pw=14, gap=5, tot=o.total*(pw+gap)-gap, x0=W/2-tot/2, py=my-30, k=0;
+  for(var i=0;i<targets.length;i++){ var c=targets[i]; if(!gpIsPerson(c)) continue; var civ=c.dkind==='civilian';
+    var alive=c.aboard||(!c.gone&&c.vanish<=0), col=!alive?'#4a1c22':c.aboard?'#7fe9ff':c.st==='wounded'?'#ff9d3a':civ?'#bdf2cf':'#39ff14', x=x0+k*(pw+gap); k++;
+    ctx.fillStyle=col; if(civ){ ctx.beginPath(); ctx.arc(x+pw/2,py+7,6,0,6.28); ctx.fill(); } else { roundRect(x,py,pw,14,3); ctx.fill(); }
+    if(!alive){ ctx.strokeStyle='#ff5d6c'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x+2,py+2); ctx.lineTo(x+pw-2,py+12); ctx.moveTo(x+pw-2,py+2); ctx.lineTo(x+2,py+12); ctx.stroke(); } }
+  ctx.textAlign='center'; ctx.font='800 14px system-ui';
+  ctx.fillStyle=warn?((Math.floor(t*5)%2)?'#ff5d6c':'#ffd23f'):close?'#ffd23f':'#9affc0';
+  ctx.fillText('SOLDIERS '+o.s+'/'+o.sT+'  ·  CIVILIANS '+o.c+'/'+o.cT+'  ·  MUST SAVE '+GP_MUST_SAVE, W/2, my);
+  if(warn){ ctx.font='800 11px ui-monospace'; ctx.fillText('ONE MORE LOSS AND FORT GUNPOWDER FALLS', W/2, my+15); }
+  // phase track (top centre, under the clock)
+  var segW=clamp(W*0.07,64,110), sx=W/2-segW*2-6, sy=62;
+  for(var p=0;p<4;p++){ var x=sx+p*(segW+4), on=p===gpPhase, done=p<gpPhase;
+    ctx.fillStyle=done?'rgba(154,255,192,0.5)':on?GP_PHASES[p].col:'rgba(255,255,255,0.12)'; ctx.fillRect(x,sy,segW,5);
+    if(on){ var f=clamp((gpEl()-GP_PHASE_AT[p])/((p<3?GP_PHASE_AT[p+1]:GP_LEN)-GP_PHASE_AT[p]),0,1); ctx.fillStyle='rgba(255,255,255,0.75)'; ctx.fillRect(x,sy+6,segW*f,2); } }
+  ctx.fillStyle=GP_PHASES[gpPhase].col; ctx.font='800 12px ui-monospace'; ctx.fillText(GP_PHASES[gpPhase].name, W/2, sy+22);
+  ctx.textAlign='right'; ctx.fillStyle='#ffd23f'; ctx.font='800 15px system-ui'; ctx.fillText('GNOMES BEAMED  '+(gpStats?gpStats.beamed:0), W-22, 36);
+  ctx.fillStyle='#9c89c4'; ctx.font='700 11px system-ui'; ctx.fillText('the line\'s kills pay nothing', W-22, 52);
+}
+function gpDrawFail(){
+  var a=clamp(gpFailT*1.6,0,1); ctx.save(); ctx.globalAlpha=a; ctx.fillStyle='rgba(18,2,6,.78)'; ctx.fillRect(0,0,W,H);
+  ctx.textAlign='center'; ctx.fillStyle='#ff5d6c'; ctx.font='900 '+clamp(W*0.058,40,88)+'px system-ui'; ctx.shadowColor='#ff5d6c'; ctx.shadowBlur=26;
+  ctx.fillText('MISSION FAILED', W/2, H*0.30); ctx.shadowBlur=0;
+  ctx.fillStyle='#ffd23f'; ctx.font='800 '+clamp(W*0.016,14,22)+'px system-ui'; ctx.fillText('THE GNOMES TOOK FORT GUNPOWDER', W/2, H*0.30+46);
+  ctx.fillStyle='#dff7e4'; ctx.font='700 '+clamp(W*0.013,12,17)+'px ui-monospace'; ctx.fillText(gpFailWhy, W/2, H*0.30+80);
+  var y=H*0.52, row=function(l,v,col){ ctx.textAlign='left'; ctx.fillStyle='#9fb8d0'; ctx.font='700 '+clamp(W*0.012,12,16)+'px ui-monospace'; ctx.fillText(l, W*0.36, y);
+    ctx.textAlign='right'; ctx.fillStyle=col||'#dff7e4'; ctx.font='800 '+clamp(W*0.016,14,20)+'px system-ui'; ctx.fillText(v, W*0.64, y); y+=clamp(W*0.022,22,32); };
+  var o=gpCounts();
+  row('FELL IN', GP_PHASES[gpPhase].name, GP_PHASES[gpPhase].col);
+  row('HELD FOR', Math.floor(gpStats.failAt/60)+':'+('0'+Math.floor(gpStats.failAt%60)).slice(-2)+' of '+Math.floor(GP_LEN/60)+':'+('0'+GP_LEN%60).slice(-2));
+  row('SOLDIERS · CIVILIANS LEFT', o.s+'/'+o.sT+'  ·  '+o.c+'/'+o.cT, '#ff9d3a');
+  row('GNOMES YOU BEAMED', ''+gpStats.beamed, '#ffd23f');
+  ctx.textAlign='center'; ctx.globalAlpha=a*(gpFailT>0.9?(0.6+0.4*Math.abs(Math.sin(t*4))):0.3);
+  ctx.fillStyle='#39ff14'; ctx.font='900 '+clamp(W*0.018,16,24)+'px system-ui'; ctx.fillText('BEAM — RETRY THE MISSION', W/2, H*0.83);
+  ctx.fillStyle='#9c89c4'; ctx.font='700 '+clamp(W*0.012,11,15)+'px ui-monospace';
+  ctx.fillText('WARBLE / ESC — '+(soloStage?'BACK TO THE VAULT':'TAKE THE LOSS AND MOVE ON'), W/2, H*0.83+28);
+  ctx.restore();
+}
+function gpDrawTally(){
+  var T=gpTally||{s:0,sT:6,c:0,cT:4,beamed:0,beamPts:0,line:0,bonus:0,perfect:false}, col=T.perfect?'#ffd23f':'#9affc0';
+  ctx.fillStyle='rgba(2,6,12,.80)'; ctx.fillRect(0,0,W,H); ctx.textAlign='center';
+  ctx.save(); ctx.fillStyle=col; ctx.font='900 '+clamp(W*0.05,34,74)+'px system-ui'; ctx.shadowColor=col; ctx.shadowBlur=24;
+  ctx.fillText(T.perfect?'PERFECT DEFENSE':'FORT GUNPOWDER HELD', W/2, H*0.22); ctx.restore();
+  ctx.fillStyle='#bdf2cf'; ctx.font='700 '+clamp(W*0.013,12,17)+'px ui-monospace'; ctx.fillText(T.perfect?'every soldier and every civilian made the convoy':'the convoy got out — the gnomes have the golf course', W/2, H*0.22+36);
+  var y=H*0.38, gap=clamp(W*0.028,24,40);
+  function row(l,v,c2){ ctx.textAlign='left'; ctx.fillStyle='#9fb8d0'; ctx.font='700 '+clamp(W*0.014,12,18)+'px ui-monospace'; ctx.fillText(l, W*0.32, y);
+    ctx.textAlign='right'; ctx.fillStyle=c2||'#dff7e4'; ctx.font='800 '+clamp(W*0.02,15,24)+'px system-ui'; ctx.fillText(v, W*0.68, y); y+=gap; }
+  row('SOLDIERS SAVED  '+T.s+'/'+T.sT, '+'+(T.s*GP_SAVE_SOLDIER), '#39ff14');
+  row('CIVILIANS SAVED  '+T.c+'/'+T.cT, '+'+(T.c*GP_SAVE_CIV), '#7fe9ff');
+  row('GNOMES BEAMED  '+T.beamed, '+'+T.beamPts+' (banked)', '#ffd23f');
+  row('GNOMES THE LINE DROPPED  '+T.line, '+0', '#9c89c4');
+  row('PERFECT — ALL '+(T.sT+T.cT)+' HOME', T.perfect?'+'+BONUS_PERFECT:'—', T.perfect?'#ffd23f':'#5a6070');
+  y+=gap*0.3; row('MISSION BONUS', '+'+T.bonus, col); row('SCORE', ''+score, '#dff7e4');
+  ctx.textAlign='center'; ctx.globalAlpha=0.55+0.45*Math.abs(Math.sin(t*4)); ctx.fillStyle='#bdf2cf'; ctx.font='800 '+clamp(W*0.014,12,17)+'px ui-monospace';
+  ctx.fillText(ARCADE?'press any key':'BEAM — CONTINUE', W/2, H*0.88); ctx.globalAlpha=1;
+}
+/* ---------- CLAW & ORDER — render (presentation only: reads the bonus, never writes it) ----------
+   "Light the line, leave the field dark" (FORT_LAYOUT_LESSONS §6): the crab-house porch throws a warm pool across the dock
+   where the guns and the rich food are; the quiet end by the pier stays moonlit; THE DROP is the one green light in the sky. */
+function clawDrawWorld(){
+  var gy=groundY(), hx=W*CLAW_DOOR;
+  ctx.save(); ctx.globalCompositeOperation='lighter';
+  var g=ctx.createRadialGradient(hx,gy-H*0.02,0,hx,gy-H*0.02,W*0.30);                       // the porch light pool
+  g.addColorStop(0,'rgba(255,176,90,0.20)'); g.addColorStop(0.45,'rgba(255,150,70,0.08)'); g.addColorStop(1,'rgba(255,140,60,0)');
+  ctx.fillStyle=g; ctx.fillRect(hx-W*0.32,gy-H*0.30,W*0.64,H*0.40);
+  var lx=W*0.215, ly=gy-H*0.135, lg=ctx.createRadialGradient(lx,ly,0,lx,ly,W*0.06);           // the pier lamp — one small warm point at the quiet end
+  lg.addColorStop(0,'rgba(255,200,120,0.22)'); lg.addColorStop(1,'rgba(255,200,120,0)'); ctx.fillStyle=lg; ctx.fillRect(lx-W*0.07,ly-W*0.07,W*0.14,W*0.14);
+  if(claw && claw.lv>=2){ var pulse=0.5+0.5*Math.sin(t*(claw.lv>=3?7:3.5));                   // the dock heats: a red wash over the porch at ANGRY / RIOT
+    var rg=ctx.createRadialGradient(hx,gy,0,hx,gy,W*0.36); rg.addColorStop(0,'rgba(255,60,50,'+(0.05+0.06*pulse)*(claw.lv-1)+')'); rg.addColorStop(1,'rgba(255,60,50,0)');
+    ctx.fillStyle=rg; ctx.fillRect(hx-W*0.4,gy-H*0.35,W*0.8,H*0.45); }
+  ctx.restore();
+}
+function clawDrawFront(){
+  if(!claw) return;
+  var i, d=clawDrop(), pulse=0.5+0.5*Math.sin(t*5);
+  // THE DROP — the bank ring over the water
+  ctx.save(); ctx.globalCompositeOperation='lighter';
+  var on=claw.hold>0, col=on?'57,255,20':'120,200,150', rr=d.r*(0.92+0.08*pulse);
+  var dg=ctx.createRadialGradient(d.x,d.y,0,d.x,d.y,rr*1.5); dg.addColorStop(0,'rgba('+col+','+(on?0.20:0.08)+')'); dg.addColorStop(1,'rgba('+col+',0)');
+  ctx.fillStyle=dg; ctx.beginPath(); ctx.arc(d.x,d.y,rr*1.5,0,6.28); ctx.fill();
+  ctx.strokeStyle='rgba('+col+','+(on?0.85:0.35)+')'; ctx.lineWidth=on?3:2; ctx.setLineDash(on?[]:[6,6]); ctx.beginPath(); ctx.arc(d.x,d.y,rr,0,6.28); ctx.stroke(); ctx.setLineDash([]);
+  ctx.restore();
+  ctx.textAlign='center'; ctx.font='800 '+clamp(W*0.009,10,13)+'px ui-monospace'; ctx.fillStyle=on?'#39ff14':'rgba(160,220,180,0.7)';
+  ctx.fillText(on?'BANK HERE':'THE DROP', d.x, d.y+4);
+  if(claw.bailT>0 || claw.dropT>0.5){ ctx.fillStyle='#ffd23f'; ctx.font='800 '+clamp(W*0.010,11,14)+'px ui-monospace';
+    ctx.fillText(claw.bailT>0?'BAILING IN '+Math.max(1,Math.ceil(3-claw.bailT))+'…':'STAY TO BAIL OUT', d.x, d.y+d.r+16); }
+  if(on && P && !clawInDrop(P)){ var ax=P.x-d.x, ay=P.y-d.y, aL=Math.hypot(ax,ay)||1;           // a faint guide arrow from the ring toward you while you carry
+    ctx.save(); ctx.globalAlpha=0.25+0.2*pulse; ctx.strokeStyle='#39ff14'; ctx.lineWidth=2; ctx.setLineDash([3,7]);
+    ctx.beginPath(); ctx.moveTo(d.x+ax/aL*d.r, d.y+ay/aL*d.r); ctx.lineTo(d.x+ax/aL*(d.r+Math.min(aL-d.r,W*0.10)), d.y+ay/aL*(d.r+Math.min(aL-d.r,W*0.10))); ctx.stroke(); ctx.restore(); }
+  // the kitchen's steam puff before a platter goes down
+  for(i=0;i<claw.pend.length;i++){ var pd=claw.pend[i];
+    for(var k=0;k<4;k++){ var a=(pd.t*0.9+k*0.25)%1; ctx.globalAlpha=(1-a)*0.35; ctx.fillStyle='#e8eef6'; ctx.beginPath(); ctx.arc(pd.x+Math.sin(k*2+pd.t*3)*6, groundY()-4-a*H*0.07, 4+a*10, 0, 6.28); ctx.fill(); } }
+  ctx.globalAlpha=1;
+  // TELEGRAPHS — "!" over the shooter + a dashed aim line to where you WERE (locked), a growing muzzle glint
+  for(i=0;i<claw.tel.length;i++){ var e=claw.tel[i], p=clamp(e.t/e.T,0,1), blink=Math.floor(e.t*(8+10*p))%2;
+    var c=e.who, hh=H*c.drawH*zdS(c), top=groundY()+6+zdY(c)-hh-6, red=e.volley||p>0.7;
+    ctx.save(); ctx.globalAlpha=0.18+0.45*p; ctx.strokeStyle=red?'#ff5d6c':'#ffd23f'; ctx.lineWidth=1.5; ctx.setLineDash([4,6]);
+    ctx.beginPath(); ctx.moveTo(e.mx,e.my); ctx.lineTo(e.mx+(e.ax-e.mx)*(0.25+0.75*p), e.my+(e.ay-e.my)*(0.25+0.75*p)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.globalAlpha=0.3+0.5*p; ctx.beginPath(); ctx.arc(e.ax,e.ay,SAUCER_W()*0.20*(1.4-0.4*p),0,6.28); ctx.stroke(); ctx.restore();
+    glow(e.mx,e.my,3+7*p,red?'rgba(255,93,108,0.9)':'rgba(255,226,140,0.9)');
+    ctx.textAlign='center'; ctx.font='900 '+Math.round(14+8*p)+'px system-ui'; ctx.fillStyle=blink?(red?'#ff5d6c':'#ffd23f'):'#ffffff';
+    ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,0.6)'; ctx.strokeText(e.volley?'!!':'!', c.x, top); ctx.fillText(e.volley?'!!':'!', c.x, top); }
+  // townie state marks: ducking (hat knocked off)
+  for(i=0;i<targets.length;i++){ var tw=targets[i]; if(tw.kind!=='townie'||tw.gone||tw.duckT<=0) continue; var th=H*tw.drawH*zdS(tw);
+    ctx.textAlign='center'; ctx.font='800 11px ui-monospace'; ctx.fillStyle='#bfefff'; ctx.fillText('HEY!', tw.x, groundY()+6-th-4); }
+  // spill / hat / steam bits
+  for(i=0;i<claw.fx.length;i++){ var f=claw.fx[i], fp=f.t/f.life;
+    if(f.kind==='spill'){ drawImg(f.sp, f.x, f.y, sz().cow*0.55, f.rot, clamp(1.2-fp,0,1)); if(f.y>groundY()-6 && fp>0.4) glow(f.x,groundY(),6,'rgba(150,200,255,0.6)'); }
+    else if(f.kind==='hat'){ ctx.save(); ctx.translate(f.x,f.y); ctx.rotate(f.t*9); ctx.globalAlpha=1-fp; ctx.fillStyle='#c9a24a'; ctx.fillRect(-7,-2,14,4); ctx.fillRect(-4,-6,8,4); ctx.restore(); }
+    else if(f.kind==='steam'){ for(var s2=0;s2<5;s2++){ ctx.globalAlpha=(1-fp)*0.4; ctx.fillStyle='#eef3f8'; ctx.beginPath(); ctx.arc(f.x+(s2-2)*8, f.y-fp*40-s2*4, 6+fp*12, 0, 6.28); ctx.fill(); } ctx.globalAlpha=1; } }
+  ctx.globalAlpha=1;
+  if(claw.bull && !claw.bull.gone && !claw.bull.lifting){ var bh=sz().cow*1.25; ctx.textAlign='center'; ctx.font='800 11px system-ui'; ctx.fillStyle='#ff9d3a';
+    ctx.fillText(CLAW_BULL_VAL+' · GUARDED', claw.bull.x, groundY()+6-bh-18); }
+}
+function clawDrawHUD(){
+  var my=H-30, mw=clamp(W*0.30,240,460), mx=(W-mw)/2, lv=claw.lv, L=CLAW_LV[lv];
+  var bw=Math.min(W-40, mw*1.7); ctx.fillStyle='rgba(4,8,14,0.58)'; roundRect(W/2-bw/2, my-76, bw, 96, 12); ctx.fill();   // backing plate: the dock planks are busy
+  // the dock's greed meter (CALM / SORE / ANGRY / RIOT), with the tier ticks
+  ctx.fillStyle='#160c10'; ctx.strokeStyle='#3a1c24'; ctx.lineWidth=1; roundRect(mx,my,mw,12,6); ctx.fill(); ctx.stroke();
+  var grad=ctx.createLinearGradient(mx,0,mx+mw,0); grad.addColorStop(0,'#9affc0'); grad.addColorStop(0.3,'#ffd23f'); grad.addColorStop(0.6,'#ff9d3a'); grad.addColorStop(1,'#ff5d6c');
+  ctx.save(); roundRect(mx,my,mw,12,6); ctx.clip(); ctx.fillStyle=grad; ctx.fillRect(mx,my,mw*claw.anger/100,12); ctx.restore();
+  ctx.fillStyle='rgba(0,0,0,0.5)'; for(var k=1;k<4;k++) ctx.fillRect(mx+mw*CLAW_LV[k].at/100-1,my,2,12);
+  ctx.textAlign='center'; ctx.font='800 12px system-ui'; ctx.fillStyle=(lv>=3&&Math.floor(t*5)%2)?'#ffffff':L.col;
+  ctx.fillText('THE DOCK — '+L.name+(lv<3?'  ·  they shoot at thieves':'  ·  they shoot at ANYTHING'), W/2, my-7);
+  // THE HOLD + streak (left of centre, above the meter) — unbanked = at risk
+  var hy=my-50, mult=Math.min(CLAW_MULT_MAX,Math.max(1,claw.chain));
+  ctx.font='900 '+clamp(W*0.016,15,22)+'px system-ui'; ctx.fillStyle=claw.hold>0?'#ffd23f':'#5a6070';
+  ctx.fillText('HOLD  '+claw.hold+(claw.chain>1?'   ×'+mult+' STREAK':''), W/2, hy);
+  if(claw.chain>0){ var cf=clamp(1-(clawEl()-claw.lastGrab)/CLAW_CHAIN,0,1); ctx.fillStyle='rgba(255,255,255,0.15)'; ctx.fillRect(W/2-70,hy+5,140,3); ctx.fillStyle='#ffd23f'; ctx.fillRect(W/2-70,hy+5,140*cf,3); }
+  ctx.font='700 11px ui-monospace'; ctx.fillStyle=claw.hold>0?'#bdf2cf':'#6f7a8a';
+  ctx.fillText(claw.hold>0?'NOT YOURS UNTIL YOU BANK IT — FLY TO THE DROP (TOP LEFT)':'GRAB FAST TO STREAK ×'+CLAW_MULT_MAX+' · A HIT SPILLS A THIRD OF THE HOLD', W/2, hy+22);
+  ctx.textAlign='right'; ctx.fillStyle='#39ff14'; ctx.font='800 13px system-ui'; ctx.fillText('BANKED  '+claw.banked, W-22, 64);
+  if(claw.bull && !claw.bull.gone){ ctx.fillStyle='#ff9d3a'; ctx.font='700 11px system-ui'; ctx.fillText('THE BULL IS OUT — BANK IT CLEAN = PERFECT', W-22, 80); }
+  else if(claw.bullHeld){ ctx.fillStyle='#ffd23f'; ctx.font='700 11px system-ui'; ctx.fillText('THE BULL IS IN YOUR HOLD — GET IT HOME', W-22, 80); }
+}
+function clawFmtT(s){ s=Math.max(0,Math.floor(s)); return Math.floor(s/60)+':'+('0'+(s%60)).slice(-2); }
+function clawDrawFail(){
+  var T=clawTally||{}, a=clamp(clawFailT*1.6,0,1); ctx.save(); ctx.globalAlpha=a; ctx.fillStyle='rgba(16,4,6,.80)'; ctx.fillRect(0,0,W,H);
+  ctx.textAlign='center'; ctx.fillStyle='#ff5d6c'; ctx.font='900 '+clamp(W*0.056,38,84)+'px system-ui'; ctx.shadowColor='#ff5d6c'; ctx.shadowBlur=26;
+  ctx.fillText('RUN OFF THE DOCK', W/2, H*0.28); ctx.shadowBlur=0;
+  ctx.fillStyle='#ffd23f'; ctx.font='800 '+clamp(W*0.016,14,22)+'px system-ui'; ctx.fillText('THE CRAB HOUSE SHOT YOU OUT OF THE SKY — THE HOLD WENT IN THE BAY', W/2, H*0.28+46);
+  var y=H*0.46, row=function(l,v,col){ ctx.textAlign='left'; ctx.fillStyle='#9fb8d0'; ctx.font='700 '+clamp(W*0.012,12,16)+'px ui-monospace'; ctx.fillText(l, W*0.34, y);
+    ctx.textAlign='right'; ctx.fillStyle=col||'#dff7e4'; ctx.font='800 '+clamp(W*0.016,14,20)+'px system-ui'; ctx.fillText(v, W*0.66, y); y+=clamp(W*0.022,22,32); };
+  row('LASTED', clawFmtT(T.at)+' of '+clawFmtT(CLAW_LEN));
+  row('HOLD LOST (IN THE BAY)', '−'+((T.lost||0)+(T.spilled||0)), '#ff5d6c');
+  row('BANKED — YOU KEEP IT', '+'+(T.banked||0), '#39ff14');
+  row('HULL', soloStage?'—':'PATCHED TO '+CLAW_PATCH+' — NO SHIP LOST', '#ff9d3a');
+  ctx.textAlign='center'; ctx.globalAlpha=a*(clawFailT>0.9?(0.6+0.4*Math.abs(Math.sin(t*4))):0.3);
+  ctx.fillStyle='#39ff14'; ctx.font='900 '+clamp(W*0.018,16,24)+'px system-ui';
+  ctx.fillText(soloStage?'BEAM — RETRY THE FEAST':'BEAM — LIMP ON TO '+nextSegLabel(), W/2, H*0.80);
+  ctx.fillStyle='#9c89c4'; ctx.font='700 '+clamp(W*0.012,11,15)+'px ui-monospace';
+  ctx.fillText(soloStage?'WARBLE / ESC — BACK TO THE VAULT':'no retries in the run — the gamble was the point', W/2, H*0.80+28);
+  ctx.restore();
+}
+// the success tally — solo (state 'clear') or in the run (drawn by drawResult in place of the generic rows)
+function clawDrawTally(inRun){
+  var T=clawTally||{banked:0,grabs:0,best:1,hits:0,spilled:0,bull:'never',perfect:false,bonus:0,returns:0,outcome:'time'}, col=T.perfect?'#ffd23f':'#9affc0';
+  ctx.fillStyle='rgba(2,6,12,.82)'; ctx.fillRect(0,0,W,H); ctx.textAlign='center';
+  ctx.save(); ctx.fillStyle=col; ctx.font='900 '+clamp(W*0.048,32,70)+'px system-ui'; ctx.shadowColor=col; ctx.shadowBlur=24;
+  ctx.fillText(T.perfect?'PERFECT HEIST':T.outcome==='bail'?'TOOK THE MONEY AND RAN':'CLAW & ORDER — LAST CALL', W/2, H*0.19); ctx.restore();
+  ctx.fillStyle='#bdf2cf'; ctx.font='700 '+clamp(W*0.013,12,17)+'px ui-monospace';
+  ctx.fillText(T.perfect?'the Bull, banked, and not a scratch on the hull':T.outcome==='bail'?'out over the water before the dock could finish the job':'the crab house is closing — whatever you carried came home', W/2, H*0.19+34);
+  var y=H*0.33, gap=clamp(W*0.026,22,36);
+  function row(l,v,c2){ ctx.textAlign='left'; ctx.fillStyle='#9fb8d0'; ctx.font='700 '+clamp(W*0.014,12,18)+'px ui-monospace'; ctx.fillText(l, W*0.31, y);
+    ctx.textAlign='right'; ctx.fillStyle=c2||'#dff7e4'; ctx.font='800 '+clamp(W*0.02,15,24)+'px system-ui'; ctx.fillText(v, W*0.69, y); y+=gap; }
+  row('BANKED HAUL  ('+T.grabs+' GRABS)', '+'+T.banked, '#39ff14');
+  row('BEST STREAK', '×'+T.best, T.best>=3?'#ffd23f':'#dff7e4');
+  row('THE BULL', T.bull==='banked'?'BANKED':T.bull==='rival'?'THE RIVAL GOT IT':T.bull==='lost'?'LOST':T.bull==='escaped'?'STILL ON THE PORCH':'—', T.bull==='banked'?'#ffd23f':'#9c89c4');
+  row('HITS TAKEN · SPILLED', T.hits+'  ·  −'+T.spilled, T.hits?'#ff9d3a':'#39ff14');
+  if(T.returns) row('RETURNED TO SENDER', '×'+T.returns+'  (+'+(T.returns*CLAW_RETURN)+')', '#bfefff');
+  row('PERFECT — THE BULL, NO HITS', T.perfect?'+'+BONUS_PERFECT:'—', T.perfect?'#ffd23f':'#5a6070');
+  y+=gap*0.2; row('SCORE', ''+score, '#dff7e4');
+  if(inRun){ ctx.textAlign='center'; ctx.fillStyle='#9c89c4'; ctx.font='700 '+clamp(W*0.013,11,15)+'px ui-monospace'; ctx.fillText('NEXT UP  ·  HULL '+Math.round(hp)+'%', W/2, H*0.78);
+    ctx.fillStyle='#ffd23f'; ctx.font='900 '+clamp(W*0.022,16,28)+'px system-ui'; ctx.fillText(nextSegLabel(), W/2, H*0.78+clamp(W*0.026,20,34)); }
+  ctx.textAlign='center'; ctx.globalAlpha=0.55+0.45*Math.abs(Math.sin(t*4)); ctx.fillStyle='#bdf2cf'; ctx.font='800 '+clamp(W*0.014,12,17)+'px ui-monospace';
+  ctx.fillText(ARCADE?'press any key':'BEAM — CONTINUE', W/2, H*0.92); ctx.globalAlpha=1;
+}
 function drawHUD(){
   ctx.textAlign='left';
   if(R || mode==='bonus'){                                          // 2-UFO scoreboard — most sucked up wins
@@ -2332,14 +3305,15 @@ function drawHUD(){
   if(superT>0){ ctx.textAlign='center'; var spp=clamp(superT/SUPER_SECS,0,1);            // SUPER BEAM badge + drain bar
     ctx.fillStyle=(Math.floor(t*8)%2)?'#ffd23f':'#fff'; ctx.font='800 14px ui-monospace'; ctx.fillText('★ SUPER BEAM ★', W/2, 30);
     ctx.fillStyle='rgba(255,210,63,.85)'; ctx.fillRect(W/2-60, 38, 120*spp, 4); ctx.textAlign='left'; }
-  // HULL life bar (replaces the hit-count)
+  // HULL life bar (replaces the hit-count) — not in THE GUNPOWDER HORROR (the saucer can't die there; the fort can)
   var hbw=clamp(W*0.18,170,300), hbx=W-22-hbw, hby=20;
+  if(mode!=='gunpowder'){
   ctx.fillStyle='#1a0c10'; ctx.strokeStyle='#3a1c24'; ctx.lineWidth=1; roundRect(hbx,hby,hbw,16,8); ctx.fill(); ctx.stroke();
   ctx.save(); roundRect(hbx,hby,hbw,16,8); ctx.clip(); ctx.fillStyle= hp>60?'#39ff14':hp>30?'#ffe23a':'#ff5d6c'; ctx.fillRect(hbx,hby,hbw*(hp/maxHP),16); ctx.restore();
   // lives — ◉ per remaining ship, left of the HULL bar
   if(mode!=='bonus'){ var dots=''; for(var li=0;li<lives;li++) dots+='◉ ';
     ctx.textAlign='right'; ctx.font='800 16px system-ui'; ctx.fillStyle='#7fe9ff'; ctx.fillText(dots.trim()||'—', hbx-12, hby+14); }
-  ctx.textAlign='right'; ctx.fillStyle='#9c89c4'; ctx.font='700 11px system-ui'; ctx.fillText('HULL INTEGRITY', W-22, hby+30);
+  ctx.textAlign='right'; ctx.fillStyle='#9c89c4'; ctx.font='700 11px system-ui'; ctx.fillText('HULL INTEGRITY', W-22, hby+30); }
   // zone + clock
   ctx.textAlign='center';
   var zoneName = mode==='gunpowder'?'THE GUNPOWDER HORROR':mode==='base'?'MILITARY BASE':mode==='bonus'?(bonusKind==='crab'?'CLAW & ORDER':bonusKind==='champ'?'#1 CHAMPION LAP':"DAVE'S BACKYARD"):(LEVELS[level]?LEVELS[level].zone:'');
@@ -2349,9 +3323,8 @@ function drawHUD(){
   if(runActive){ ctx.fillStyle='#ff9d3a'; ctx.font='800 14px system-ui'; ctx.globalAlpha=0.6+0.4*Math.sin(clock*9); ctx.fillText('>>> THE RUN <<<', W/2, 74); ctx.globalAlpha=1; }
   // meter — or, in a bonus sweep, the loot-remaining readout (no military response)
   var stg=stageOf(), mw=clamp(W*0.34,260,520), mx=(W-mw)/2, my=H-30;
-  if(mode==='gunpowder'){ var sv=liveDefenders().length;
-    ctx.textAlign='center'; ctx.fillStyle=sv>=gpTotal?'#39ff14':sv>0?'#ffd23f':'#ff5d6c'; ctx.font='800 13px system-ui';
-    ctx.fillText('DEFENDERS  '+sv+'/'+gpTotal+'  ·  SUCK UP THE GNOMES — SAVE THEM ALL = PERFECT', W/2, my); }
+  if(mode==='gunpowder'){ gpDrawHUD(); }
+  else if(clawOn()){ clawDrawHUD(); }
   else if(mode==='bonus'){ var left=0; for(var i=0;i<targets.length;i++) if(!targets[i].gone) left++;
     ctx.textAlign='center'; ctx.fillStyle='#ffd23f'; ctx.font='800 13px system-ui';
     ctx.fillText(left>0?('SWEEP IT — '+left+' LEFT  ·  CLEAR ALL = PERFECT +'+BONUS_PERFECT):'PERFECT!', W/2, my); }
@@ -2366,6 +3339,7 @@ function drawHUD(){
     ctx.textAlign='right'; ctx.fillStyle = fps<45?'#ff5d6c':fps<55?'#ffe23a':'#39ff14'; ctx.font='700 12px ui-monospace';
     ctx.fillText('FPS '+Math.round(fps)+'  · jets '+jets.length+' · shots '+shots.length+' · fx '+fx.length+(stress?'  · BLITZ':''), W-22, H-26);
   }
+  if(mode==='gunpowder' && state==='play') gpDrawBanner();
   if(msgT>0){ ctx.textAlign='center'; ctx.globalAlpha=clamp(msgT,0,1); ctx.fillStyle=msgColor; ctx.font='800 26px system-ui'; ctx.fillText(msg,W/2,H*0.30); ctx.globalAlpha=1; }
 }
 function overlay(title,sub,col){
@@ -2377,9 +3351,11 @@ function overlay(title,sub,col){
 }
 // STAGE-CLEAR CARD — the "where you're at" beat between campaign segments (drawn over the frozen field).
 function drawResult(){
+  if(resKind==='claw' && clawTally){ clawDrawTally(true); return; }   // CLAW & ORDER carries its own tally (haul / streak / the Bull / hits)
   ctx.fillStyle='rgba(2,6,12,.80)'; ctx.fillRect(0,0,W,H); ctx.textAlign='center';
   var accent = resKind==='bonus' ? (resPerfect?'#ffd23f':'#9affc0') : '#9affc0';
-  var head = resKind==='base' ? 'MILITARY BASE — CLEARED'
+  var head = resKind==='gunpowder' ? (resPerfect?'PERFECT DEFENSE':resBonus>0?'FORT GUNPOWDER — HELD':'FORT GUNPOWDER — LOST')
+           : resKind==='base' ? 'MILITARY BASE — CLEARED'
            : resKind==='bonus' ? (resPerfect?'PERFECT SWEEP!':'SWEEP OVER')
            : ((LEVELS[level]&&LEVELS[level].zone)||'ZONE')+' — CLEARED';
   ctx.save(); ctx.fillStyle=accent; ctx.font='900 '+clamp(W*0.05,34,72)+'px system-ui';
@@ -2444,7 +3420,7 @@ function frame(ts){
     else { _devStageBooted=false; }
     { var _mp=(location.search.match(/[?&]meter=([0-9.]+)/)||[])[1]; if(_mp!=null) meter=clamp(+_mp,0,100); }   // dev: &meter=N pins the MILITARY RESPONSE (e.g. 95 = RED) to review heat-keyed threats
     if(_devStageBooted){ state='play'; if(STAGE_ELAPSED>0){ stageClock=Math.max(1,stageClock-STAGE_ELAPSED); }
-      if(STAGE_SIM>0){ for(var _s=0; _s<STAGE_SIM*60 && state==='play'; _s++){ if(BOTPLAY) devBot(); update(1/60); } }   // deterministic fast-forward into live combat (BOTPLAY = best-case auto-player, for winnability tests)
+      if(STAGE_SIM>0){ for(var _s=0; _s<STAGE_SIM*60 && state==='play'; _s++){ if(BOTPLAY) devBot(); update(1/60); } if(state==='gpfail') gpFailT=2; if(state==='clawfail') clawFailT=2; }   // deterministic fast-forward into live combat (BOTPLAY = best-case auto-player, for winnability tests)
       if(STAGE_LIFT>=0) devStageLift(STAGE_LIFT);                    // stage a frozen abduction for the lift-art review
     }
   }
@@ -2456,6 +3432,8 @@ function frame(ts){
   if(state==='select' && idleT>22) enterAttract();                  // attract kicks in after idle on the menu
   if(state==='over' && idleT>12) finishRun();                        // idle on game-over -> leaderboard (or vault for solo stages)
   if(state==='clear' && idleT>12) backToFront();
+  if(state==='gpfail' && idleT>25) gpExit();
+  if(state==='clawfail' && idleT>25) clawLimpOn();                     // nobody at the stick: limp on (vault: back out)                          // nobody at the stick: take the loss
   if(state==='attract'){                                                          // THE SUCK UP FILES — the real baked reel + live NEW-game demo cuts, mounted on the bezel
     ctx.fillStyle='#04080e'; ctx.fillRect(0,0,W,H);
     var sd=Math.min(W,H), ox=(W-sd)/2, oy=(H-sd)/2;
@@ -2482,14 +3460,16 @@ function frame(ts){
   if(state==='select'){ drawSelect(); drawBezel(); requestAnimationFrame(frame); return; }
   ctx.save(); if(shake>0) ctx.translate(rnd(-shake,shake),rnd(-shake,shake));
   drawBG();
-  if(!(DEV&&BGONLY)){ drawTruck(); drawTargets(true); drawShots(); drawJets(); drawSaucer(); drawLifted(); drawFx(); drawHUD(); }   // &bgonly = scenery only (dev background review)
+  if(!(DEV&&BGONLY)){ drawTruck(); drawTargets(true); drawShots(); if(mode==='gunpowder') gpDrawFront(); else if(clawOn()) clawDrawFront(); drawJets(); drawSaucer(); drawLifted(); drawFx(); drawHUD(); }   // &bgonly = scenery only (dev background review)
   ctx.restore();
   drawBezel();
   if(state==='over') overlay(defcon?'DEFCON 1 — GAME OVER':'GAME OVER',
       (defcon&&!defconUnlimited)?'1 CREDIT, NO CONTINUES — BEAM returns  (score '+score+')'
       : soloStage?'BEAM = back to the CHEATS vault  (score '+score+')'
       : 'INSERT COIN — CONTINUE  (score '+score+')','#ff5d6c');
-  else if(state==='clear') overlay(mode==='gunpowder'?(gpFell?'GUNPOWDER FELL':'BASE HELD'):mode==='base'?'BASE CLEARED':soloStage?'STAGE CLEARED':'YOU MADE IT HOME', ARCADE?'press any key — THE SUCK UP FILES':'BEAM = back to the cab menu',gpFell&&mode==='gunpowder'?'#ff5d6c':'#9affc0');
+  else if(state==='gpfail') gpDrawFail();
+  else if(state==='clawfail') clawDrawFail();
+  else if(state==='clear'){ if(mode==='gunpowder' && gpTally) gpDrawTally(); else if(clawOn() && clawTally) clawDrawTally(false); else overlay(mode==='base'?'BASE CLEARED':soloStage?'STAGE CLEARED':'YOU MADE IT HOME', ARCADE?'press any key — THE SUCK UP FILES':'BEAM = back to the cab menu','#9affc0'); }
   else if(state==='result') drawResult();
   requestAnimationFrame(frame);
 }
@@ -2542,6 +3522,87 @@ if(/[?&]soak\b/.test(location.search)){
       breaches:breaches.slice(0,15),errCount:errs.length,errs:errs.slice(0,15),avgScore:avg,maxScore:scores.length?Math.max.apply(null,scores):0,peakEntities:maxEnt});
   };
 }
+
+// GUNPOWDER BATTERY (dev-only, ?dev): window.__gp.battery({policies,runs}) plays the whole mission headless under each
+// scripted player (idle / lazy / competent / expert — gpBotStep) and returns JSON; window.__gp.retry() proves the FAILED
+// card's retry + exit. Driven by tools/gunpowder_test.mjs. Sweeps answer "is the player load-bearing" and "is it
+// winnable" — they CANNOT tune feel (the Python fallback lesson: a metronome player makes difficulty a cliff).
+if(DEV){ window.__gp={
+  battery:function(o){ o=o||{}; var pols=o.policies||['idle','lazy','competent','expert'], n=o.runs||6, out={}, A0=AUDIO_ON; AUDIO_ON=false;
+    for(var pi=0;pi<pols.length;pi++){ var pol=pols[pi], sk=GP_SKILL[pol], res=[];
+      for(var r=0;r<n;r++){ soloStage=true; GOD=false; twoP=false; defcon=false; lives=STARTING_LIVES; hp=maxHP; held={}; planting=false; gpBot={tgt:null,wait:0};
+        startGunpowder(true); var ticks=0;
+        while(state==='play' && ticks<(GP_LEN+10)*60){ if(sk) gpBotStep(1/60,sk); else planting=false; update(1/60); ticks++; }
+        var c=gpCounts();
+        res.push({ win:gpWon, fail:gpFell, t:+gpEl().toFixed(1), phase:gpPhase, phaseT:gpStats.phaseT.map(function(v){return +(+v).toFixed(1);}),
+          alive:c.alive, s:c.s, c:c.c, aboard:c.aboard, spawned:gpStats.spawned, beamed:gpStats.beamed, line:gpStats.lineKills, shots:gpStats.soldierShots, hits:gpStats.soldierHits,
+          wounded:gpStats.wounded, patched:gpStats.patched, atk:gpStats.atk, dmg:gpStats.dmg, lostAt:gpStats.lostAt, hexHit:gpStats.atk.hexHit||0, score:score, state:state, gateFell:gpStats.phaseT[1]!=null?gpStats.phaseT[1]:null }); }
+      out[pol]=res; }
+    AUDIO_ON=A0; return JSON.stringify(out); },
+  retry:function(){ var A0=AUDIO_ON, rep={}; AUDIO_ON=false;
+    soloStage=true; GOD=false; held={}; planting=false; startGunpowder(true); score=777;
+    var k=0; while(state==='play' && k<(GP_LEN+5)*60){ planting=false; update(1/60); k++; }
+    rep.failed=(state==='gpfail'); rep.failAt=+gpEl().toFixed(1); rep.why=gpFailWhy;
+    dispatchEvent(new KeyboardEvent('keydown',{key:' '})); rep.guardHeld=(state==='gpfail');            // too soon: the card is not armed yet
+    for(var i=0;i<60;i++) update(1/60);
+    dispatchEvent(new KeyboardEvent('keydown',{key:' ',repeat:true})); rep.repeatIgnored=(state==='gpfail');   // a held beam auto-repeats: ignored
+    dispatchEvent(new KeyboardEvent('keydown',{key:' '}));
+    rep.retried=(state==='play' && mode==='gunpowder' && gpPhase===0 && gpEl()<0.05 && !gpFell); rep.scoreRestored=(score===777);
+    rep.peopleBack=gpCounts().alive; rep.gateBack=!!(gpGate && gpGate.hp===GP_GATE_HP);
+    k=0; while(state==='play' && k<(GP_LEN+5)*60){ planting=false; update(1/60); k++; }
+    for(var j=0;j<60;j++) update(1/60);
+    dispatchEvent(new KeyboardEvent('keydown',{key:'x'})); rep.exitState=state;                         // WARBLE = leave -> the vault (solo stage)
+    AUDIO_ON=A0; return JSON.stringify(rep); },
+  tune:function(o){ var roots={GP_SOLDIER:GP_SOLDIER, GNOME_UNITS:GNOME_UNITS, GP_PHASES:GP_PHASES, GP_COVER:GP_COVER, GP_SURGE:GP_SURGE}, old={};   // sweep knobs without editing the page
+    for(var k in o){ var ps=k.split('.'), r=roots[ps[0]];
+      if(!r){ if(k==='GP_MUST_SAVE'){ old[k]=GP_MUST_SAVE; GP_MUST_SAVE=o[k]; } else if(k==='GP_GATE_HP'){ old[k]=GP_GATE_HP; GP_GATE_HP=o[k]; } else if(k==='GP_FOOT_CAP'){ old[k]=GP_FOOT_CAP; GP_FOOT_CAP=o[k]; } continue; }
+      for(var i=1;i<ps.length-1;i++) r=r[ps[i]]; old[k]=r[ps[ps.length-1]]; r[ps[ps.length-1]]=o[k]; }
+    return JSON.stringify(old); },
+  peek:function(){ var c=gpCounts(); return JSON.stringify({fps:Math.round(fps), state:state, mode:mode, phase:gpPhase, el:+gpEl().toFixed(1), alive:c.alive, targets:targets.length, shots:gpShots.length, fx:gpFx.length}); }
+}; }
+
+// CLAW & ORDER BATTERY (dev-only, ?dev): window.__claw.battery({policies,runs}) plays the whole bonus headless under each
+// scripted player (idle / careful / greedy / reckless — clawBotStep) and returns JSON; .retry() proves the RUN OFF THE DOCK
+// card (vault retry + exit), .inrun() the arcade-run path (no retry: limp on with the banked haul + a patched hull),
+// .bail() the bank-and-bail exit. Driven by tools/claw_test.mjs. Sweeps prove "risk pays and greed sinks"; FEEL needs hands.
+if(DEV){ window.__claw={
+  run:function(pol,cap){ var sk=CLAW_SKILL[pol]; clawBot={tgt:null,side:0,sideT:0}; var k=0, hp0=hp;
+    while(state==='play' && k<(cap||CLAW_LEN+5)*60){ if(sk) clawBotStep(1/60,sk); else planting=false; update(1/60); k++; }
+    var T=clawTally||{}, st=claw.st;
+    return { pol:pol, state:state, outcome:claw.outcome, t:+clawEl().toFixed(1), banked:claw.banked, bankN:claw.bankN, grabs:claw.grabs, best:claw.best,
+      hits:claw.hits, spilled:claw.spilled, lost:claw.lost, bull:T.bull, perfect:!!T.perfect, lvMax:Math.max.apply(null,st.firstLv.map(function(v,i){return v==null?0:i;})),
+      firstLv:st.firstLv, tel:st.tel, shots:st.shots, kinds:st.kinds, minTel:+st.minTel.toFixed(2), volleys:st.volleys, atP:st.atP, returns:st.returns,
+      restocks:st.restocks, holdMax:st.holdMax, rival:rivalScore, hp0:hp0, hpEnd:Math.round(hp), score:score }; },
+  battery:function(o){ o=o||{}; var pols=o.policies||['idle','careful','greedy','reckless'], n=o.runs||6, out={}, A0=AUDIO_ON; AUDIO_ON=false;
+    for(var pi=0;pi<pols.length;pi++){ var res=[];
+      for(var r=0;r<n;r++){ soloStage=true; GOD=false; twoP=false; defcon=false; lives=STARTING_LIVES; score=0; rivalScore=0; held={}; planting=false; startClaw(true); res.push(this.run(pols[pi])); }
+      out[pols[pi]]=res; }
+    AUDIO_ON=A0; return JSON.stringify(out); },
+  retry:function(){ var A0=AUDIO_ON, rep={}; AUDIO_ON=false;
+    soloStage=true; GOD=false; held={}; planting=false; score=777; hp=maxHP; startClaw(false); var hpIn=hp;
+    var r1=this.run('reckless'); rep.failed=(state==='clawfail'); rep.failAt=r1.t; rep.lost=r1.lost+r1.spilled;
+    dispatchEvent(new KeyboardEvent('keydown',{key:' '})); rep.guardHeld=(state==='clawfail');
+    for(var i=0;i<60;i++) update(1/60);
+    dispatchEvent(new KeyboardEvent('keydown',{key:' ',repeat:true})); rep.repeatIgnored=(state==='clawfail');
+    dispatchEvent(new KeyboardEvent('keydown',{key:' '}));
+    rep.retried=(state==='play' && clawOn() && clawEl()<0.05 && claw.hold===0 && claw.banked===0); rep.scoreRestored=(score===777); rep.hullRestored=(hp===hpIn);
+    this.run('reckless'); for(var j=0;j<60;j++) update(1/60);
+    dispatchEvent(new KeyboardEvent('keydown',{key:'x'})); rep.exitState=state;
+    AUDIO_ON=A0; return JSON.stringify(rep); },
+  inrun:function(pol){ var A0=AUDIO_ON, rep={}; AUDIO_ON=false;
+    soloStage=false; GOD=false; twoP=false; defcon=false; held={}; planting=false; lives=STARTING_LIVES; hp=maxHP; score=1000; rivalScore=0;
+    segIdx=SCHEDULE.lastIndexOf('B'); beginSegment(); rep.isClaw=clawOn(); var seg0=segIdx, lives0=lives;
+    var r=this.run(pol||'reckless'); rep.outcome=r.outcome; rep.state=state; rep.banked=r.banked; rep.scoreKept=(score===1000+r.banked+(r.returns*CLAW_RETURN)+(clawTally&&clawTally.perfect?BONUS_PERFECT:0));
+    rep.hpAfter=Math.round(hp); rep.livesKept=(lives===lives0);
+    if(state==='clawfail'){ for(var i=0;i<60;i++) update(1/60); dispatchEvent(new KeyboardEvent('keydown',{key:' '})); }
+    else if(state==='result'){ resT=1; dispatchEvent(new KeyboardEvent('keydown',{key:' '})); }
+    rep.next=(segIdx===seg0+1 && state==='play' && mode==='campaign'); rep.hpCarried=Math.round(hp);
+    AUDIO_ON=A0; return JSON.stringify(rep); },
+  bail:function(){ var A0=AUDIO_ON, rep={}; AUDIO_ON=false; soloStage=true; held={}; planting=false; score=0; hp=maxHP; startClaw(true);
+    var d=clawDrop(), k=0; while(state==='play' && k<20*60){ planting=false; P.tx=d.x; P.ty=d.y; update(1/60); k++; }
+    rep.state=state; rep.outcome=claw.outcome; rep.at=+clawEl().toFixed(1); rep.tally=!!clawTally; AUDIO_ON=A0; return JSON.stringify(rep); },
+  peek:function(){ if(!claw) return ''; return JSON.stringify({ fps:Math.round(fps), state:state, el:+clawEl().toFixed(1), hold:claw.hold, banked:claw.banked, chain:claw.chain, dock:CLAW_LV[claw.lv].name, anger:Math.round(claw.anger), hp:Math.round(hp), tel:claw.tel.length, shots:shots.length, outcome:claw.outcome }); }
+}; }
 
 /* ---------- THE DECK BUS — the lit-panel wiring for deck.html (docs/cab-standard.md "lit-art-window")
    deck.html mounts this game under the real cabinet panel and lights each control from live state.
