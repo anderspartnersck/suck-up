@@ -1616,8 +1616,24 @@ function sfx(key,vol){ if(!AUDIO_ON) return; var p=SFX[key]; if(!p) return; if(A
 var sfxCd={}; function sfxT(key,gap,vol){ if((sfxCd[key]||0)>t) return; sfxCd[key]=t+(gap||0.25); sfx(key,vol); }
 var mA=new Audio(), mB=new Audio(); mA.loop=mB.loop=true; var mCur=mA, mOther=mB, mKey=null, mTargetVol=0.5;
 function playMusic(path,vol){ if(!path||path===mKey) return; mKey=path; mTargetVol=clamp((vol==null?0.5:vol)*again(path),0,1);
-  var nx=mOther; try{ nx.src='assets/'+path; nx.volume=0; nx.currentTime=0; nx.play().catch(function(){}); }catch(e){}
+  var nx=mOther; try{ nx.src='assets/'+path; nx.volume=0; nx.currentTime=0; nx.play().catch(function(er){ if(er&&er.name==='NotAllowedError') audioBlocked=true; }); }catch(e){}
   mOther=mCur; mCur=nx; }
+// WEB WAKE (Joe 2026-10-22): a browser plays no sound until the page is clicked / tapped / keyed. On the Pages build that
+// first click ALSO inserted the coin (and a second one played solo), so nobody saw the attract or the 2P lock-in with sound.
+// Now the FIRST gesture on a silent cab only wakes the sound -- it never advances the screen. The desktop launchers run
+// Chrome with --autoplay-policy=no-user-gesture-required, are never blocked, and so never swallow anything.
+var audioBlocked=false, wakeSwallowUntil=-1;                                  // -1 = the one wake gesture isn't spent yet
+function tryWake(){ if(!audioBlocked) return; try{ var pr=mCur.play(); if(pr&&pr.then) pr.then(function(){ audioBlocked=false; },function(){}); else audioBlocked=false; }catch(e){} }
+function wakeGate(e){ if(!e.isTrusted) return;                               // stick / phone-pad synthesized keys can't unlock audio -- let them through
+  var now=performance.now();
+  if(audioBlocked && wakeSwallowUntil<0 && (state==='boot'||state==='cabboot'||state==='attract')) wakeSwallowUntil=now+700;   // spend it once, menus only
+  tryWake();
+  if(now<wakeSwallowUntil){ e.stopImmediatePropagation(); if(e.cancelable) e.preventDefault(); } }   // the whole wake tap (down/up/click) is eaten, nothing else
+['keydown','mousedown','pointerdown','pointerup','touchend','click'].forEach(function(ev){ addEventListener(ev,wakeGate,{capture:true,passive:false}); });
+var WAKE_TOUCH=false; try{ WAKE_TOUCH=matchMedia('(pointer:coarse)').matches; }catch(e){}
+function drawWakeHint(){ if(!audioBlocked || wakeSwallowUntil>=0) return;   // only until the wake gesture lands
+  ctx.save(); ctx.textAlign='center'; ctx.globalAlpha=0.55+0.45*Math.abs(Math.sin(t*3)); ctx.fillStyle='#ffd23f'; ctx.font='800 '+clamp(W*0.018,12,18)+'px ui-monospace';
+  ctx.fillText(WAKE_TOUCH?'\u266A  TAP FOR SOUND  \u266A':'\u266A  CLICK OR PRESS ANY KEY FOR SOUND  \u266A', W/2, Math.max(22,H*0.045)); ctx.restore(); }
 function updateAudio(dt){ var tv=AUDIO_ON?mTargetVol*MIX.mus:0, r=Math.min(1,dt*2.4);   // MIX.mus applied HERE (not at playMusic) so a slider move takes effect on the bed already playing
   mCur.volume=clamp(mCur.volume+(tv-mCur.volume)*r,0,1);
   if(mOther!==mCur){ mOther.volume=clamp(mOther.volume+(0-mOther.volume)*r,0,1); if(mOther.volume<0.02 && !mOther.paused){ try{mOther.pause();}catch(e){} } } }
@@ -1698,6 +1714,7 @@ addEventListener('keydown',function(e){
     e.preventDefault(); return; }
   // LOCK-IN — the "ARE YOU ALONE?" prompt: P2 BEAM (;) joins · P1 BEAM/ENTER goes solo · WARBLE/ESC stands down
   if(state==='lockin'){ idleT=0;
+    if(lockinT<1.0){ e.preventDefault(); return; }                    // first second is deaf: the coin click's twin (double-click, held BEAM) can't skip the question
     if(k==='escape'||k==='f'||k==='x'||k==="'"){ enterAttract(); e.preventDefault(); return; }   // WARBLE (X/F) or ESC = stand down
     if(k===';'){ twoP=true; sfx('snatch',0.5); flash('PLAYER 2 IS IN','#3cc8ff',1.2); startRun(); e.preventDefault(); return; }
     if(e.key===' '||e.key==='Enter'){ twoP=false; sfx('launch',0.5); startRun(); e.preventDefault(); return; }
@@ -1774,6 +1791,7 @@ if(!STICK){                                                                    /
   cv.addEventListener('mousemove',function(e){ var p=mouseXY(e); MOUSE.x=p.x; MOUSE.y=p.y; MOUSE.on=true; moveSrc='mouse'; });
   cv.addEventListener('mousedown',function(e){
     if(e.button===2){                                                          // RIGHT-CLICK = WARBLE (phase through fire)
+      if(state==='attract'||state==='lockin'){ try{ dispatchEvent(new KeyboardEvent('keydown',{key:'x'})); }catch(_){} e.preventDefault(); return; }   // menus: WARBLE arms DEFCON 1 / stands down, same as X
       if(state==='play' && P && clock>P.warbleCd){ P.warbleU=clock+0.60; P.warbleCd=clock+2.0; planting=false; sfx('warble',0.7); }
       e.preventDefault(); return; }
     if(e.button!==0) return;                                                    // LEFT-CLICK
@@ -2652,7 +2670,7 @@ function drawAttract(){
       : 'PRESS ANY KEY — BEGIN';
     ctx.fillText(coinTxt, W/2, H*0.93); ctx.globalAlpha=1;
     if(!OG){ ctx.globalAlpha=fade*0.75; ctx.fillStyle='#9c89c4'; ctx.font='700 12px ui-monospace';
-      ctx.fillText('WARBLE = DEFCON 1'+(cheatsUnlocked()?'   ·   C = CHEATS VAULT':'  (clear it to unlock CHEATS)'), W/2, H*0.965); ctx.globalAlpha=1; }
+      ctx.fillText((STICK?'WARBLE':'WARBLE (RIGHT-CLICK)')+' = DEFCON 1'+(cheatsUnlocked()?'   ·   C = CHEATS VAULT':'  (clear it to unlock CHEATS)'), W/2, H*0.965); ctx.globalAlpha=1; }
     return;
   }
   if(pod.hook){                                                      // cold-open HOOK — white line + red turn, centered mid-screen
@@ -3427,8 +3445,8 @@ function frame(ts){
       if(STAGE_LIFT>=0) devStageLift(STAGE_LIFT);                    // stage a frozen abduction for the lift-art review
     }
   }
-  if(state==='boot'){ bootT+=dt; drawBoot(); audioDirector(); updateAudio(dt); updateMixPanel(dt); if(bootT>3.6){ bootT=0; state='cabboot'; } requestAnimationFrame(frame); return; }
-  if(state==='cabboot'){ bootT+=dt; drawCabBoot(); audioDirector(); updateAudio(dt); updateMixPanel(dt); if(bootT>3.0){ ARCADE?enterAttract():enterFront(); } requestAnimationFrame(frame); return; }
+  if(state==='boot'){ bootT+=dt; drawBoot(); drawWakeHint(); audioDirector(); updateAudio(dt); updateMixPanel(dt); if(bootT>3.6){ bootT=0; state='cabboot'; } requestAnimationFrame(frame); return; }
+  if(state==='cabboot'){ bootT+=dt; drawCabBoot(); drawWakeHint(); audioDirector(); updateAudio(dt); updateMixPanel(dt); if(bootT>3.0){ ARCADE?enterAttract():enterFront(); } requestAnimationFrame(frame); return; }
   clock+=dt;
   if(!(DEV&&FREEZE)) update(dt);
   audioDirector(); updateAudio(dt); updateMixPanel(dt);             // bed per state/zone + crossfade
@@ -3454,7 +3472,7 @@ function frame(ts){
       ctx.fillText('★ DEFCON 1 ARMED — 1 CREDIT, NO CONTINUES ★', W/2, by);
       ctx.font='600 12px ui-monospace'; ctx.fillStyle='#bdf2cf';
       ctx.fillText('BEAM = START   ·   WARBLE = STAND DOWN', W/2, by+18); ctx.restore(); }
-    requestAnimationFrame(frame); return;
+    drawWakeHint(); requestAnimationFrame(frame); return;
   }
   if(state==='ending'){ drawEnding(); requestAnimationFrame(frame); return; }
   if(state==='lockin'){ drawLockin(); drawBezel(); requestAnimationFrame(frame); return; }
