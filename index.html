@@ -570,6 +570,7 @@ var STARTING_LIVES=3, lives=STARTING_LIVES;                // HULL = this life's
 var defconArmed=false, defcon=false, defconUnlimited=false, unlockMsg='';   // DEFCON 1: WARBLE arms at coin-up -> 1 CREDIT, NO continues (the real high-score run + the CHEATS-unlock challenge). defconUnlimited = the CHEATS-vault practice version (continues allowed).
 var EXTRA_LIFE=15000, nextExtra=EXTRA_LIFE;                 // arcade reward (from the Python build): cross this score -> +1 ship (matters most in DEFCON 1, no continues)
 var superT=0, briskN=0, SUPER_SECS=8, SUPER_EVERY=2;       // SUPER BEAM (brisket payoff): every Nth brisket arms a wider+faster beam for SUPER_SECS
+var BEAM_GRAB=0.06, SUPER_GRAB=0.11;   // beam acquisition half-width (×W) — same for you and the rival; the SUPER BEAM's is wider. The drawn beams are sized FROM these (fairness, Joe 2026-10-24)
 var runActive=false, daveSpawned=false, moTele=false, moSpawned=false, moTarget=null, moEscapeAt=0;
 // STAGE-CLEAR interstitial (campaign only): the "where you're at" beat between segments (the original build had it).
 var resT=0, resBonus=0, resKind='round', resPerfect=false, resLast=false, RESULT_HOLD=5.5;   // captured at each clear site, shown by drawResult, then proceedSegment()
@@ -2097,11 +2098,11 @@ function update(dt){
   P.lock=null; if(R) R.lock=null;
   var pT=-1, rT=-1;
   if(planting && P.stun<=0 && mode!=='base'){
-    var bestD=(superT>0?W*0.11:W*0.06); for(var i=0;i<targets.length;i++){ var c=targets[i]; if(c.gone||c.hidden||c.protect) continue; var dxp=Math.abs(c.x-P.x);   // SUPER BEAM = wider acquisition; hidden critters + protected defenders aren't lockable
+    var bestD=(superT>0?W*SUPER_GRAB:W*BEAM_GRAB); for(var i=0;i<targets.length;i++){ var c=targets[i]; if(c.gone||c.hidden||c.protect) continue; var dxp=Math.abs(c.x-P.x);   // SUPER BEAM = wider acquisition; hidden critters + protected defenders aren't lockable
       if(dxp<bestD && P.y<c.y){ bestD=dxp; pT=i; } }
   }
   if(R && R.beamOn && R.stun<=0){
-    var bestDr=W*0.06; for(var i=0;i<targets.length;i++){ var c=targets[i]; if(c.gone||c.hidden||c.protect||c.guarded) continue; var dxr=Math.abs(c.x-R.x);
+    var bestDr=W*BEAM_GRAB; for(var i=0;i<targets.length;i++){ var c=targets[i]; if(c.gone||c.hidden||c.protect||c.guarded) continue; var dxr=Math.abs(c.x-R.x);
       if(dxr<bestDr && R.y<c.y){ bestDr=dxr; rT=i; } }
   }
   if(pT>=0 && pT===rT){                                              // CROSSED BEAMS — the ESTABLISHED claim holds
@@ -2920,6 +2921,12 @@ function drawTargets(skipLift){
 }
 // The tractor beam is a CONE — narrow at the saucer emitter, wide at the ground contact ring.
 // funnelHalf gives the cone's half-width at world-y `y` for the owning saucer `own`.
+// FAIR BEAMS (Joe 2026-10-24: "make them the same size for fairness"). The rules always gave both saucers the
+// same beam (BEAM_GRAB, the shaft barrier, funnelHalf); only the ART differed — beam-blue.png is ~1.8× wider at
+// its foot than beam-green.png, so the rival's beam LOOKED twice yours. Both are now drawn so the cone's foot =
+// the funnel (2×funnelHalf at the ground), and the SUPER BEAM widens by its real grab ratio (11/6 ≈ 1.83×; the
+// art used a guessed 1.7×). BEAM_FOOT = each PNG's lit width at its foot as a fraction of the image width (measured).
+var BEAM_FOOT={ beam:0.944, beam2:0.919 };
 function funnelHalf(own,y){ var w=SAUCER_W(), gy=groundY()+8, belly=own.y+w*0.16;
   var f=clamp((y-belly)/Math.max(1,gy-belly),0,1);                 // 0 at the emitter -> 1 at the ground
   return w*0.13 + (w*0.60-w*0.13)*f; }
@@ -2956,7 +2963,7 @@ function drawShip(o,pre,wpre,beamSp,beamOn,gcol){
   var w=SAUCER_W(), gy=groundY()+8, belly=o.y+w*0.16;
   if(beamOn && o.stun<=0 && mode!=='base'){
     var sup=(o===P && superT>0);                                          // SUPER BEAM: wider + brighter (lighter blend, double pass)
-    if(ok(beamSp)){ var bm=IMG[beamSp], bw=(gy-belly)*(bm.naturalWidth/bm.naturalHeight)*(sup?1.7:1); ctx.save(); ctx.globalAlpha=sup?0.95:.82; if(sup) ctx.globalCompositeOperation='lighter'; ctx.drawImage(bm,o.x-bw/2,belly,bw,gy-belly); if(sup){ ctx.globalAlpha=0.5; ctx.drawImage(bm,o.x-bw/2,belly,bw,gy-belly); } ctx.restore(); }
+    if(ok(beamSp)){ var bm=IMG[beamSp], bw=2*funnelHalf(o,gy)*(sup?SUPER_GRAB/BEAM_GRAB:1)/(BEAM_FOOT[beamSp]||0.94); ctx.save(); ctx.globalAlpha=sup?0.95:.82; if(sup) ctx.globalCompositeOperation='lighter'; ctx.drawImage(bm,o.x-bw/2,belly,bw,gy-belly); if(sup){ ctx.globalAlpha=0.5; ctx.drawImage(bm,o.x-bw/2,belly,bw,gy-belly); } ctx.restore(); }
     var ringSp = pre==='p2'?'impact_b':'impact_g';                          // cyan rival / green player ground-contact ring
     if(!drawImg(ringSp,o.x,gy-w*0.12,w*1.5,0,0.9) && ok('ring')) drawImg('ring',o.x,gy,w*0.95,0,0.85);
   }
