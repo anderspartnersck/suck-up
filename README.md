@@ -103,6 +103,14 @@ Each cabinet brings its own deck, because they are not the same machine:
 - [BLACKSITE deck][deckstory]: the jailbroken one
 - [COLEMAN'S ORIGINAL deck][deckog]: Blacksite's panel with every zone open
 
+### The 3D edition
+
+[THE 3D EDITION][play3d] is the same game with a 3D art pass on top: beams with real
+volume and a contest you can read, saucer light on the ground, moon shadows, 3D jets
+and tanks, depth behind the skyline, and the gnome army lit for the Gunpowder
+Horror. The rules are identical. It has its own [deck][deck3d] too. On the
+[Blacksite 3D][story3d] link, press 3 on a computer to flip back to the original art.
+
 ### The vault
 
 Press X at the attract screen before you start and you'll arm DEFCON 1, which is
@@ -150,3 +158,6 @@ Music & SFX by **Joseph Coleman**.
 [deck]: https://anderspartnersck.github.io/suck-up/deck.html
 [deckstory]: https://anderspartnersck.github.io/suck-up/deck.html?story
 [deckog]: https://anderspartnersck.github.io/suck-up/deck.html?og
+[play3d]: https://anderspartnersck.github.io/suck-up/3d.html?arcade
+[deck3d]: https://anderspartnersck.github.io/suck-up/deck-3d.html
+[story3d]: https://anderspartnersck.github.io/suck-up/3d.html?story
