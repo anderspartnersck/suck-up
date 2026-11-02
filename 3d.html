@@ -562,6 +562,12 @@ function devSoak(seconds){
       if(state!=='play') break;   // stage ended (clear/over) — move on
     } }
   __soak={ticks:ticks, breaches:breaches, errors:errors, ok:(breaches.length===0&&errors.length===0)};
+  // The ship gate reads explicit completion, never screenshot colours or a
+  // previous run's image. Missing completion is a failure too.
+  document.documentElement.setAttribute('data-suckup-soak',__soak.ok?'pass':'fail');
+  document.documentElement.setAttribute('data-suckup-soak-ticks',String(ticks));
+  document.documentElement.setAttribute('data-suckup-soak-errors',String(errors.length));
+  document.documentElement.setAttribute('data-suckup-soak-breaches',String(breaches.length));
   state='soakdone';
 }
 var STAGE_ROUNDS={dairy:0,corn:1,downtown:2,county:3,beltway:4,outskirts:5};
@@ -3600,12 +3606,12 @@ var L3 = (function(){
   //   ?stick, ?arcade, a touch device / the phone pad, the retired ?panel band, or a cab shell's iframe, even with ?dev).
   //   The playfield CAPTION is lab / desktop ?dev only: a shipping build draws no caption over the field.
   var LAB = !window.SU3D_EDITION, LKEY = 'su3d.lab';
-  var on = !/[?&]l3=0\b/.test(Q);
+  var on = !((LAB || DEV) && /[?&]l3=0\b/.test(Q));   // the 2D art is lab / ?dev only in the edition (Joe 2026-11-02: hide the original 2D)
   if(LAB){ try{ var sv = localStorage.getItem(LKEY); if(sv!=null && !/[?&]l3=/.test(Q)) on = (sv==='1'); }catch(e){} }
   var TOUCH = /[?&]touch\b/.test(Q) || ((('ontouchstart' in window) || navigator.maxTouchPoints > 0) && !!window.matchMedia && matchMedia('(pointer:coarse)').matches);
   var INFRAME = true; try{ INFRAME = (window.top !== window); }catch(e){}
   var DESK = !STICK && !ARCADE && !TOUCH && !INFRAME && !/[?&]panel=(band|alt|1up)\b/.test(Q);   // ?dev doesn't bring them back on a stick / cab / phone
-  var CHROME = LAB || DESK;
+  var CHROME = LAB || (DEV && DESK);   // the 2D<->3D flip chip + key 3: lab, or the desktop page with ?dev (Joe 2026-11-02)
   var CAPTION = LAB || (DEV && DESK);
   // SUPER BEAM test key (Q): the lab page or an explicit ?dev only, and never in a ranked run (runRanked: no cheats, no
   // vault stage, not OG) or any DEFCON run. tools/edition_check.mjs proves it stays inert in the edition.

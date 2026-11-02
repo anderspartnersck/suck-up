@@ -76,6 +76,10 @@ bottom of the screen.
 
 ## The three cabinets
 
+All three run the 3D edition: beams with real volume and a contest you can read,
+saucer light on the ground, moon shadows, 3D jets and tanks, depth behind the
+skyline, and the gnome army lit for the Gunpowder Horror.
+
 [HYSCORE FOREST][play] is the arcade cab, and the one to start with. Attract
 reel, a full run, then continue or begin again. No stage select and no quitting
 mid-run, the same as a real cabinet.
@@ -83,7 +87,7 @@ mid-run, the same as a real cabinet.
 [BLACKSITE][story] is the same game, but it tracks your progress: clear a zone
 and the next one opens, and it drops you into the furthest one you have reached.
 There is no level select, it just continues. That progress lasts for the session
-and resets when you refresh. The bare link boots this one.
+and resets when you refresh.
 
 [COLEMAN'S ORIGINAL][testcab] is Blacksite with every zone already open. Use it
 to jump straight to the later stages.
@@ -102,14 +106,6 @@ Each cabinet brings its own deck, because they are not the same machine:
 - [HYSCORE FOREST deck][deck]: the painted arcade panel
 - [BLACKSITE deck][deckstory]: the jailbroken one
 - [COLEMAN'S ORIGINAL deck][deckog]: Blacksite's panel with every zone open
-
-### The 3D edition
-
-[THE 3D EDITION][play3d] is the same game with a 3D art pass on top: beams with real
-volume and a contest you can read, saucer light on the ground, moon shadows, 3D jets
-and tanks, depth behind the skyline, and the gnome army lit for the Gunpowder
-Horror. The rules are identical. It has its own [deck][deck3d] too. On the
-[Blacksite 3D][story3d] link, press 3 on a computer to flip back to the original art.
 
 ### The vault
 
@@ -152,12 +148,19 @@ Music & SFX by **Joseph Coleman**.
 
 <sub>RESPEK LOGIC ART UREA</sub>
 
-[play]: https://anderspartnersck.github.io/suck-up/?arcade
-[story]: https://anderspartnersck.github.io/suck-up/
-[testcab]: https://anderspartnersck.github.io/suck-up/?og
-[deck]: https://anderspartnersck.github.io/suck-up/deck.html
-[deckstory]: https://anderspartnersck.github.io/suck-up/deck.html?story
-[deckog]: https://anderspartnersck.github.io/suck-up/deck.html?og
-[play3d]: https://anderspartnersck.github.io/suck-up/3d.html?arcade
-[deck3d]: https://anderspartnersck.github.io/suck-up/deck-3d.html
-[story3d]: https://anderspartnersck.github.io/suck-up/3d.html?story
+## OLD 2D VERSION
+
+The original flat-sprite game, kept playable but no longer the main game:
+[HYSCORE FOREST][old] · [BLACKSITE][oldstory] · [COLEMAN'S ORIGINAL][oldog] · [the deck][olddeck].
+The rules are identical.
+
+[play]: https://anderspartnersck.github.io/suck-up/3d.html?arcade
+[story]: https://anderspartnersck.github.io/suck-up/3d.html?story
+[testcab]: https://anderspartnersck.github.io/suck-up/3d.html?og
+[deck]: https://anderspartnersck.github.io/suck-up/deck-3d.html
+[deckstory]: https://anderspartnersck.github.io/suck-up/deck-3d.html?story
+[deckog]: https://anderspartnersck.github.io/suck-up/deck-3d.html?og
+[old]: https://anderspartnersck.github.io/suck-up/?arcade
+[oldstory]: https://anderspartnersck.github.io/suck-up/
+[oldog]: https://anderspartnersck.github.io/suck-up/?og
+[olddeck]: https://anderspartnersck.github.io/suck-up/deck.html
