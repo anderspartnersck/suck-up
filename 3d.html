@@ -4461,10 +4461,13 @@ requestAnimationFrame(frame);
   function peek(){ try{ return window.__suPeek?window.__suPeek():{}; }catch(_){ return {}; } }
   function key(type,k){ window.dispatchEvent(new KeyboardEvent(type,{key:k,bubbles:true,cancelable:true})); }
   function buzz(ms){ try{ navigator.vibrate&&navigator.vibrate(ms||10); }catch(_){} }
+  // env(safe-area-inset-*) in px (0 off-notch): the pad column pads by it, so its width must include it
+  function safeInset(side){ var d=document.createElement('div'); d.style.cssText='position:fixed;visibility:hidden;pointer-events:none;padding-left:env(safe-area-inset-'+side+')';
+    document.body.appendChild(d); var v=parseFloat(getComputedStyle(d).paddingLeft)||0; d.remove(); return v; }
   function layout(){
     TMODE=innerWidth>=innerHeight;
     document.body.classList.toggle('smode',TMODE); document.body.classList.toggle('trot',!TMODE);
-    var btn=Math.round(Math.min((innerHeight-56)/2.75,128)); colW=TMODE?Math.round(Math.max(btn*1.3,118)):0;
+    var btn=Math.round(Math.min((innerHeight-56)/2.75,128)); colW=TMODE?Math.round(Math.max(btn*1.3,118)+safeInset(HAND==='R'?'right':'left')):0;   // + the notch: the column pads by it (border-box), so the buttons keep their full lane and the divider clears the rings
     var r=document.documentElement.style; r.setProperty('--btn',btn+'px'); r.setProperty('--col',colW+'px');
     var home=HAND==='R'?cR:cL; cL.classList.toggle('on',TMODE&&home===cL); cR.classList.toggle('on',TMODE&&home===cR);
     home.appendChild(bW); home.appendChild(bB);   // top->bottom WARBLE · BEAM (BEAM = the resting thumb)
