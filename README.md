@@ -148,9 +148,10 @@ Music & SFX by **Joseph Coleman**.
 
 <sub>RESPEK LOGIC ART UREA</sub>
 
-## OLD 2D VERSION
+## ⚠︎ OLD 2D VERSION — NOT THE MAIN GAME
 
-The original flat-sprite game, kept playable but no longer the main game:
+Archived for reference only. It is no longer updated, and nothing new goes into it.
+The game at the top of this page is the real one. This is the original flat-sprite build:
 [HYSCORE FOREST][old] · [BLACKSITE][oldstory] · [COLEMAN'S ORIGINAL][oldog] · [the deck][olddeck].
 The rules are identical.
 
