@@ -498,6 +498,11 @@ var ARCADE=/[?&]arcade\b/.test(location.search) || (MODEBAKE==='arcade' && !MODE
 // COLEMAN'S ORIGINAL SUCK-UP BLACKSITE CABINET — the backdoor test cab: EVERYTHING unlocked from boot
 // (every level + every cheat + GOD mode), and it never touches the real player's save. ?coleman or ?og.
 var OG=/[?&](coleman|og)\b/.test(location.search);
+// ?console (2026-11-10, the desktop / Steam CONSOLE build): the CK ident + the attract only; any press, a finished run and
+// BACK out of the lock-in / vault all go to the front door (title.html: TITLE → PRESS BEAM → the mode menu). ?go= is
+// how that menu comes back in: play (ARE YOU ALONE?) · defcon (the DEFCON 1 run) · vault (once earned) · attract.
+var CONSOLE=/[?&]console\b/.test(location.search) && !ARCADE && !OG;
+function toFront(){ if(CONSOLE){ try{reelVid.pause();}catch(e){} location.href='title.html'; return; } enterAttract(); }
 // EDITIONS — the two distributable builds are cleanly separate:
 //   DESKTOP = pure KEYBOARD+MOUSE (mouse = fly-to-cursor + hold-click BEAM + right-click WARBLE; gamepad IGNORED)
 //   STICK   = pure arcade STICK/keyboard (gamepad ON; MOUSE fully disabled)
@@ -583,9 +588,14 @@ var SAVE_KEY='suckupBlacksite1';
 // on a stranger's machine for a thing they clicked once. It also actively CLEARS the keys older builds
 // wrote, so anyone who played before gets tidied up rather than left with orphaned data.
 // (ckGamepad is still READ below -- the KILLBOX writes that, not us, and a cab needs its pad map.)
-function loadSave(){ try{ localStorage.removeItem(SAVE_KEY); localStorage.removeItem('suckupMix'); }catch(e){} return {}; }
+// THE CLOSED BOX (2026-11-10): the desktop / Steam app (ANDERS CASTLE KILLSCREEN/STEAM) hands the page a window.ckSave
+// bridge, and ONLY then does SAVE outlive the tab: it goes to a JSON file in the OS user-data folder (Steam Cloud can sync
+// it). The web never has the bridge, so the web still writes nothing. ?coleman / ?og never touch the box's save.
+var SAVEBOX=(function(){ try{ var b=window.ckSave; return (b && typeof b.getItem==='function' && typeof b.setItem==='function' && !/[?&](coleman|og)\b/.test(location.search)) ? b : null; }catch(e){ return null; } })();
+function loadSave(){ if(SAVEBOX){ try{ var o=JSON.parse(SAVEBOX.getItem(SAVE_KEY)||'{}'); return (o && typeof o==='object') ? o : {}; }catch(e){ return {}; } }
+  try{ localStorage.removeItem(SAVE_KEY); localStorage.removeItem('suckupMix'); }catch(e){} return {}; }
 var SAVE=loadSave(); if(SAVE.storyMax==null) SAVE.storyMax=0;   // highest STORY zone unlocked (0 = only DAIRY FLATS open)
-function persist(){}   // session-only: SAVE lives in memory and is never written. See loadSave().
+function persist(){ if(SAVEBOX){ try{ SAVEBOX.setItem(SAVE_KEY, JSON.stringify(SAVE)); }catch(e){} } }   // web: a no-op (session-only). Desktop app: the box's save file.
 function cheatsUnlocked(){ return OG || !!SAVE.cheats; }        // CHEATS vault — earned by a DEFCON-1 full clear (always open in OG)
 function storyMaxZone(){ return OG ? LEVELS.length-1 : (SAVE.storyMax|0); }
 var GOD=OG;                                                    // GOD mode / infinite lives (default ON in OG; toggled in CHEATS)
@@ -801,7 +811,7 @@ function enterCheats(){ state='select'; idleT=0; sel=0; mode='campaign'; level=0
   targets=[]; jets=[]; shots=[]; fx=[]; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0; planting=false; held={};
 }
 function enterSelect(){ enterCheats(); }                 // legacy alias — any old "go to the menu" call lands in the vault
-function enterFront(){ OG?enterCheats():enterAttract(); } // blacksite front door: OG -> vault, otherwise the arcade-style attract
+function enterFront(){ if(CONSOLE && state!=='boot' && state!=='cabboot'){ toFront(); return; } OG?enterCheats():enterAttract(); } // blacksite front door: OG -> vault, otherwise the arcade-style attract
 function backToFront(){ if(soloStage) enterCheats(); else enterFront(); }   // after a stage/run ends: solo vault stages go back to the vault, runs go to the front
 function startRun(){ held={}; held2={}; planting=false; planting2=false; ARCADE?startCampaign():startStory(); }
 function enterLockin(){ state='lockin'; lockinT=0; twoP=false; held={}; held2={}; planting=false; planting2=false; idleT=0; }   // "DO YOU THINK YOU ARE ALONE?"
@@ -1825,6 +1835,7 @@ addEventListener('keydown',function(e){
   if(state==='cabboot'){ ARCADE?enterAttract():enterFront(); e.preventDefault(); return; }
   // attract: WARBLE (F / stick warble button) ARMS DEFCON 1 (the arcade high-score run AND the CHEATS-unlock
   // challenge); any other key/BEAM inserts a coin. STANDALONE: coin CONTINUES your story; C opens the vault once earned.
+  if(state==='attract' && CONSOLE){ toFront(); e.preventDefault(); return; }   // desktop console: the attract never starts a run itself
   if(state==='attract' && !OG && (k==='f'||k==='x')){ defconArmed=!defconArmed; sfx(defconArmed?'snatch':'denied',0.7); e.preventDefault(); return; }   // WARBLE (X/F) arms DEFCON 1
   if(state==='attract' && !ARCADE && cheatsUnlocked() && k==='c'){ sfx('launch',0.6); enterCheats(); e.preventDefault(); return; }
   if(state==='attract'){ try{reelVid.pause();}catch(e){} sfx('launch',0.6);
@@ -1834,7 +1845,7 @@ addEventListener('keydown',function(e){
   // LOCK-IN — the "ARE YOU ALONE?" prompt: P2 BEAM (;) joins · P1 BEAM/ENTER goes solo · WARBLE/ESC stands down
   if(state==='lockin'){ idleT=0;
     if(lockinT<1.0){ e.preventDefault(); return; }                    // first second is deaf: the coin click's twin (double-click, held BEAM) can't skip the question
-    if(k==='escape'||k==='f'||k==='x'||k==="'"){ enterAttract(); e.preventDefault(); return; }   // WARBLE (X/F) or ESC = stand down
+    if(k==='escape'||k==='f'||k==='x'||k==="'"){ toFront(); e.preventDefault(); return; }   // WARBLE (X/F) or ESC = stand down (console: back to the menu)
     if(k===';'){ twoP=true; sfx('snatch',0.5); flash('PLAYER 2 IS IN','#3cc8ff',1.2); startRun(); e.preventDefault(); return; }
     if(e.key===' '||e.key==='Enter'){ twoP=false; sfx('launch',0.5); startRun(); e.preventDefault(); return; }
     e.preventDefault(); return; }
@@ -1871,7 +1882,7 @@ addEventListener('keydown',function(e){
     if(dd==='up'){   sel=(sel+MENU.length-1)%MENU.length; sfx('select',0.5); e.preventDefault(); return; }
     if(dd==='down'){ sel=(sel+1)%MENU.length;             sfx('select',0.5); e.preventDefault(); return; }
     if(e.key===' '||e.key==='Enter'){ sfx('launch',0.6); launchSel(); e.preventDefault(); return; }
-    if(k==='escape'){ enterAttract(); return; }
+    if(k==='escape'){ toFront(); return; }
     return;
   }
   // ---- in play ----
@@ -4138,7 +4149,7 @@ function frame(ts){
   if(!(DEV&&FREEZE)) update(dt);
   L3.post();   // LAB3D
   audioDirector(); updateAudio(dt); updateMixPanel(dt);             // bed per state/zone + crossfade
-  if(state==='select' && idleT>22) enterAttract();                  // attract kicks in after idle on the menu
+  if(state==='select' && idleT>22) toFront();                  // attract kicks in after idle on the menu
   if(state==='over' && idleT>12) finishRun();                        // idle on game-over -> leaderboard (or vault for solo stages)
   if(state==='clear' && idleT>12) backToFront();
   if(state==='gpfail' && idleT>25) gpExit();
@@ -4346,6 +4357,12 @@ if(window.parent && window.parent!==window){
     }catch(e2){}
   });
 }
+if(CONSOLE){ (function(){ var go=(location.search.match(/[?&]go=([a-z]+)/)||[])[1];   // the front door's picks (title.html)
+  if(go==='attract') enterAttract();
+  else if(go==='play') enterLockin();
+  else if(go==='defcon'){ defconArmed=true; startRun(); }
+  else if(go==='vault'){ if(cheatsUnlocked()) enterCheats(); else toFront(); } })(); }
+if(SAVEBOX) window.__suSave={ get:function(){ return JSON.parse(JSON.stringify(SAVE)); }, post:function(n,sc){ postScore(n,sc); }, story:function(z){ SAVE.storyMax=z|0; persist(); } };   // desktop QA (STEAM/tools/smoke.mjs): only where the box's save bridge exists
 
 requestAnimationFrame(frame);
 })();
