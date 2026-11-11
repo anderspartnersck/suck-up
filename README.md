@@ -1,3 +1,5 @@
+> **Status: finished title, live.** Play it at **[anderspartnersck.github.io/suck-up/3d.html?arcade][play]** (the 3D edition, which is the main game). The old 2D build is still online and listed at the bottom as NOT THE MAIN GAME.
+
 ```
   ___ _   _  ___ _  __  _   _ ___
  / __| | | |/ __| |/ / | | | | _ \
@@ -56,20 +58,23 @@ Fly over a target and hold **BEAM** to pull it up. **WARBLE** phases you
 through incoming fire for a moment, and a well-timed one sends the shot back.
 Farmers shoot back. On County Road 9, so do the cops.
 
-**On a phone,** turn it sideways and the cabinet's control panel fills the
-bottom of the screen.
+**On a phone,** turn it sideways. A column down the left edge holds two
+buttons: WARBLE on top, BEAM below it, both for one thumb.
 
-- Player 1 is green, on the left: the stick flies, then BEAM and WARBLE.
-- Player 2 is blue, on the right. When the game asks DO YOU THINK YOU ARE
-  ALONE?, player 2 taps their BEAM to join, and you play on the same phone.
-- Tap the middle of the panel to switch its look, fluorescent or dark.
+- Drag anywhere on the game with your other thumb to fly. The saucer moves
+  with your thumb from where it already is, so your thumb never covers it.
+- Outside of play, tap the game to start or confirm, and swipe to move
+  through menus.
+- The ⇄ LEFTY chip (shown outside of play) moves the buttons to the right
+  side. `?hand=right` on the link does the same.
+- The phone is one player. Two players need a keyboard.
 
 **On a computer:**
 
 - Move the mouse and the saucer follows your cursor. Hold left-click to beam,
   right-click to warble.
-- On the keyboard it's WASD to fly, **Z** to beam, **X** to warble. Space
-  starts a game and M mutes.
+- On the keyboard it's WASD or the arrow keys to fly, **Z** to beam, **X** to
+  warble. Space starts a game (and also beams), and M mutes.
 - A second player can join on the same keyboard. When the game asks DO YOU
   THINK YOU ARE ALONE?, press `;` to jump in, then fly with IJKL, beam with M
   and warble with the comma key. M stops muting once two people are playing.
@@ -109,29 +114,26 @@ Each cabinet brings its own deck, because they are not the same machine:
 
 ### The vault
 
-Press X at the attract screen before you start and you'll arm DEFCON 1, which is
-one credit with no continues. Finish a run on that and the cheats vault unlocks.
-It holds every level, the Military Base, Claw & Order, the Champion Lap, DEFCON 1
-with unlimited continues, The Gunpowder Horror, three codes, and the attract film
-on its own.
+Press X (or right-click) at the attract screen before you start and you'll arm
+DEFCON 1, which is one credit with no continues. Finish a run on that and the
+cheats vault unlocks. It holds every level, Dave's Backyard, the Military Base,
+Claw & Order, the Champion Lap, the full run, DEFCON 1 with unlimited
+continues, god mode, The Gunpowder Horror, three codes, and the attract film on
+its own.
 
-You can unlock it from the arcade cab but you can't open it there, because that
-cab has no menus. Press C on the Blacksite cab instead. On Coleman's Original
-it's already open.
+The arcade cab has no menus, so the vault only opens on the Blacksite cab:
+earn it there, then press C at the attract screen. Because nothing is saved
+(see below), it has to be earned in the same tab you open it in. On Coleman's
+Original it's already open.
 
 Progress, scores and the vault last as long as the tab is open and reset on
-refresh, the way a cabinet forgets your game when the power cycles. The only
-thing the game keeps on your device is which phone-panel look you picked, and it
-sends nothing anywhere.
+refresh, the way a cabinet forgets your game when the power cycles. The web
+game saves nothing on your device and sends nothing anywhere.
 
 ## Controllers
 
-This build is mouse, keyboard and touch, and it ignores gamepads. The
-arcade-stick version is a separate build.
-
-If you're on that one, put the controller in X-input mode, and on an 8BitDo set
-the lever to D-pad as well. Left and right working while up and down don't is
-almost always that setting rather than the game. A is beam, B is warble.
+This build is mouse, keyboard and touch, and it ignores gamepads. An
+arcade-stick edition exists on Joe's machine but is not published.
 
 ## Credits
 
@@ -145,6 +147,8 @@ Music & SFX by **Joseph Coleman**.
 ---
 
 <sub>The logo and the saucers above come from the terminal version of the game.</sub>
+
+<sub>This repo is generated from the private Castle Killscreen tree (`SUCK UP` and its `art-3d` worktree, `tools/build_pages.py`). Edit there, not here. This README is the one file kept by hand.</sub>
 
 <sub>RESPEK LOGIC ART UREA</sub>
 
