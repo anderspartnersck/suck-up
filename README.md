@@ -82,8 +82,8 @@ buttons: WARBLE on top, BEAM below it, both for one thumb.
 ## The three cabinets
 
 All three run the 3D edition: beams with real volume and a contest you can read,
-saucer light on the ground, moon shadows, 3D jets and tanks, depth behind the
-skyline, and the gnome army lit for the Gunpowder Horror.
+saucer light on the ground, moon shadows, 3D jets and tanks, 3D trees, water
+tower and hay bales across the farm, depth behind the skyline, and the gnome army lit for the Gunpowder Horror.
 
 [HYSCORE FOREST][play] is the arcade cab, and the one to start with. Attract
 reel, a full run, then continue or begin again. No stage select and no quitting
@@ -132,8 +132,7 @@ game saves nothing on your device and sends nothing anywhere.
 
 ## Controllers
 
-This build is mouse, keyboard and touch, and it ignores gamepads. An
-arcade-stick edition exists on Joe's machine but is not published.
+This build is mouse, keyboard and touch, and it ignores gamepads.
 
 ## Credits
 
@@ -147,8 +146,6 @@ Music & SFX by **Joseph Coleman**.
 ---
 
 <sub>The logo and the saucers above come from the terminal version of the game.</sub>
-
-<sub>This repo is generated from the private Castle Killscreen tree (`SUCK UP` and its `art-3d` worktree, `tools/build_pages.py`). Edit there, not here. This README is the one file kept by hand.</sub>
 
 <sub>RESPEK LOGIC ART UREA</sub>
 
