@@ -1,4 +1,4 @@
-> **Status: finished title, live.** Play it at **[anderspartnersck.github.io/suck-up/3d.html?arcade][play]** (the 3D edition, which is the main game). The old 2D build is still online and listed at the bottom as NOT THE MAIN GAME.
+> **Status: finished title, live.** Play it at **[anderspartnersck.github.io/suck-up][play]** (the 3D edition, which is the main game). The old 2D build is still online and listed at the bottom as NOT THE MAIN GAME.
 
 ```
   ___ _   _  ___ _  __  _   _ ___
@@ -75,6 +75,8 @@ buttons: WARBLE on top, BEAM below it, both for one thumb.
   right-click to warble.
 - On the keyboard it's WASD or the arrow keys to fly, **Z** to beam, **X** to
   warble. Space starts a game (and also beams), and M mutes.
+- **Esc** (or P) pauses: RESUME, RESTART or QUIT TO TITLE. On a pad it's
+  START; on a phone, the ❚❚ PAUSE chip in the top corner.
 - A second player can join on the same keyboard. When the game asks DO YOU
   THINK YOU ARE ALONE?, press `;` to jump in, then fly with IJKL, beam with M
   and warble with the comma key. M stops muting once two people are playing.
@@ -86,8 +88,9 @@ saucer light on the ground, moon shadows, 3D jets and tanks, 3D trees, water
 tower and hay bales across the farm, depth behind the skyline, and the gnome army lit for the Gunpowder Horror.
 
 [HYSCORE FOREST][play] is the arcade cab, and the one to start with. Attract
-reel, a full run, then continue or begin again. No stage select and no quitting
-mid-run, the same as a real cabinet.
+reel, a full run, then continue or begin again. No stage select. On the web the
+rounds run long and you can pause. [The coin-op version][coinop] plays the way the
+real cabinet does: the original short rounds, no pause, and no quitting mid-run.
 
 [BLACKSITE][story] is the same game, but it tracks your progress: clear a zone
 and the next one opens, and it drops you into the furthest one you have reached.
@@ -156,13 +159,14 @@ The game at the top of this page is the real one. This is the original flat-spri
 [HYSCORE FOREST][old] · [BLACKSITE][oldstory] · [COLEMAN'S ORIGINAL][oldog] · [the deck][olddeck].
 The rules are identical.
 
-[play]: https://anderspartnersck.github.io/suck-up/3d.html?arcade
-[story]: https://anderspartnersck.github.io/suck-up/3d.html?story
-[testcab]: https://anderspartnersck.github.io/suck-up/3d.html?og
-[deck]: https://anderspartnersck.github.io/suck-up/deck-3d.html
-[deckstory]: https://anderspartnersck.github.io/suck-up/deck-3d.html?story
-[deckog]: https://anderspartnersck.github.io/suck-up/deck-3d.html?og
-[old]: https://anderspartnersck.github.io/suck-up/?arcade
-[oldstory]: https://anderspartnersck.github.io/suck-up/?story
-[oldog]: https://anderspartnersck.github.io/suck-up/?og
-[olddeck]: https://anderspartnersck.github.io/suck-up/deck.html
+[play]: https://anderspartnersck.github.io/suck-up/
+[coinop]: https://anderspartnersck.github.io/suck-up/?arcade
+[story]: https://anderspartnersck.github.io/suck-up/?story
+[testcab]: https://anderspartnersck.github.io/suck-up/?og
+[deck]: https://anderspartnersck.github.io/suck-up/deck.html
+[deckstory]: https://anderspartnersck.github.io/suck-up/deck.html?story
+[deckog]: https://anderspartnersck.github.io/suck-up/deck.html?og
+[old]: https://anderspartnersck.github.io/suck-up/old-2d.html
+[oldstory]: https://anderspartnersck.github.io/suck-up/old-2d.html?story
+[oldog]: https://anderspartnersck.github.io/suck-up/old-2d.html?og
+[olddeck]: https://anderspartnersck.github.io/suck-up/old-2d-deck.html
