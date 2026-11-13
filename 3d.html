@@ -495,6 +495,16 @@ var MODEBAKE=(typeof window!=='undefined' && window.__SUCKUP_MODE)||'';   // bak
 // cab and the OG test cab unreachable on that upload, with no way back.
 var MODEOVR=/[?&](og|coleman|story|blacksite)\b/.test(location.search);
 var ARCADE=/[?&]arcade\b/.test(location.search) || (MODEBAKE==='arcade' && !MODEOVR);
+// LONG ROUNDS (Joe 1112: "longer rounds might make more sense ... we dont have a ton of stages") -- the HOME profile:
+// every non-arcade build (STORY, the desktop / console / Steam front, the BLACKSITE vault) and the 3D EDITION's web default.
+// The arcade quarter-eater (?arcade, the cabs, the baked 2D Pages site) keeps the original timings (RK=BK=1: byte-identical).
+// A main round is the same round TIME-STRETCHED: the clock, THE RUN's scroll_start + ramp, the meter's whole timeline
+// (passive fill AND snatch heat / brisket cool, so RED still lands near the horn), Mo's arc and wild Dave's arrival.
+// Telegraphs, hazard cadences and spawn rates are untouched. Base + sweep bonuses x1.5; GUNPOWDER (170 s) and CLAW keep theirs.
+// = src/suck_up.py LONG_ROUND_SCALE / LONG_BREAK_SCALE (GameState.long_rounds). Override: ?rounds=arcade | ?rounds=long.
+var LONGR=(function(){ var q=location.search; if(/[?&]rounds=arcade\b/.test(q)) return false; if(/[?&]rounds=long\b/.test(q)) return true;
+  return !ARCADE || (!!window.SU3D_EDITION && !/[?&]arcade\b/.test(q)); })();
+var RK=LONGR?2.0:1, BK=LONGR?1.5:1;   // main-round stretch · burst-stage stretch
 // COLEMAN'S ORIGINAL SUCK-UP BLACKSITE CABINET — the backdoor test cab: EVERYTHING unlocked from boot
 // (every level + every cheat + GOD mode), and it never touches the real player's save. ?coleman or ?og.
 var OG=/[?&](coleman|og)\b/.test(location.search);
@@ -785,7 +795,7 @@ function beginSegment(){
 }
 function advanceSegment(){
   sfx('transition',0.55);
-  if(soloStage){ state='clear'; return; }                 // single stage off the CHEATS vault -> back to the cab
+  if(soloStage){ state='clear'; idleT=0; return; }                 // single stage off the CHEATS vault -> back to the cab
   var z=zoneOfSeg(segIdx); if(z>=0 && z+1<LEVELS.length && z+1>(SAVE.storyMax|0)){ SAVE.storyMax=z+1; persist(); }   // clearing a zone unlocks the next (STANDALONE/STORY progress)
   resLast=(segIdx+1>=SCHEDULE.length);                    // final segment -> the card leads into the credit page
   showResult();                                           // the "where you're at" beat, THEN proceedSegment() picks up the schedule
@@ -814,6 +824,7 @@ function enterSelect(){ enterCheats(); }                 // legacy alias — any
 function enterFront(){ if(CONSOLE && state!=='boot' && state!=='cabboot'){ toFront(); return; } OG?enterCheats():enterAttract(); } // blacksite front door: OG -> vault, otherwise the arcade-style attract
 function backToFront(){ if(soloStage) enterCheats(); else enterFront(); }   // after a stage/run ends: solo vault stages go back to the vault, runs go to the front
 function startRun(){ held={}; held2={}; planting=false; planting2=false; ARCADE?startCampaign():startStory(); }
+var titleT=0; function enterTitle(){ state='title'; titleT=0; idleT=0; held={}; planting=false; }   // CK BOOT STANDARD S3: attract -> TITLE (PRESS BEAM) -> lockin
 function enterLockin(){ state='lockin'; lockinT=0; twoP=false; held={}; held2={}; planting=false; planting2=false; idleT=0; }   // "DO YOU THINK YOU ARE ALONE?"
 function launchSel(){ var m=MENU[sel]; held={}; planting=false;
   if(m.kind==='locked'||m.kind==='header'){ if(m.kind==='locked'){ sfx('denied',0.45); flash(m.hint||'LOCKED','#ff5d6c',1.0); } return; }
@@ -921,7 +932,7 @@ function updateAttract(dt){ var _W=W,_H=H; W=H=Math.min(_W,_H);     // square sp
 function startLevel(idx){
   level=idx; mode='campaign'; var L=LEVELS[idx];
   P=newPlayer(); R=newRival(); targets=[]; jets=[]; shots=[]; fx=[]; shake=0;
-  meter=L.meter0||0; stageClock=L.clock; levelLen=L.clock; jetTimer=L.aa?0.6:2; aaTimer=L.aa?0.8:1.8;
+  meter=L.meter0||0; stageClock=L.clock*RK; levelLen=L.clock*RK; jetTimer=L.aa?0.6:2; aaTimer=L.aa?0.8:1.8;
   runActive=false; daveSpawned=false; moTele=false; moSpawned=false; moTarget=null; moEscapeAt=0; bandScroll=0; bandScroll2=0; roadScroll=0; superT=0;   // fresh round: drop any active super (brisket charge carries the run)
   truck = L.truck ? truckRespawn({gapCd:0}) : null;   // Dave's rocket truck this round (enters from a random side, faces its travel direction)
   buildScenery(L.props, 0.03, L.props.length>7?0.128:0.135, L.pool);
@@ -934,7 +945,7 @@ function startLevel(idx){
 function startBase(fresh){
   mode='base'; clock=0; if(fresh){ score=0; hp=maxHP; }            // fresh = standalone (B key); woven-in keeps score+hull
   P=newPlayer(); R=null; targets=[]; jets=[]; shots=[]; fx=[]; shake=0; bonusKind=null;   // base = solo dodge, no rival
-  meter=100; stageClock=30; levelLen=30; jetTimer=1.0; aaTimer=1.2; runActive=false; daveSpawned=true; moSpawned=true; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0; superT=0;
+  meter=100; stageClock=30*BK; levelLen=30*BK; jetTimer=1.0; aaTimer=1.2; runActive=false; daveSpawned=true; moSpawned=true; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0; superT=0;
   buildScenery(BASE_PROPS, 0.02, 0.112, BASE_POOL);   // MILITARY BASE — see BASE_PROPS (barracks, fence line, gate, tower, hangar; ONE commissary)
   for(var k=0;k<2;k++) spawnTarget('farmer');
   for(var k=0;k<3;k++) spawnTarget('tank');            // AA BATTERIES — the base's ground fire launches from these (no ordnance from nowhere)
@@ -1392,7 +1403,7 @@ function startBonus(bi){
   var crab=(bi%2===1); if(crab){ startClaw(false); return; }   // CLAW & ORDER is its own hostile mission now (startClaw) — the hull carries in
   claw=null; mode='bonus'; bonusKind=crab?'crab':'backyard'; clock=0;
   P=newPlayer(); R=newRival(); targets=[]; jets=[]; shots=[]; fx=[]; shake=0; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0;
-  meter=0; stageClock=BONUS_SECONDS; levelLen=BONUS_SECONDS; runActive=false; daveSpawned=true; moSpawned=true; superT=0;
+  meter=0; stageClock=BONUS_SECONDS*BK; levelLen=BONUS_SECONDS*BK; runActive=false; daveSpawned=true; moSpawned=true; superT=0;
   // DAVE'S BACKYARD — still the 20s sweep-for-PERFECT (CLAW & ORDER branched off above). The yard: BACKYARD_SCENE.
   buildScenery([],0,0,[]);                                      // rolls the yard moon + resets the pools; the yard itself is COMPOSED, not dealt
   scenery=BACKYARD_SCENE.map(function(p){ return { x:W*p.x, s:p.s, sc:p.sc||1, d:p.d, fl:!!p.fl }; }); scenery.sort(function(a,b){return a.d-b.d;});
@@ -1405,7 +1416,7 @@ function startBonus(bi){
 // #1 CHAMPION LAP — the calm victory pasture: a sparse peaceful field, no army, high-value herd + Dave hands over the crown.
 function startChampionLap(){ claw=null; mode='bonus'; bonusKind='champ'; clock=0;   // 'champ' -> HUD reads CHAMPION LAP; music falls through to the calm backyard bed
   P=newPlayer(); R=newRival(); targets=[]; jets=[]; shots=[]; fx=[]; shake=0; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0;
-  meter=0; stageClock=BONUS_SECONDS; levelLen=BONUS_SECONDS; runActive=false; daveSpawned=true; moSpawned=true; superT=0;
+  meter=0; stageClock=BONUS_SECONDS*BK; levelLen=BONUS_SECONDS*BK; runActive=false; daveSpawned=true; moSpawned=true; superT=0;
   // #1 CHAMPION LAP — calm victory pasture, layered homesteads (deep house → near house + barn + trees)
   buildScenery([ {s:'it_house_2',d:0.5,sc:0.82}, {s:'tree',d:0.62}, {s:'it_house_10',d:1.0}, {s:'barn',d:0.42}, {s:'tree',d:1.0} ], 0.06, 0.205);   // barn behind the homesteads (Joe 2026-10-25)
   for(var i=0;i<6;i++) targets.push(lootTarget('cow',300,0.95, W*(0.1+0.8*(i+0.5)/6), false));
@@ -1702,14 +1713,14 @@ var audioBlocked=false, wakeSwallowUntil=-1;                                  //
 function tryWake(){ if(!audioBlocked) return; try{ var pr=mCur.play(); if(pr&&pr.then) pr.then(function(){ audioBlocked=false; },function(){}); else audioBlocked=false; }catch(e){} }
 function wakeGate(e){ if(!e.isTrusted) return;                               // stick / phone-pad synthesized keys can't unlock audio -- let them through
   var now=performance.now();
-  if(audioBlocked && wakeSwallowUntil<0 && (state==='boot'||state==='cabboot'||state==='attract')) wakeSwallowUntil=now+700;   // spend it once, menus only
+  if(audioBlocked && wakeSwallowUntil<0 && (state==='boot'||state==='cabboot'||state==='attract'||state==='title'||state==='select')) wakeSwallowUntil=now+700;   // spend it once, menus only
   tryWake();
   if(now<wakeSwallowUntil){ e.stopImmediatePropagation(); if(e.cancelable) e.preventDefault(); } }   // the whole wake tap (down/up/click) is eaten, nothing else
 ['keydown','mousedown','pointerdown','pointerup','touchend','click'].forEach(function(ev){ addEventListener(ev,wakeGate,{capture:true,passive:false}); });
 var WAKE_TOUCH=false; try{ WAKE_TOUCH=matchMedia('(pointer:coarse)').matches; }catch(e){}
 function drawWakeHint(){ if(!audioBlocked || wakeSwallowUntil>=0) return;   // only until the wake gesture lands
   ctx.save(); ctx.textAlign='center'; ctx.globalAlpha=0.55+0.45*Math.abs(Math.sin(t*3)); ctx.fillStyle='#ffd23f'; ctx.font='800 '+clamp(W*0.018,12,18)+'px ui-monospace';
-  ctx.fillText(WAKE_TOUCH?'\u266A  TAP FOR SOUND  \u266A':'\u266A  CLICK OR PRESS ANY KEY FOR SOUND  \u266A', W/2, Math.max(22,H*0.045)); ctx.restore(); }
+  ctx.textAlign='right'; ctx.globalAlpha=0.55; ctx.font='700 16px ui-monospace'; ctx.fillText('\u266A\u2715', W-18, 26); ctx.restore(); }   // CK BOOT STANDARD S5: a quiet glyph, not a banner
 function updateAudio(dt){ var tv=AUDIO_ON?mTargetVol*MIX.mus:0, r=Math.min(1,dt*2.4);   // MIX.mus applied HERE (not at playMusic) so a slider move takes effect on the bed already playing
   mCur.volume=clamp(mCur.volume+(tv-mCur.volume)*r,0,1);
   if(mOther!==mCur){ mOther.volume=clamp(mOther.volume+(0-mOther.volume)*r,0,1); if(mOther.volume<0.02 && !mOther.paused){ try{mOther.pause();}catch(e){} } } }
@@ -1773,6 +1784,7 @@ function audioDirector(){ var path=null,vol=0.5;
     else if(attractMode==='demo'){ var Z=DEMO_ZONES[demoZ]; path = Z.base?MUS.base : (MUS.zones[Z.lvl]||MUS.zones[0]); }   // the demo cut plays the REAL mission music (crossfades per zone)
     else path=MUS.attract;
   }
+  else if(state==='title'){ path=MUS.attract; }
   else if(state==='select'){ path=MUS.menu; vol=0.45; }
   else if(state==='play'){ path = (mode==='base'||mode==='gunpowder')?MUS.base : mode==='bonus'?(bonusKind==='crab'?MUS.crab:MUS.backyard) : (MUS.zones[level]||MUS.zones[0]); }
   else if(state==='over'||state==='gpfail'||state==='clawfail'){ path=MUS.over; }
@@ -1830,15 +1842,16 @@ addEventListener('keydown',function(e){
   if(e.key==='Meta'||e.key==='Shift'||e.key==='Control'||e.key==='Alt'||e.key==='CapsLock') return;   // a bare modifier isn't a coin
   var k=e.key.toLowerCase();
   if(k==='m' && !(twoP && state==='play')){ AUDIO_ON=!AUDIO_ON; flash('SOUND '+(AUDIO_ON?'ON':'OFF'),'#bdf2cf',0.7); e.preventDefault(); return; }   // M = mute EXCEPT in 2-player play, where it's P2's BEAM (falls through below)
-  // boot idents — any key skips ahead
-  if(state==='boot'){ bootT=0; state='cabboot'; e.preventDefault(); return; }
-  if(state==='cabboot'){ ARCADE?enterAttract():enterFront(); e.preventDefault(); return; }
+  // boot idents — they play out (CK BOOT STANDARD S1)
+  if(state==='boot'||state==='cabboot'){ e.preventDefault(); return; }   // CK BOOT STANDARD: idents play out (wakeGate already used the press for sound)
   // attract: WARBLE (F / stick warble button) ARMS DEFCON 1 (the arcade high-score run AND the CHEATS-unlock
   // challenge); any other key/BEAM inserts a coin. STANDALONE: coin CONTINUES your story; C opens the vault once earned.
   if(state==='attract' && CONSOLE){ toFront(); e.preventDefault(); return; }   // desktop console: the attract never starts a run itself
-  if(state==='attract' && !OG && (k==='f'||k==='x')){ defconArmed=!defconArmed; sfx(defconArmed?'snatch':'denied',0.7); e.preventDefault(); return; }   // WARBLE (X/F) arms DEFCON 1
-  if(state==='attract' && !ARCADE && cheatsUnlocked() && k==='c'){ sfx('launch',0.6); enterCheats(); e.preventDefault(); return; }
-  if(state==='attract'){ try{reelVid.pause();}catch(e){} sfx('launch',0.6);
+  if(state==='attract' && !ARCADE){ try{reelVid.pause();}catch(e){} sfx('select',0.5); enterTitle(); e.preventDefault(); return; }   // CK BOOT STANDARD S3: the title beat (non-arcade)
+  if((state==='attract'||state==='title') && !OG && (k==='f'||k==='x')){ defconArmed=!defconArmed; sfx(defconArmed?'snatch':'denied',0.7); e.preventDefault(); return; }   // WARBLE (X/F) arms DEFCON 1
+  if((state==='attract'||state==='title') && !ARCADE && cheatsUnlocked() && k==='c'){ sfx('launch',0.6); enterCheats(); e.preventDefault(); return; }
+  if(state==='attract'||state==='title'){ if(state==='title' && (e.repeat||titleT<0.35)){ e.preventDefault(); return; }
+    try{reelVid.pause();}catch(e){} sfx('launch',0.6);
     if(defconArmed) startRun();                                        // DEFCON = committed solo, no join prompt
     else enterLockin();                                                // DO YOU THINK YOU ARE ALONE? — offer P2 the join
     e.preventDefault(); return; }
@@ -1861,11 +1874,12 @@ addEventListener('keydown',function(e){
     else if(k==='escape'||k==='x'||k==='f') clawLimpOn();
     e.preventDefault(); return; }
   // game over / cleared
-  if(state==='over'||state==='clear'){ if(e.key===' '||e.key==='Enter'||k==='r'){
+  if(state==='over'||state==='clear'){ if(e.repeat||idleT<0.9){ e.preventDefault(); return; }   // CK BOOT STANDARD S4: results hold 0.9 s
+    if(e.key===' '||e.key==='Enter'||k==='r'){
       if(state==='over' && !(defcon&&!defconUnlimited) && !soloStage) insertContinue();   // continue — unless a REAL DEFCON-1 run OR a vault single-stage (those go back to the vault, matching the overlay + idle path)
       else finishRun(); } e.preventDefault(); return; }                     // no continue -> leaderboard (real runs) / vault (solo stages)
-  if(state==='result'){ if(resT>0.6 && (e.key===' '||e.key==='Enter'||k==='w'||k==='i')){ proceedSegment(); } e.preventDefault(); return; }   // BEAM/any advance skips the tally (short guard so the clear keypress doesn't skip it instantly)
-  if(state==='ending'){ endGame(); e.preventDefault(); return; }            // skip credits -> leaderboard
+  if(state==='result'){ if(!e.repeat && resT>0.9 && (e.key===' '||e.key==='Enter'||k==='w'||k==='i')){ proceedSegment(); } e.preventDefault(); return; }   // BEAM/any advance skips the tally (short guard so the clear keypress doesn't skip it instantly)
+  if(state==='ending'){ if(!e.repeat && endT>0.9) endGame(); e.preventDefault(); return; }            // skip credits -> leaderboard
   // INITIALS entry (arcade-style: stick cycles the letter, BEAM advances, WARBLE backs up)
   if(state==='initials'){ idleT=0; var di=kn(e);
     if(di==='up'){   cycleChar(1);  e.preventDefault(); return; }
@@ -1876,7 +1890,7 @@ addEventListener('keydown',function(e){
     if(e.key===' '){ if(iniPos<2){ iniPos++; sfx('select',0.4); } else { sfx('launch',0.5); confirmInitials(); } e.preventDefault(); return; }
     if(k==='f'||k==='x'){ if(iniPos>0) iniPos--; sfx('denied',0.3); e.preventDefault(); return; }   // WARBLE (X/F) = back a letter
     e.preventDefault(); return; }
-  if(state==='board'){ if(boardT>0.4) enterFront(); e.preventDefault(); return; }   // any key -> front
+  if(state==='board'){ if(!e.repeat && boardT>0.9) enterFront(); e.preventDefault(); return; }   // any key -> front
   // CHEATS VAULT — level select
   if(state==='select'){ idleT=0; var dd=kn(e);
     if(dd==='up'){   sel=(sel+MENU.length-1)%MENU.length; sfx('select',0.5); e.preventDefault(); return; }
@@ -1921,7 +1935,7 @@ if(!STICK){                                                                    /
   cv.addEventListener('mousemove',function(e){ var p=mouseXY(e); MOUSE.x=p.x; MOUSE.y=p.y; MOUSE.on=true; moveSrc='mouse'; });
   cv.addEventListener('mousedown',function(e){
     if(e.button===2){                                                          // RIGHT-CLICK = WARBLE (phase through fire)
-      if(state==='attract'||state==='lockin'){ try{ dispatchEvent(new KeyboardEvent('keydown',{key:'x'})); }catch(_){} e.preventDefault(); return; }   // menus: WARBLE arms DEFCON 1 / stands down, same as X
+      if(state==='attract'||state==='title'||state==='lockin'){ try{ dispatchEvent(new KeyboardEvent('keydown',{key:'x'})); }catch(_){} e.preventDefault(); return; }   // menus: WARBLE arms DEFCON 1 / stands down, same as X
       if(state==='play' && P && clock>P.warbleCd){ P.warbleU=clock+0.60; P.warbleCd=clock+2.0; planting=false; sfx('warble',0.7); }
       e.preventDefault(); return; }
     if(e.button!==0) return;                                                    // LEFT-CLICK
@@ -2070,7 +2084,7 @@ function hitPlayer(){
   hp-=34; P.stun=1.1; P.invuln=2.0; shake=18; addFx(P.x,P.y,'boom','#ff7a3a',0.6); sfx('hit',0.5);
   if(hp<=0){ lives--;
     if(lives>0){ hp=maxHP; P.invuln=2.4; P.stun=0.6; addFx(P.x,P.y,'snatch','#7fe9ff',0.6); flash('SHIP DOWN — '+lives+' LEFT','#ff9d3a',1.4); if(level>=1) sayLater(pick(EXPLOSION_BARKS),'#ffd23f',0.7); }   // Dave cheers the shootdown (later zones)
-    else { hp=0; state='over'; flash('SOMETHING HAPPENED…','#ff5d6c',99); }
+    else { hp=0; state='over'; idleT=0; flash('SOMETHING HAPPENED…','#ff5d6c',99); }
   }
 }
 function shoot(x,y,vx,vy,kind,col){ if(shots.length>=MAX_SHOTS) shots.shift(); shots.push({x:x,y:y,vx:vx,vy:vy,kind:kind,col:col,t:0,life:kind==='missile'?5:3}); }
@@ -2094,7 +2108,7 @@ function abduct(tg,who){
   var _claw=clawOn() && tg.kind==='loot';                          // CLAW & ORDER: your grabs go into the HOLD (clawGrab), not the score
   if(isR){ rivalScore+=tg.def.val; if(_claw) clawRivalGrab(tg); } else if(_claw) clawGrab(tg); else score+=tg.def.val;
   if(tg.def.val>0 && !(_claw && !isR)){ if(fx.length>=MAX_FX)fx.shift(); fx.push({x:sh.x,y:sh.y+SAUCER_W()*0.1,kind:'pts',col:isR?'#7fb0ff':'#ffe23a',t:0,life:0.95,val:tg.def.val,big:tg.def.val>=1000}); }   // floating +POINTS so each grab's value READS (cow 100 / person 300 / farmer 250 / Dave 2000 / Mo 3000)
-  meter=clamp(meter+tg.def.meter,0,100); addFx(sh.x,sh.y,'snatch', isR?'#7fb0ff':'#7fe9ff',0.5);
+  meter=clamp(meter+tg.def.meter/(mode==='campaign'?RK:1),0,100); addFx(sh.x,sh.y,'snatch', isR?'#7fb0ff':'#7fe9ff',0.5);
   sfx(tg.def.meter<0?'brisket':(tg.kind==='cow'||tg.isMo)?'cow':'pickup', isR?0.4:0.7);
   if(tg.isMo){ flash(isR?'RIVAL SNATCHED MO!':MO_CAUGHT_BARK, isR?'#7fb0ff':'#ffd23f',1.6); sayLater(pick(DAVE_MO_BARKS),'#ffd23f',1.5); }   // Dave's one Dairy Flats beat: he reacts to Mo
   else if(tg.def.val>=2000){ var who=bossName(tg.sprite);                                  // wild Dave (2000) AND the champion-lap Dr. L come through here — name the right one
@@ -2128,6 +2142,7 @@ function update(dt){
     else { demoClk+=dt; updateAttract(dt); if(demoClk>DEMO_SEG) endDemoCut(); }            // live NEW-game demo cut
     return; }
   if(state==='ending'){ endT+=dt; if(msgT>0)msgT-=dt; if(endT>=9.5){ endGame(); } return; }   // credit page -> leaderboard
+  if(state==='title'){ titleT+=dt; idleT+=dt; if(msgT>0)msgT-=dt; if(idleT>25) enterAttract(); return; }
   if(state==='lockin'){ lockinT+=dt; if(msgT>0)msgT-=dt; if(lockinT>7){ twoP=false; startRun(); } return; }   // no answer in 7s -> solo
   if(state==='initials'){ idleT+=dt; if(msgT>0)msgT-=dt; if(idleT>30) confirmInitials(); return; }   // afk -> auto-lock the initials
   if(state==='board'){ boardT+=dt; if(msgT>0)msgT-=dt; if(boardT>10) enterFront(); return; }
@@ -2149,13 +2164,13 @@ function update(dt){
 
   // meter climb (campaign only — base stays pinned RED, bonus has no military response)
   // RURAL maps build the meter for tension but CAP below RED (never the onslaught); urban/beltway/military fill to RED.
-  if(mode==='campaign'){ var mFill = L.aa?1.05 : L.red?1.35 : 0.5; meter = clamp(meter + dt*mFill, 0, ons?100:64); }   // red maps fill fast enough to reach the RED climax within their clock
+  if(mode==='campaign'){ var mFill = L.aa?1.05 : L.red?1.35 : 0.5; meter = clamp(meter + dt*mFill/RK, 0, ons?100:64); }   // red maps fill fast enough to reach the RED climax within their clock
 
   // THE RUN — once past the zone's scroll_start the world drags you back; beaming anchors you
   var worldSpeed = 0;   // HOLD the area — work one spot for the calm part of the clock; it only moves on THE RUN
-  if(mode==='campaign' && elapsed>=L.scrollStart){
+  if(mode==='campaign' && elapsed>=L.scrollStart*RK){
     if(!runActive){ runActive=true; flash('>>> THE RUN <<<','#ff9d3a',1.4); sfx('run',0.5); }
-    var ramp=clamp((elapsed-L.scrollStart)/Math.max(1,levelLen-L.scrollStart),0,1);
+    var ramp=clamp((elapsed-L.scrollStart*RK)/Math.max(1,levelLen-L.scrollStart*RK),0,1);
     worldSpeed = 10 + 52*ramp;                                                     // gentler push (was 16 + 90)
     if(!planting && P.stun<=0) P.tx=clamp(P.tx-(14+40*ramp)*dt, W*0.05, W*0.95);   // softer drag toward the back edge
   }
@@ -2171,8 +2186,8 @@ function update(dt){
 
   // MO (Dairy Flats only)
   if(mode==='campaign' && L.mo){
-    if(!moTele && elapsed>=MO_TELE){ moTele=true; flash("DR. L: the herd's gone quiet — the FIRST one is coming back…",'#bdf2cf',2.0); }
-    if(!moSpawned && elapsed>=MO_APPEAR){ moSpawned=true; spawnMo(); }
+    if(!moTele && elapsed>=MO_TELE*RK){ moTele=true; flash("DR. L: the herd's gone quiet — the FIRST one is coming back…",'#bdf2cf',2.0); }
+    if(!moSpawned && elapsed>=MO_APPEAR*RK){ moSpawned=true; spawnMo(); }
     if(moTarget && !moTarget.gone && clock>=moEscapeAt){ moTarget.gone=true; moTarget.respawn=1e9; flash(MO_ESCAPED,'#bdf2cf',2.2); moTarget=null; }   // Mo escapes ungrabbed
   }
 
@@ -2185,7 +2200,7 @@ function update(dt){
     if(lootLeft===0){ score+=BONUS_PERFECT; if(twoP) rivalScore+=BONUS_PERFECT; flash('PERFECT!  +'+BONUS_PERFECT,'#ffd23f',1.8); resKind='bonus'; resBonus=BONUS_PERFECT; resPerfect=true; advanceSegment(); }   // all loot swept -> the advertised reward
     else if(stageClock<=0){ flash('TIME — SWEEP OVER','#9affc0',1.4); resKind='bonus'; resBonus=0; resPerfect=false; advanceSegment(); }
   }
-  else { if(!daveSpawned && stageClock<28) spawnDave();
+  else { if(!daveSpawned && stageClock<28*RK) spawnDave();
          if(stageClock<=0){ score+=2000; if(twoP) rivalScore+=2000;
            flash(L.zone+' CLEARED  '+(R?(score>rivalScore?'— ROUND TO YOU':score<rivalScore?'— ROUND TO RIVAL':'— DEAD HEAT'):'+2000'),'#9affc0',1.6);
            resKind='round'; resBonus=2000; resPerfect=false; advanceSegment(); } }
@@ -2677,7 +2692,7 @@ function drawBoot(){
   ctx.textAlign='center'; ctx.globalAlpha=0.4+0.3*pulse; ctx.fillStyle='#9c89c4'; ctx.font='700 13px ui-monospace';
   ctx.fillText('RESPEK LOGIC ART UREA  ·  25¢ PER PLAY', cx, H*0.80);
   ctx.globalAlpha=clamp((bootT-1.2)*1.5,0,0.7); ctx.fillStyle='#5f8a70'; ctx.font='700 12px ui-monospace';
-  ctx.fillText('press any key', cx, H*0.88); ctx.globalAlpha=1;
+  ctx.globalAlpha=1;
 }
 function fitH(n,h){ var im=IMG[n]; var ar=(im&&im.ok)?im.naturalWidth/im.naturalHeight:0.55; return h*ar; }   // width for a target HEIGHT
 // CAB BOOT — the slow Ken Burns push on the jailbroken BLACKSITE cab (the house boot beat)
@@ -2701,7 +2716,7 @@ function drawCabBoot(){
   ctx.globalAlpha=clamp((bootT-0.6)*1.2,0,1); ctx.fillStyle=CAB_ACCENT; ctx.font='900 '+clamp(W*0.028,20,34)+'px system-ui';
   ctx.shadowColor=ARCADE?'#1f8a14':'#ff2b3a'; ctx.shadowBlur=20; ctx.fillText(ARCADE?'▌ HYSCORE FOREST':OG?"▌ COLEMAN'S ORIGINAL":'▌ BLACKSITE', cx, H*0.90); ctx.shadowBlur=0;
   ctx.globalAlpha=clamp((bootT-1.4)*1.3,0,0.7); ctx.fillStyle=ARCADE?'#8fd6a6':'#9c89c4'; ctx.font='700 12px ui-monospace';
-  ctx.fillText(ARCADE?'25¢ — press any key':OG?'your cabinet · everything unlocked · press any key':'press any key', cx, H*0.95); ctx.globalAlpha=1;
+  ctx.fillText(ARCADE?'25¢ PER PLAY':OG?'your cabinet · everything unlocked':'', cx, H*0.95); ctx.globalAlpha=1;
 }
 // cab bezel over the live screen — green/gold HYSCORE FOREST in arcade, red BLACKSITE in the jailbreak cut
 function drawBezel(){ ctx.save(); ctx.globalAlpha=0.5; ctx.strokeStyle=CAB_ACCENT; ctx.lineWidth=5; roundRect(8,8,W-16,H-16,16); ctx.stroke();
@@ -2767,6 +2782,13 @@ function fitFont(txt, weight, px, fam, maxW){
   var w = ctx.measureText(txt).width;
   if(w > maxW && w > 0) ctx.font = weight+' '+Math.max(9,Math.floor(px*maxW/w))+'px '+fam;
 }
+function drawTitleCard(){ ctx.fillStyle='#04080e'; ctx.fillRect(0,0,W,H); ctx.textAlign='center';   // CK BOOT STANDARD S3
+  if(ok('title')){ drawImg('title', W/2, H*0.5, W, 0, 1); drawTitleBeam(1); }
+  else { ctx.fillStyle='#39ff14'; ctx.font='900 '+clamp(W*0.09,40,120)+'px system-ui'; ctx.fillText('SUCK UP',W/2,H*0.42); }
+  ctx.globalAlpha=0.4+0.6*Math.abs(Math.sin(t*4)); ctx.fillStyle='#ffd23f'; ctx.font='800 '+clamp(W*0.03,18,26)+'px system-ui';
+  ctx.fillText('PRESS BEAM', W/2, H*0.93); ctx.globalAlpha=1;
+  if(!OG){ ctx.globalAlpha=0.75; ctx.fillStyle='#9c89c4'; ctx.font='700 12px ui-monospace';
+    ctx.fillText((STICK?'WARBLE':'WARBLE (RIGHT-CLICK)')+' = DEFCON 1'+(defconArmed?' · ARMED':'')+(cheatsUnlocked()?'   ·   C = CHEATS VAULT':''), W/2, H*0.965); ctx.globalAlpha=1; } }
 function drawLockin(){
   L3.menuBG(.82);   // LAB3D ctx.textAlign='center';
   ctx.fillStyle='#39ff14'; fitFont('PLAYER 1  IS IN','800',clamp(W*0.02,15,24),'system-ui',W*0.92); ctx.fillText('PLAYER 1  IS IN', W/2, H*0.28);
@@ -3607,7 +3629,7 @@ var last=0;
    until a sheet is ready the original art draws, so nothing ever pops mid-play.
 =============================================================================================================== */
 var L3 = (function(){
-  var M = {"foot":0.92,"shaft":{"green":{"file":"shaft_green.webp","fw":192,"fh":512,"n":8,"cols":8,"gut":2},"blue":{"file":"shaft_blue.webp","fw":192,"fh":512,"n":8,"cols":8,"gut":2},"super":{"file":"shaft_super.webp","fw":192,"fh":512,"n":8,"cols":8,"gut":2}},"pool":{"green":{"file":"pool_green.webp","fw":256,"fh":80,"n":8,"cols":8,"gut":2},"blue":{"file":"pool_blue.webp","fw":256,"fh":80,"n":8,"cols":8,"gut":2},"super":{"file":"pool_super.webp","fw":256,"fh":80,"n":8,"cols":8,"gut":2}},"clash":{"file":"clash.webp","fw":128,"fh":128,"n":8,"cols":8,"gut":2},"beam2":{"geo":{"w":256,"h":768,"apex":6.14399999999996,"ringtop":694.2719999999999,"base":721.92,"ringbot":749.5680000000001,"r_px":102.4,"crop":176,"foot_px":87.0748299319728,"squash":0.27},"green":{"file":"beam2_green.webp","fw":256,"fh":768,"n":8,"cols":8,"gut":2},"c_green":{"file":"contact_green.webp","fw":256,"fh":176,"n":8,"cols":8,"gut":2},"blue":{"file":"beam2_blue.webp","fw":256,"fh":768,"n":8,"cols":8,"gut":2},"c_blue":{"file":"contact_blue.webp","fw":256,"fh":176,"n":8,"cols":8,"gut":2},"super":{"file":"beam2_super.webp","fw":256,"fh":768,"n":8,"cols":8,"gut":2},"c_super":{"file":"contact_super.webp","fw":256,"fh":176,"n":8,"cols":8,"gut":2}},"jet_roll":{"file":"jet_roll.webp","fw":112,"fh":80,"n":9,"cols":9,"gut":2,"span":1.0777777777777777},"jet_tumble":{"file":"jet_tumble.webp","fw":112,"fh":112,"n":16,"cols":8,"gut":2,"span":1.0777777777777777},"tank":{"file":"tank.webp","w":109,"h":54},"props":{"windmill":{"files":["prop_windmill_0.webp","prop_windmill_1.webp","prop_windmill_2.webp","prop_windmill_3.webp","prop_windmill_4.webp","prop_windmill_5.webp","prop_windmill_6.webp","prop_windmill_7.webp"],"w":86,"h":219},"water_tower":{"files":["prop_water_tower_0.webp"],"w":100,"h":202},"tree":{"files":["prop_tree_0.webp","prop_tree_1.webp"],"w":120,"h":171},"haybale":{"files":["prop_haybale_0.webp"],"w":83,"h":75},"radar":{"files":["prop_radar_0.webp"],"w":133,"h":168},"it_corn_1":{"files":["farm_it_corn_1.webp"],"w":1472,"h":146,"scn":0.95},"it_corn_2":{"files":["farm_it_corn_2.webp"],"w":1460,"h":150,"scn":0.8636363636363636},"it_corn_3":{"files":["farm_it_corn_3.webp"],"w":1472,"h":149,"scn":1.1176470588235294},"it_corn_4":{"files":["farm_it_corn_4.webp"],"w":1471,"h":146,"scn":0.9047619047619048},"it_corn_5":{"files":["farm_it_corn_5.webp"],"w":1481,"h":142,"scn":0.9047619047619048},"farm_barn_red":{"files":["farm_farm_barn_red.webp"],"w":420,"h":220,"scn":1.0},"farm_barn_grey":{"files":["farm_farm_barn_grey.webp"],"w":462,"h":200,"scn":1.0},"farm_shed":{"files":["farm_farm_shed.webp"],"w":218,"h":150,"scn":1.0},"farm_crib":{"files":["farm_farm_crib.webp"],"w":159,"h":150,"scn":1.0}},"units":{"brisket":{"file":"unit_brisket.webp","w":184,"h":54}},"plates":{"rural":{"file":"plate_rural.webp","fw":1024,"fh":160,"h":0.085,"par":0.42,"alpha":0.8,"drop":0.0},"city":{"file":"plate_city.webp","fw":1024,"fh":160,"h":0.115,"par":0.4,"alpha":0.82,"drop":0.0},"suburb":{"file":"plate_suburb.webp","fw":1024,"fh":160,"h":0.09,"par":0.42,"alpha":0.6,"drop":0.0},"base":{"file":"plate_base.webp","fw":1024,"fh":160,"h":0.1,"par":0.4,"alpha":0.82,"drop":0.0}},"gnome3d":{"gn_cart":{"file":"g3_gn_cart.webp","w":364,"h":174},"gn_flag":{"file":"g3_gn_flag.webp","w":147,"h":122},"gn_flame":{"file":"g3_gn_flame.webp","w":131,"h":104},"gn_flame_fire":{"file":"g3_gn_flame_fire.webp","w":196,"h":97},"gn_heavy":{"file":"g3_gn_heavy.webp","w":136,"h":102},"gn_knife":{"file":"g3_gn_knife.webp","w":153,"h":130},"gn_knife_run":{"file":"g3_gn_knife_run.webp","w":129,"h":136},"gn_knife_slash":{"file":"g3_gn_knife_slash.webp","w":154,"h":131},"gn_mortar":{"file":"g3_gn_mortar.webp","w":205,"h":114},"gn_mower":{"file":"g3_gn_mower.webp","w":167,"h":137},"gn_pistol":{"file":"g3_gn_pistol.webp","w":148,"h":129},"gn_pistol_fire":{"file":"g3_gn_pistol_fire.webp","w":197,"h":124},"gn_rpg":{"file":"g3_gn_rpg.webp","w":116,"h":116},"gn_rpg_fire":{"file":"g3_gn_rpg_fire.webp","w":219,"h":113},"gn_smg":{"file":"g3_gn_smg.webp","w":144,"h":117},"gn_smg_fire":{"file":"g3_gn_smg_fire.webp","w":179,"h":121},"gn_wizard":{"file":"g3_gn_wizard.webp","w":150,"h":168},"gn_wizard_b":{"file":"g3_gn_wizard_b.webp","w":141,"h":170},"gn_wizard_cast":{"file":"g3_gn_wizard_cast.webp","w":222,"h":188},"gn_wizard_gun":{"file":"g3_gn_wizard_gun.webp","w":182,"h":136},"gn_wizard_raise":{"file":"g3_gn_wizard_raise.webp","w":142,"h":210},"gnome":{"file":"g3_gnome.webp","w":46,"h":86},"gnome_heavy":{"file":"g3_gnome_heavy.webp","w":71,"h":74},"gnome_knife":{"file":"g3_gnome_knife.webp","w":72,"h":67},"gnome_pistol":{"file":"g3_gnome_pistol.webp","w":81,"h":80},"gnome_smg":{"file":"g3_gnome_smg.webp","w":71,"h":70}},"scenery":{"road_rural":{"file":"road_rural.webp","w":960,"h":120},"road_city":{"file":"road_city.webp","w":960,"h":120},"sound_wall":{"file":"sw3_sound_wall.webp","w":1086,"h":195},"sound_wall_ivy":{"file":"sw3_sound_wall_ivy.webp","w":1086,"h":195}},"bk":{"props":{"tree":{"files":["bk_prop_tree_0.webp","bk_prop_tree_1.webp","bk_prop_tree_2.webp"],"w":150,"h":121},"water_tower":{"files":["bk_prop_water_tower_0.webp"],"w":88,"h":208},"haybale":{"files":["bk_prop_haybale_0.webp"],"w":102,"h":88}},"plates":{"rural":{"file":"bk_plate_rural.webp","fw":1024,"fh":160,"h":0.085,"par":0.42,"alpha":0.8,"drop":0.0},"suburb":{"file":"bk_plate_suburb.webp","fw":1024,"fh":160,"h":0.09,"par":0.42,"alpha":0.6,"drop":0.0}},"cop":{"file":"bk_cop_cruiser.webp","w":550,"h":187,"replaces":"veh_cop_cruiser"}},"paintb":{"barn":"pb_barn.webp","barracks":"pb_barracks.webp","bunker":"pb_bunker.webp","fort_gate":"pb_fort_gate.webp","fort_guardhouse":"pb_fort_guardhouse.webp","fort_house":"pb_fort_house.webp","fort_px":"pb_fort_px.webp","fort_tower":"pb_fort_tower.webp","house":"pb_house.webp","it_bldg6":"pb_it_bldg6.webp","it_brick":"pb_it_brick.webp","it_highrise":"pb_it_highrise.webp","it_house_1":"pb_it_house_1.webp","it_house_10":"pb_it_house_10.webp","it_house_11":"pb_it_house_11.webp","it_house_12":"pb_it_house_12.webp","it_house_2":"pb_it_house_2.webp","it_house_3":"pb_it_house_3.webp","it_house_4":"pb_it_house_4.webp","it_house_5":"pb_it_house_5.webp","it_house_6":"pb_it_house_6.webp","it_house_7":"pb_it_house_7.webp","it_house_8":"pb_it_house_8.webp","it_house_9":"pb_it_house_9.webp","it_morale_corp":"pb_it_morale_corp.webp","it_office":"pb_it_office.webp","it_penalty_box":"pb_it_penalty_box.webp","it_shops":"pb_it_shops.webp","mb_array":"pb_mb_array.webp","mb_barracks":"pb_mb_barracks.webp","mb_bunkhouse":"pb_mb_bunkhouse.webp","mb_chapel":"pb_mb_chapel.webp","mb_commissary":"pb_mb_commissary.webp","mb_gate":"pb_mb_gate.webp","mb_hangar":"pb_mb_hangar.webp","mb_motorpool":"pb_mb_motorpool.webp","mb_radar_trailer":"pb_mb_radar_trailer.webp","mb_shed":"pb_mb_shed.webp","mb_watchtower":"pb_mb_watchtower.webp","res_garage":"pb_res_garage.webp","res_shed":"pb_res_shed.webp","silo":"pb_silo.webp","tower_a":"pb_tower_a.webp","tower_b":"pb_tower_b.webp","tower_c":"pb_tower_c.webp"},"moon":{"file":"moon.webp","fw":256,"fh":256,"cols":3,"n":9,"phases":[0.15,0.25,0.38,0.44,0.5,0.56,0.62,0.75,0.85]},"cars":{"files":{"veh_cop_cruiser":"car3_veh_cop_cruiser.webp","veh_cop_flash":"car3_veh_cop_flash.webp","veh_cop_interceptor":"car3_veh_cop_interceptor.webp","veh_cop_k9":"car3_veh_cop_k9.webp","veh_cop_lights":"car3_veh_cop_lights.webp","veh_cop_suv":"car3_veh_cop_suv.webp","veh_minivan_silver":"car3_veh_minivan_silver.webp","veh_minivan_tan":"car3_veh_minivan_tan.webp","veh_pickup_silver":"car3_veh_pickup_silver.webp","veh_pickup_white":"car3_veh_pickup_white.webp","veh_sedan_dark":"car3_veh_sedan_dark.webp","veh_sedan_unmarked":"car3_veh_sedan_unmarked.webp","veh_sedan_white":"car3_veh_sedan_white.webp","veh_suv_dark":"car3_veh_suv_dark.webp","veh_van_white":"car3_veh_van_white.webp","veh_van_work":"car3_veh_van_work.webp","veh_wagon_gold":"car3_veh_wagon_gold.webp"},"ship":["veh_cop_cruiser","veh_cop_interceptor","veh_cop_lights","veh_cop_flash","veh_sedan_dark","veh_sedan_unmarked","veh_sedan_white","veh_pickup_white","veh_pickup_silver","veh_van_white"]},"farm3":{"file":"farm3.webp","fw":2400,"fh":273,"h":0.15,"par":0.36,"alpha":0.72,"drop":0.0}}, ROOT = window.SU3D_ROOT || '';
+  var M = {"foot":0.92,"shaft":{"green":{"file":"shaft_green.webp","fw":192,"fh":512,"n":8,"cols":8,"gut":2},"blue":{"file":"shaft_blue.webp","fw":192,"fh":512,"n":8,"cols":8,"gut":2},"super":{"file":"shaft_super.webp","fw":192,"fh":512,"n":8,"cols":8,"gut":2}},"pool":{"green":{"file":"pool_green.webp","fw":256,"fh":80,"n":8,"cols":8,"gut":2},"blue":{"file":"pool_blue.webp","fw":256,"fh":80,"n":8,"cols":8,"gut":2},"super":{"file":"pool_super.webp","fw":256,"fh":80,"n":8,"cols":8,"gut":2}},"clash":{"file":"clash.webp","fw":128,"fh":128,"n":8,"cols":8,"gut":2},"beam2":{"geo":{"w":256,"h":768,"apex":6.14399999999996,"ringtop":694.2719999999999,"base":721.92,"ringbot":749.5680000000001,"r_px":102.4,"crop":176,"foot_px":87.0748299319728,"squash":0.27},"green":{"file":"beam2_green.webp","fw":256,"fh":768,"n":8,"cols":8,"gut":2},"c_green":{"file":"contact_green.webp","fw":256,"fh":176,"n":8,"cols":8,"gut":2},"blue":{"file":"beam2_blue.webp","fw":256,"fh":768,"n":8,"cols":8,"gut":2},"c_blue":{"file":"contact_blue.webp","fw":256,"fh":176,"n":8,"cols":8,"gut":2},"super":{"file":"beam2_super.webp","fw":256,"fh":768,"n":8,"cols":8,"gut":2},"c_super":{"file":"contact_super.webp","fw":256,"fh":176,"n":8,"cols":8,"gut":2}},"jet_roll":{"file":"jet_roll.webp","fw":112,"fh":80,"n":9,"cols":9,"gut":2,"span":1.0777777777777777},"jet_tumble":{"file":"jet_tumble.webp","fw":112,"fh":112,"n":16,"cols":8,"gut":2,"span":1.0777777777777777},"tank":{"file":"tank.webp","w":109,"h":54},"props":{"windmill":{"files":["prop_windmill_0.webp","prop_windmill_1.webp","prop_windmill_2.webp","prop_windmill_3.webp","prop_windmill_4.webp","prop_windmill_5.webp","prop_windmill_6.webp","prop_windmill_7.webp"],"w":86,"h":219},"water_tower":{"files":["prop_water_tower_0.webp"],"w":100,"h":202},"tree":{"files":["prop_tree_0.webp","prop_tree_1.webp"],"w":120,"h":171},"haybale":{"files":["prop_haybale_0.webp"],"w":83,"h":75},"radar":{"files":["prop_radar_0.webp"],"w":133,"h":168},"it_corn_1":{"files":["farm_it_corn_1.webp"],"w":1472,"h":146,"scn":0.95},"it_corn_2":{"files":["farm_it_corn_2.webp"],"w":1460,"h":150,"scn":0.8636363636363636},"it_corn_3":{"files":["farm_it_corn_3.webp"],"w":1472,"h":149,"scn":1.1176470588235294},"it_corn_4":{"files":["farm_it_corn_4.webp"],"w":1471,"h":146,"scn":0.9047619047619048},"it_corn_5":{"files":["farm_it_corn_5.webp"],"w":1481,"h":142,"scn":0.9047619047619048},"farm_barn_red":{"files":["farm_farm_barn_red.webp"],"w":420,"h":220,"scn":1.0},"farm_barn_grey":{"files":["farm_farm_barn_grey.webp"],"w":462,"h":200,"scn":1.0},"farm_shed":{"files":["farm_farm_shed.webp"],"w":218,"h":150,"scn":1.0},"farm_crib":{"files":["farm_farm_crib.webp"],"w":159,"h":150,"scn":1.0}},"units":{"brisket":{"file":"unit_brisket.webp","w":184,"h":54}},"plates":{"rural":{"file":"plate_rural.webp","fw":1024,"fh":160,"h":0.085,"par":0.42,"alpha":0.8,"drop":0.0},"city":{"file":"plate_city.webp","fw":1024,"fh":160,"h":0.115,"par":0.4,"alpha":0.82,"drop":0.0},"suburb":{"file":"plate_suburb.webp","fw":1024,"fh":160,"h":0.09,"par":0.42,"alpha":0.6,"drop":0.0},"base":{"file":"plate_base.webp","fw":1024,"fh":160,"h":0.1,"par":0.4,"alpha":0.82,"drop":0.0}},"gnome3d":{"gn_cart":{"file":"g3_gn_cart.webp","w":364,"h":174},"gn_flag":{"file":"g3_gn_flag.webp","w":147,"h":122},"gn_flame":{"file":"g3_gn_flame.webp","w":131,"h":104},"gn_flame_fire":{"file":"g3_gn_flame_fire.webp","w":196,"h":97},"gn_heavy":{"file":"g3_gn_heavy.webp","w":136,"h":102},"gn_knife":{"file":"g3_gn_knife.webp","w":153,"h":130},"gn_knife_run":{"file":"g3_gn_knife_run.webp","w":129,"h":136},"gn_knife_slash":{"file":"g3_gn_knife_slash.webp","w":154,"h":131},"gn_mortar":{"file":"g3_gn_mortar.webp","w":205,"h":114},"gn_mower":{"file":"g3_gn_mower.webp","w":167,"h":137},"gn_pistol":{"file":"g3_gn_pistol.webp","w":148,"h":129},"gn_pistol_fire":{"file":"g3_gn_pistol_fire.webp","w":197,"h":124},"gn_rpg":{"file":"g3_gn_rpg.webp","w":116,"h":116},"gn_rpg_fire":{"file":"g3_gn_rpg_fire.webp","w":219,"h":113},"gn_smg":{"file":"g3_gn_smg.webp","w":144,"h":117},"gn_smg_fire":{"file":"g3_gn_smg_fire.webp","w":179,"h":121},"gn_wizard":{"file":"g3_gn_wizard.webp","w":150,"h":168},"gn_wizard_b":{"file":"g3_gn_wizard_b.webp","w":141,"h":170},"gn_wizard_cast":{"file":"g3_gn_wizard_cast.webp","w":222,"h":188},"gn_wizard_gun":{"file":"g3_gn_wizard_gun.webp","w":182,"h":136},"gn_wizard_raise":{"file":"g3_gn_wizard_raise.webp","w":142,"h":210},"gnome":{"file":"g3_gnome.webp","w":46,"h":86},"gnome_heavy":{"file":"g3_gnome_heavy.webp","w":71,"h":74},"gnome_knife":{"file":"g3_gnome_knife.webp","w":72,"h":67},"gnome_pistol":{"file":"g3_gnome_pistol.webp","w":81,"h":80},"gnome_smg":{"file":"g3_gnome_smg.webp","w":71,"h":70}},"scenery":{"road_rural":{"file":"road_rural.webp","w":960,"h":120},"road_city":{"file":"road_city.webp","w":960,"h":120},"sound_wall":{"file":"sw3_sound_wall.webp","w":1086,"h":195},"sound_wall_ivy":{"file":"sw3_sound_wall_ivy.webp","w":1086,"h":195}},"bk":{"props":{"tree":{"files":["bk_prop_tree_0.webp","bk_prop_tree_1.webp","bk_prop_tree_2.webp"],"w":150,"h":121},"water_tower":{"files":["bk_prop_water_tower_0.webp"],"w":88,"h":208},"haybale":{"files":["bk_prop_haybale_0.webp"],"w":102,"h":88}},"plates":{"rural":{"file":"bk_plate_rural.webp","fw":1024,"fh":160,"h":0.085,"par":0.42,"alpha":0.8,"drop":0.0},"suburb":{"file":"bk_plate_suburb.webp","fw":1024,"fh":160,"h":0.09,"par":0.42,"alpha":0.6,"drop":0.0}},"cop":{"file":"bk_cop_cruiser.webp","w":550,"h":187,"replaces":"veh_cop_cruiser"}},"paintb":{"barn":"pb_barn.webp","barracks":"pb_barracks.webp","bunker":"pb_bunker.webp","fort_gate":"pb_fort_gate.webp","fort_guardhouse":"pb_fort_guardhouse.webp","fort_house":"pb_fort_house.webp","fort_px":"pb_fort_px.webp","fort_tower":"pb_fort_tower.webp","house":"pb_house.webp","it_bldg6":"pb_it_bldg6.webp","it_brick":"pb_it_brick.webp","it_highrise":"pb_it_highrise.webp","it_house_1":"pb_it_house_1.webp","it_house_10":"pb_it_house_10.webp","it_house_11":"pb_it_house_11.webp","it_house_12":"pb_it_house_12.webp","it_house_2":"pb_it_house_2.webp","it_house_3":"pb_it_house_3.webp","it_house_4":"pb_it_house_4.webp","it_house_5":"pb_it_house_5.webp","it_house_6":"pb_it_house_6.webp","it_house_7":"pb_it_house_7.webp","it_house_8":"pb_it_house_8.webp","it_house_9":"pb_it_house_9.webp","it_morale_corp":"pb_it_morale_corp.webp","it_office":"pb_it_office.webp","it_penalty_box":"pb_it_penalty_box.webp","it_shops":"pb_it_shops.webp","mb_array":"pb_mb_array.webp","mb_barracks":"pb_mb_barracks.webp","mb_bunkhouse":"pb_mb_bunkhouse.webp","mb_chapel":"pb_mb_chapel.webp","mb_commissary":"pb_mb_commissary.webp","mb_gate":"pb_mb_gate.webp","mb_hangar":"pb_mb_hangar.webp","mb_motorpool":"pb_mb_motorpool.webp","mb_radar_trailer":"pb_mb_radar_trailer.webp","mb_shed":"pb_mb_shed.webp","mb_watchtower":"pb_mb_watchtower.webp","res_garage":"pb_res_garage.webp","res_shed":"pb_res_shed.webp","silo":"pb_silo.webp","tower_a":"pb_tower_a.webp","tower_b":"pb_tower_b.webp","tower_c":"pb_tower_c.webp"},"moon":{"file":"moon.webp","fw":256,"fh":256,"cols":3,"n":9,"phases":[0.15,0.25,0.38,0.44,0.5,0.56,0.62,0.75,0.85]},"cars":{"files":{"veh_cop_cruiser":"car3_veh_cop_cruiser.webp","veh_cop_flash":"car3_veh_cop_flash.webp","veh_cop_interceptor":"car3_veh_cop_interceptor.webp","veh_cop_k9":"car3_veh_cop_k9.webp","veh_cop_lights":"car3_veh_cop_lights.webp","veh_cop_suv":"car3_veh_cop_suv.webp","veh_minivan_silver":"car3_veh_minivan_silver.webp","veh_minivan_tan":"car3_veh_minivan_tan.webp","veh_pickup_silver":"car3_veh_pickup_silver.webp","veh_pickup_white":"car3_veh_pickup_white.webp","veh_sedan_dark":"car3_veh_sedan_dark.webp","veh_sedan_unmarked":"car3_veh_sedan_unmarked.webp","veh_sedan_white":"car3_veh_sedan_white.webp","veh_suv_dark":"car3_veh_suv_dark.webp","veh_van_white":"car3_veh_van_white.webp","veh_van_work":"car3_veh_van_work.webp","veh_wagon_gold":"car3_veh_wagon_gold.webp"},"ship":[]},"farm3":{"file":"farm3.webp","fw":2400,"fh":273,"h":0.15,"par":0.36,"alpha":0.72,"drop":0.0}}, ROOT = window.SU3D_ROOT || '';
   var Q = location.search;
   var BEAM2 = !!M.beam2 && !/[?&]l3beam=(v1|vol)\b/.test(Q);   // the integrated beam (take 2) is the default; &l3beam=v1 = the first overlay
   var MIXB = !/[?&]l3beam=vol\b/.test(Q), VOLA = +((Q.match(/[?&]l3vola=([0-9.]+)/)||[])[1]||0.55), POOLA = +((Q.match(/[?&]l3poola=([0-9.]+)/)||[])[1]||0.30);
@@ -4296,6 +4318,7 @@ function frame(ts){
     drawWakeHint(); requestAnimationFrame(frame); return;
   }
   if(state==='ending'){ drawEnding(); requestAnimationFrame(frame); return; }
+  if(state==='title'){ drawTitleCard(); drawBezel(); drawWakeHint(); requestAnimationFrame(frame); return; }
   if(state==='lockin'){ drawLockin(); drawBezel(); requestAnimationFrame(frame); return; }
   if(state==='initials'){ drawInitials(); drawBezel(); requestAnimationFrame(frame); return; }
   if(state==='board'){ drawBoard(); drawBezel(); requestAnimationFrame(frame); return; }

@@ -434,6 +434,16 @@ var MODEBAKE=(typeof window!=='undefined' && window.__SUCKUP_MODE)||'';   // bak
 // cab and the OG test cab unreachable on that upload, with no way back.
 var MODEOVR=/[?&](og|coleman|story|blacksite)\b/.test(location.search);
 var ARCADE=/[?&]arcade\b/.test(location.search) || (MODEBAKE==='arcade' && !MODEOVR);
+// LONG ROUNDS (Joe 1112: "longer rounds might make more sense ... we dont have a ton of stages") -- the HOME profile:
+// every non-arcade build (STORY, the desktop / console / Steam front, the BLACKSITE vault) and the 3D EDITION's web default.
+// The arcade quarter-eater (?arcade, the cabs, the baked 2D Pages site) keeps the original timings (RK=BK=1: byte-identical).
+// A main round is the same round TIME-STRETCHED: the clock, THE RUN's scroll_start + ramp, the meter's whole timeline
+// (passive fill AND snatch heat / brisket cool, so RED still lands near the horn), Mo's arc and wild Dave's arrival.
+// Telegraphs, hazard cadences and spawn rates are untouched. Base + sweep bonuses x1.5; GUNPOWDER (170 s) and CLAW keep theirs.
+// = src/suck_up.py LONG_ROUND_SCALE / LONG_BREAK_SCALE (GameState.long_rounds). Override: ?rounds=arcade | ?rounds=long.
+var LONGR=(function(){ var q=location.search; if(/[?&]rounds=arcade\b/.test(q)) return false; if(/[?&]rounds=long\b/.test(q)) return true;
+  return !ARCADE || (!!window.SU3D_EDITION && !/[?&]arcade\b/.test(q)); })();
+var RK=LONGR?2.0:1, BK=LONGR?1.5:1;   // main-round stretch · burst-stage stretch
 // COLEMAN'S ORIGINAL SUCK-UP BLACKSITE CABINET — the backdoor test cab: EVERYTHING unlocked from boot
 // (every level + every cheat + GOD mode), and it never touches the real player's save. ?coleman or ?og.
 var OG=/[?&](coleman|og)\b/.test(location.search);
@@ -501,6 +511,12 @@ function devSoak(seconds){
       if(state!=='play') break;   // stage ended (clear/over) — move on
     } }
   __soak={ticks:ticks, breaches:breaches, errors:errors, ok:(breaches.length===0&&errors.length===0)};
+  // The ship gate reads explicit completion, never screenshot colours or a
+  // previous run's image. Missing completion is a failure too.
+  document.documentElement.setAttribute('data-suckup-soak',__soak.ok?'pass':'fail');
+  document.documentElement.setAttribute('data-suckup-soak-ticks',String(ticks));
+  document.documentElement.setAttribute('data-suckup-soak-errors',String(errors.length));
+  document.documentElement.setAttribute('data-suckup-soak-breaches',String(breaches.length));
   state='soakdone';
 }
 var STAGE_ROUNDS={dairy:0,corn:1,downtown:2,county:3,beltway:4,outskirts:5};
@@ -708,7 +724,7 @@ function beginSegment(){
 }
 function advanceSegment(){
   sfx('transition',0.55);
-  if(soloStage){ state='clear'; return; }                 // single stage off the CHEATS vault -> back to the cab
+  if(soloStage){ state='clear'; idleT=0; return; }                 // single stage off the CHEATS vault -> back to the cab
   var z=zoneOfSeg(segIdx); if(z>=0 && z+1<LEVELS.length && z+1>(SAVE.storyMax|0)){ SAVE.storyMax=z+1; persist(); }   // clearing a zone unlocks the next (STANDALONE/STORY progress)
   resLast=(segIdx+1>=SCHEDULE.length);                    // final segment -> the card leads into the credit page
   showResult();                                           // the "where you're at" beat, THEN proceedSegment() picks up the schedule
@@ -737,6 +753,7 @@ function enterSelect(){ enterCheats(); }                 // legacy alias — any
 function enterFront(){ OG?enterCheats():enterAttract(); } // blacksite front door: OG -> vault, otherwise the arcade-style attract
 function backToFront(){ if(soloStage) enterCheats(); else enterFront(); }   // after a stage/run ends: solo vault stages go back to the vault, runs go to the front
 function startRun(){ held={}; held2={}; planting=false; planting2=false; ARCADE?startCampaign():startStory(); }
+var titleT=0; function enterTitle(){ state='title'; titleT=0; idleT=0; held={}; planting=false; }   // CK BOOT STANDARD S3: attract -> TITLE (PRESS BEAM) -> lockin
 function enterLockin(){ state='lockin'; lockinT=0; twoP=false; held={}; held2={}; planting=false; planting2=false; idleT=0; }   // "DO YOU THINK YOU ARE ALONE?"
 function launchSel(){ var m=MENU[sel]; held={}; planting=false;
   if(m.kind==='locked'||m.kind==='header'){ if(m.kind==='locked'){ sfx('denied',0.45); flash(m.hint||'LOCKED','#ff5d6c',1.0); } return; }
@@ -844,7 +861,7 @@ function updateAttract(dt){ var _W=W,_H=H; W=H=Math.min(_W,_H);     // square sp
 function startLevel(idx){
   level=idx; mode='campaign'; var L=LEVELS[idx];
   P=newPlayer(); R=newRival(); targets=[]; jets=[]; shots=[]; fx=[]; shake=0;
-  meter=L.meter0||0; stageClock=L.clock; levelLen=L.clock; jetTimer=L.aa?0.6:2; aaTimer=L.aa?0.8:1.8;
+  meter=L.meter0||0; stageClock=L.clock*RK; levelLen=L.clock*RK; jetTimer=L.aa?0.6:2; aaTimer=L.aa?0.8:1.8;
   runActive=false; daveSpawned=false; moTele=false; moSpawned=false; moTarget=null; moEscapeAt=0; bandScroll=0; bandScroll2=0; roadScroll=0; superT=0;   // fresh round: drop any active super (brisket charge carries the run)
   truck = L.truck ? truckRespawn({gapCd:0}) : null;   // Dave's rocket truck this round (enters from a random side, faces its travel direction)
   buildScenery(L.props, 0.03, L.props.length>7?0.128:0.135, L.pool);
@@ -857,7 +874,7 @@ function startLevel(idx){
 function startBase(fresh){
   mode='base'; clock=0; if(fresh){ score=0; hp=maxHP; }            // fresh = standalone (B key); woven-in keeps score+hull
   P=newPlayer(); R=null; targets=[]; jets=[]; shots=[]; fx=[]; shake=0; bonusKind=null;   // base = solo dodge, no rival
-  meter=100; stageClock=30; levelLen=30; jetTimer=1.0; aaTimer=1.2; runActive=false; daveSpawned=true; moSpawned=true; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0; superT=0;
+  meter=100; stageClock=30*BK; levelLen=30*BK; jetTimer=1.0; aaTimer=1.2; runActive=false; daveSpawned=true; moSpawned=true; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0; superT=0;
   buildScenery(BASE_PROPS, 0.02, 0.112, BASE_POOL);   // MILITARY BASE — see BASE_PROPS (barracks, fence line, gate, tower, hangar; ONE commissary)
   for(var k=0;k<2;k++) spawnTarget('farmer');
   for(var k=0;k<3;k++) spawnTarget('tank');            // AA BATTERIES — the base's ground fire launches from these (no ordnance from nowhere)
@@ -1315,7 +1332,7 @@ function startBonus(bi){
   var crab=(bi%2===1); if(crab){ startClaw(false); return; }   // CLAW & ORDER is its own hostile mission now (startClaw) — the hull carries in
   claw=null; mode='bonus'; bonusKind=crab?'crab':'backyard'; clock=0;
   P=newPlayer(); R=newRival(); targets=[]; jets=[]; shots=[]; fx=[]; shake=0; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0;
-  meter=0; stageClock=BONUS_SECONDS; levelLen=BONUS_SECONDS; runActive=false; daveSpawned=true; moSpawned=true; superT=0;
+  meter=0; stageClock=BONUS_SECONDS*BK; levelLen=BONUS_SECONDS*BK; runActive=false; daveSpawned=true; moSpawned=true; superT=0;
   // DAVE'S BACKYARD — still the 20s sweep-for-PERFECT (CLAW & ORDER branched off above). The yard: BACKYARD_SCENE.
   buildScenery([],0,0,[]);                                      // rolls the yard moon + resets the pools; the yard itself is COMPOSED, not dealt
   scenery=BACKYARD_SCENE.map(function(p){ return { x:W*p.x, s:p.s, sc:p.sc||1, d:p.d, fl:!!p.fl }; }); scenery.sort(function(a,b){return a.d-b.d;});
@@ -1328,7 +1345,7 @@ function startBonus(bi){
 // #1 CHAMPION LAP — the calm victory pasture: a sparse peaceful field, no army, high-value herd + Dave hands over the crown.
 function startChampionLap(){ claw=null; mode='bonus'; bonusKind='champ'; clock=0;   // 'champ' -> HUD reads CHAMPION LAP; music falls through to the calm backyard bed
   P=newPlayer(); R=newRival(); targets=[]; jets=[]; shots=[]; fx=[]; shake=0; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0;
-  meter=0; stageClock=BONUS_SECONDS; levelLen=BONUS_SECONDS; runActive=false; daveSpawned=true; moSpawned=true; superT=0;
+  meter=0; stageClock=BONUS_SECONDS*BK; levelLen=BONUS_SECONDS*BK; runActive=false; daveSpawned=true; moSpawned=true; superT=0;
   // #1 CHAMPION LAP — calm victory pasture, layered homesteads (deep house → near house + barn + trees)
   buildScenery([ {s:'it_house_2',d:0.5,sc:0.82}, {s:'tree',d:0.62}, {s:'it_house_10',d:1.0}, {s:'barn',d:0.92}, {s:'tree',d:1.0} ], 0.06, 0.205);
   for(var i=0;i<6;i++) targets.push(lootTarget('cow',300,0.95, W*(0.1+0.8*(i+0.5)/6), false));
@@ -1627,14 +1644,14 @@ var audioBlocked=false, wakeSwallowUntil=-1;                                  //
 function tryWake(){ if(!audioBlocked) return; try{ var pr=mCur.play(); if(pr&&pr.then) pr.then(function(){ audioBlocked=false; },function(){}); else audioBlocked=false; }catch(e){} }
 function wakeGate(e){ if(!e.isTrusted) return;                               // stick / phone-pad synthesized keys can't unlock audio -- let them through
   var now=performance.now();
-  if(audioBlocked && wakeSwallowUntil<0 && (state==='boot'||state==='cabboot'||state==='attract')) wakeSwallowUntil=now+700;   // spend it once, menus only
+  if(audioBlocked && wakeSwallowUntil<0 && (state==='boot'||state==='cabboot'||state==='attract'||state==='title'||state==='select')) wakeSwallowUntil=now+700;   // spend it once, menus only
   tryWake();
   if(now<wakeSwallowUntil){ e.stopImmediatePropagation(); if(e.cancelable) e.preventDefault(); } }   // the whole wake tap (down/up/click) is eaten, nothing else
 ['keydown','mousedown','pointerdown','pointerup','touchend','click'].forEach(function(ev){ addEventListener(ev,wakeGate,{capture:true,passive:false}); });
 var WAKE_TOUCH=false; try{ WAKE_TOUCH=matchMedia('(pointer:coarse)').matches; }catch(e){}
 function drawWakeHint(){ if(!audioBlocked || wakeSwallowUntil>=0) return;   // only until the wake gesture lands
   ctx.save(); ctx.textAlign='center'; ctx.globalAlpha=0.55+0.45*Math.abs(Math.sin(t*3)); ctx.fillStyle='#ffd23f'; ctx.font='800 '+clamp(W*0.018,12,18)+'px ui-monospace';
-  ctx.fillText(WAKE_TOUCH?'\u266A  TAP FOR SOUND  \u266A':'\u266A  CLICK OR PRESS ANY KEY FOR SOUND  \u266A', W/2, Math.max(22,H*0.045)); ctx.restore(); }
+  ctx.textAlign='right'; ctx.globalAlpha=0.55; ctx.font='700 16px ui-monospace'; ctx.fillText('\u266A\u2715', W-18, 26); ctx.restore(); }   // CK BOOT STANDARD S5: a quiet glyph, not a banner
 function updateAudio(dt){ var tv=AUDIO_ON?mTargetVol*MIX.mus:0, r=Math.min(1,dt*2.4);   // MIX.mus applied HERE (not at playMusic) so a slider move takes effect on the bed already playing
   mCur.volume=clamp(mCur.volume+(tv-mCur.volume)*r,0,1);
   if(mOther!==mCur){ mOther.volume=clamp(mOther.volume+(0-mOther.volume)*r,0,1); if(mOther.volume<0.02 && !mOther.paused){ try{mOther.pause();}catch(e){} } } }
@@ -1645,6 +1662,7 @@ function audioDirector(){ var path=null,vol=0.5;
     else if(attractMode==='demo'){ var Z=DEMO_ZONES[demoZ]; path = Z.base?MUS.base : (MUS.zones[Z.lvl]||MUS.zones[0]); }   // the demo cut plays the REAL mission music (crossfades per zone)
     else path=MUS.attract;
   }
+  else if(state==='title'){ path=MUS.attract; }
   else if(state==='select'){ path=MUS.menu; vol=0.45; }
   else if(state==='play'){ path = (mode==='base'||mode==='gunpowder')?MUS.base : mode==='bonus'?(bonusKind==='crab'?MUS.crab:MUS.backyard) : (MUS.zones[level]||MUS.zones[0]); }
   else if(state==='over'||state==='gpfail'||state==='clawfail'){ path=MUS.over; }
@@ -1702,14 +1720,15 @@ addEventListener('keydown',function(e){
   if(e.key==='Meta'||e.key==='Shift'||e.key==='Control'||e.key==='Alt'||e.key==='CapsLock') return;   // a bare modifier isn't a coin
   var k=e.key.toLowerCase();
   if(k==='m' && !(twoP && state==='play')){ AUDIO_ON=!AUDIO_ON; flash('SOUND '+(AUDIO_ON?'ON':'OFF'),'#bdf2cf',0.7); e.preventDefault(); return; }   // M = mute EXCEPT in 2-player play, where it's P2's BEAM (falls through below)
-  // boot idents — any key skips ahead
-  if(state==='boot'){ bootT=0; state='cabboot'; e.preventDefault(); return; }
-  if(state==='cabboot'){ ARCADE?enterAttract():enterFront(); e.preventDefault(); return; }
+  // boot idents — they play out (CK BOOT STANDARD S1)
+  if(state==='boot'||state==='cabboot'){ e.preventDefault(); return; }   // CK BOOT STANDARD: idents play out (wakeGate already used the press for sound)
   // attract: WARBLE (F / stick warble button) ARMS DEFCON 1 (the arcade high-score run AND the CHEATS-unlock
   // challenge); any other key/BEAM inserts a coin. STANDALONE: coin CONTINUES your story; C opens the vault once earned.
-  if(state==='attract' && !OG && (k==='f'||k==='x')){ defconArmed=!defconArmed; sfx(defconArmed?'snatch':'denied',0.7); e.preventDefault(); return; }   // WARBLE (X/F) arms DEFCON 1
-  if(state==='attract' && !ARCADE && cheatsUnlocked() && k==='c'){ sfx('launch',0.6); enterCheats(); e.preventDefault(); return; }
-  if(state==='attract'){ try{reelVid.pause();}catch(e){} sfx('launch',0.6);
+  if(state==='attract' && !ARCADE){ try{reelVid.pause();}catch(e){} sfx('select',0.5); enterTitle(); e.preventDefault(); return; }   // CK BOOT STANDARD S3: the title beat (non-arcade)
+  if((state==='attract'||state==='title') && !OG && (k==='f'||k==='x')){ defconArmed=!defconArmed; sfx(defconArmed?'snatch':'denied',0.7); e.preventDefault(); return; }   // WARBLE (X/F) arms DEFCON 1
+  if((state==='attract'||state==='title') && !ARCADE && cheatsUnlocked() && k==='c'){ sfx('launch',0.6); enterCheats(); e.preventDefault(); return; }
+  if(state==='attract'||state==='title'){ if(state==='title' && (e.repeat||titleT<0.35)){ e.preventDefault(); return; }
+    try{reelVid.pause();}catch(e){} sfx('launch',0.6);
     if(defconArmed) startRun();                                        // DEFCON = committed solo, no join prompt
     else enterLockin();                                                // DO YOU THINK YOU ARE ALONE? — offer P2 the join
     e.preventDefault(); return; }
@@ -1732,11 +1751,12 @@ addEventListener('keydown',function(e){
     else if(k==='escape'||k==='x'||k==='f') clawLimpOn();
     e.preventDefault(); return; }
   // game over / cleared
-  if(state==='over'||state==='clear'){ if(e.key===' '||e.key==='Enter'||k==='r'){
+  if(state==='over'||state==='clear'){ if(e.repeat||idleT<0.9){ e.preventDefault(); return; }   // CK BOOT STANDARD S4: results hold 0.9 s
+    if(e.key===' '||e.key==='Enter'||k==='r'){
       if(state==='over' && !(defcon&&!defconUnlimited) && !soloStage) insertContinue();   // continue — unless a REAL DEFCON-1 run OR a vault single-stage (those go back to the vault, matching the overlay + idle path)
       else finishRun(); } e.preventDefault(); return; }                     // no continue -> leaderboard (real runs) / vault (solo stages)
-  if(state==='result'){ if(resT>0.6 && (e.key===' '||e.key==='Enter'||k==='w'||k==='i')){ proceedSegment(); } e.preventDefault(); return; }   // BEAM/any advance skips the tally (short guard so the clear keypress doesn't skip it instantly)
-  if(state==='ending'){ endGame(); e.preventDefault(); return; }            // skip credits -> leaderboard
+  if(state==='result'){ if(!e.repeat && resT>0.9 && (e.key===' '||e.key==='Enter'||k==='w'||k==='i')){ proceedSegment(); } e.preventDefault(); return; }   // BEAM/any advance skips the tally (short guard so the clear keypress doesn't skip it instantly)
+  if(state==='ending'){ if(!e.repeat && endT>0.9) endGame(); e.preventDefault(); return; }            // skip credits -> leaderboard
   // INITIALS entry (arcade-style: stick cycles the letter, BEAM advances, WARBLE backs up)
   if(state==='initials'){ idleT=0; var di=kn(e);
     if(di==='up'){   cycleChar(1);  e.preventDefault(); return; }
@@ -1747,7 +1767,7 @@ addEventListener('keydown',function(e){
     if(e.key===' '){ if(iniPos<2){ iniPos++; sfx('select',0.4); } else { sfx('launch',0.5); confirmInitials(); } e.preventDefault(); return; }
     if(k==='f'||k==='x'){ if(iniPos>0) iniPos--; sfx('denied',0.3); e.preventDefault(); return; }   // WARBLE (X/F) = back a letter
     e.preventDefault(); return; }
-  if(state==='board'){ if(boardT>0.4) enterFront(); e.preventDefault(); return; }   // any key -> front
+  if(state==='board'){ if(!e.repeat && boardT>0.9) enterFront(); e.preventDefault(); return; }   // any key -> front
   // CHEATS VAULT — level select
   if(state==='select'){ idleT=0; var dd=kn(e);
     if(dd==='up'){   sel=(sel+MENU.length-1)%MENU.length; sfx('select',0.5); e.preventDefault(); return; }
@@ -1792,7 +1812,7 @@ if(!STICK){                                                                    /
   cv.addEventListener('mousemove',function(e){ var p=mouseXY(e); MOUSE.x=p.x; MOUSE.y=p.y; MOUSE.on=true; moveSrc='mouse'; });
   cv.addEventListener('mousedown',function(e){
     if(e.button===2){                                                          // RIGHT-CLICK = WARBLE (phase through fire)
-      if(state==='attract'||state==='lockin'){ try{ dispatchEvent(new KeyboardEvent('keydown',{key:'x'})); }catch(_){} e.preventDefault(); return; }   // menus: WARBLE arms DEFCON 1 / stands down, same as X
+      if(state==='attract'||state==='title'||state==='lockin'){ try{ dispatchEvent(new KeyboardEvent('keydown',{key:'x'})); }catch(_){} e.preventDefault(); return; }   // menus: WARBLE arms DEFCON 1 / stands down, same as X
       if(state==='play' && P && clock>P.warbleCd){ P.warbleU=clock+0.60; P.warbleCd=clock+2.0; planting=false; sfx('warble',0.7); }
       e.preventDefault(); return; }
     if(e.button!==0) return;                                                    // LEFT-CLICK
@@ -1941,7 +1961,7 @@ function hitPlayer(){
   hp-=34; P.stun=1.1; P.invuln=2.0; shake=18; addFx(P.x,P.y,'boom','#ff7a3a',0.6); sfx('hit',0.5);
   if(hp<=0){ lives--;
     if(lives>0){ hp=maxHP; P.invuln=2.4; P.stun=0.6; addFx(P.x,P.y,'snatch','#7fe9ff',0.6); flash('SHIP DOWN — '+lives+' LEFT','#ff9d3a',1.4); if(level>=1) sayLater(pick(EXPLOSION_BARKS),'#ffd23f',0.7); }   // Dave cheers the shootdown (later zones)
-    else { hp=0; state='over'; flash('SOMETHING HAPPENED…','#ff5d6c',99); }
+    else { hp=0; state='over'; idleT=0; flash('SOMETHING HAPPENED…','#ff5d6c',99); }
   }
 }
 function shoot(x,y,vx,vy,kind,col){ if(shots.length>=MAX_SHOTS) shots.shift(); shots.push({x:x,y:y,vx:vx,vy:vy,kind:kind,col:col,t:0,life:kind==='missile'?5:3}); }
@@ -1965,7 +1985,7 @@ function abduct(tg,who){
   var _claw=clawOn() && tg.kind==='loot';                          // CLAW & ORDER: your grabs go into the HOLD (clawGrab), not the score
   if(isR){ rivalScore+=tg.def.val; if(_claw) clawRivalGrab(tg); } else if(_claw) clawGrab(tg); else score+=tg.def.val;
   if(tg.def.val>0 && !(_claw && !isR)){ if(fx.length>=MAX_FX)fx.shift(); fx.push({x:sh.x,y:sh.y+SAUCER_W()*0.1,kind:'pts',col:isR?'#7fb0ff':'#ffe23a',t:0,life:0.95,val:tg.def.val,big:tg.def.val>=1000}); }   // floating +POINTS so each grab's value READS (cow 100 / person 300 / farmer 250 / Dave 2000 / Mo 3000)
-  meter=clamp(meter+tg.def.meter,0,100); addFx(sh.x,sh.y,'snatch', isR?'#7fb0ff':'#7fe9ff',0.5);
+  meter=clamp(meter+tg.def.meter/(mode==='campaign'?RK:1),0,100); addFx(sh.x,sh.y,'snatch', isR?'#7fb0ff':'#7fe9ff',0.5);
   sfx(tg.def.meter<0?'brisket':(tg.kind==='cow'||tg.isMo)?'cow':'pickup', isR?0.4:0.7);
   if(tg.isMo){ flash(isR?'RIVAL SNATCHED MO!':MO_CAUGHT_BARK, isR?'#7fb0ff':'#ffd23f',1.6); sayLater(pick(DAVE_MO_BARKS),'#ffd23f',1.5); }   // Dave's one Dairy Flats beat: he reacts to Mo
   else if(tg.def.val>=2000){ var who=bossName(tg.sprite);                                  // wild Dave (2000) AND the champion-lap Dr. L come through here — name the right one
@@ -1999,6 +2019,7 @@ function update(dt){
     else { demoClk+=dt; updateAttract(dt); if(demoClk>DEMO_SEG) endDemoCut(); }            // live NEW-game demo cut
     return; }
   if(state==='ending'){ endT+=dt; if(msgT>0)msgT-=dt; if(endT>=9.5){ endGame(); } return; }   // credit page -> leaderboard
+  if(state==='title'){ titleT+=dt; idleT+=dt; if(msgT>0)msgT-=dt; if(idleT>25) enterAttract(); return; }
   if(state==='lockin'){ lockinT+=dt; if(msgT>0)msgT-=dt; if(lockinT>7){ twoP=false; startRun(); } return; }   // no answer in 7s -> solo
   if(state==='initials'){ idleT+=dt; if(msgT>0)msgT-=dt; if(idleT>30) confirmInitials(); return; }   // afk -> auto-lock the initials
   if(state==='board'){ boardT+=dt; if(msgT>0)msgT-=dt; if(boardT>10) enterFront(); return; }
@@ -2020,13 +2041,13 @@ function update(dt){
 
   // meter climb (campaign only — base stays pinned RED, bonus has no military response)
   // RURAL maps build the meter for tension but CAP below RED (never the onslaught); urban/beltway/military fill to RED.
-  if(mode==='campaign'){ var mFill = L.aa?1.05 : L.red?1.35 : 0.5; meter = clamp(meter + dt*mFill, 0, ons?100:64); }   // red maps fill fast enough to reach the RED climax within their clock
+  if(mode==='campaign'){ var mFill = L.aa?1.05 : L.red?1.35 : 0.5; meter = clamp(meter + dt*mFill/RK, 0, ons?100:64); }   // red maps fill fast enough to reach the RED climax within their clock
 
   // THE RUN — once past the zone's scroll_start the world drags you back; beaming anchors you
   var worldSpeed = 0;   // HOLD the area — work one spot for the calm part of the clock; it only moves on THE RUN
-  if(mode==='campaign' && elapsed>=L.scrollStart){
+  if(mode==='campaign' && elapsed>=L.scrollStart*RK){
     if(!runActive){ runActive=true; flash('>>> THE RUN <<<','#ff9d3a',1.4); sfx('run',0.5); }
-    var ramp=clamp((elapsed-L.scrollStart)/Math.max(1,levelLen-L.scrollStart),0,1);
+    var ramp=clamp((elapsed-L.scrollStart*RK)/Math.max(1,levelLen-L.scrollStart*RK),0,1);
     worldSpeed = 10 + 52*ramp;                                                     // gentler push (was 16 + 90)
     if(!planting && P.stun<=0) P.tx=clamp(P.tx-(14+40*ramp)*dt, W*0.05, W*0.95);   // softer drag toward the back edge
   }
@@ -2042,8 +2063,8 @@ function update(dt){
 
   // MO (Dairy Flats only)
   if(mode==='campaign' && L.mo){
-    if(!moTele && elapsed>=MO_TELE){ moTele=true; flash("DR. L: the herd's gone quiet — the FIRST one is coming back…",'#bdf2cf',2.0); }
-    if(!moSpawned && elapsed>=MO_APPEAR){ moSpawned=true; spawnMo(); }
+    if(!moTele && elapsed>=MO_TELE*RK){ moTele=true; flash("DR. L: the herd's gone quiet — the FIRST one is coming back…",'#bdf2cf',2.0); }
+    if(!moSpawned && elapsed>=MO_APPEAR*RK){ moSpawned=true; spawnMo(); }
     if(moTarget && !moTarget.gone && clock>=moEscapeAt){ moTarget.gone=true; moTarget.respawn=1e9; flash(MO_ESCAPED,'#bdf2cf',2.2); moTarget=null; }   // Mo escapes ungrabbed
   }
 
@@ -2056,7 +2077,7 @@ function update(dt){
     if(lootLeft===0){ score+=BONUS_PERFECT; if(twoP) rivalScore+=BONUS_PERFECT; flash('PERFECT!  +'+BONUS_PERFECT,'#ffd23f',1.8); resKind='bonus'; resBonus=BONUS_PERFECT; resPerfect=true; advanceSegment(); }   // all loot swept -> the advertised reward
     else if(stageClock<=0){ flash('TIME — SWEEP OVER','#9affc0',1.4); resKind='bonus'; resBonus=0; resPerfect=false; advanceSegment(); }
   }
-  else { if(!daveSpawned && stageClock<28) spawnDave();
+  else { if(!daveSpawned && stageClock<28*RK) spawnDave();
          if(stageClock<=0){ score+=2000; if(twoP) rivalScore+=2000;
            flash(L.zone+' CLEARED  '+(R?(score>rivalScore?'— ROUND TO YOU':score<rivalScore?'— ROUND TO RIVAL':'— DEAD HEAT'):'+2000'),'#9affc0',1.6);
            resKind='round'; resBonus=2000; resPerfect=false; advanceSegment(); } }
@@ -2506,7 +2527,7 @@ function drawBoot(){
   ctx.textAlign='center'; ctx.globalAlpha=0.4+0.3*pulse; ctx.fillStyle='#9c89c4'; ctx.font='700 13px ui-monospace';
   ctx.fillText('RESPEK LOGIC ART UREA  ·  25¢ PER PLAY', cx, H*0.80);
   ctx.globalAlpha=clamp((bootT-1.2)*1.5,0,0.7); ctx.fillStyle='#5f8a70'; ctx.font='700 12px ui-monospace';
-  ctx.fillText('press any key', cx, H*0.88); ctx.globalAlpha=1;
+  ctx.globalAlpha=1;
 }
 function fitH(n,h){ var im=IMG[n]; var ar=(im&&im.ok)?im.naturalWidth/im.naturalHeight:0.55; return h*ar; }   // width for a target HEIGHT
 // CAB BOOT — the slow Ken Burns push on the jailbroken BLACKSITE cab (the house boot beat)
@@ -2530,7 +2551,7 @@ function drawCabBoot(){
   ctx.globalAlpha=clamp((bootT-0.6)*1.2,0,1); ctx.fillStyle=CAB_ACCENT; ctx.font='900 '+clamp(W*0.028,20,34)+'px system-ui';
   ctx.shadowColor=ARCADE?'#1f8a14':'#ff2b3a'; ctx.shadowBlur=20; ctx.fillText(ARCADE?'▌ HYSCORE FOREST':OG?"▌ COLEMAN'S ORIGINAL":'▌ BLACKSITE', cx, H*0.90); ctx.shadowBlur=0;
   ctx.globalAlpha=clamp((bootT-1.4)*1.3,0,0.7); ctx.fillStyle=ARCADE?'#8fd6a6':'#9c89c4'; ctx.font='700 12px ui-monospace';
-  ctx.fillText(ARCADE?'25¢ — press any key':OG?'your cabinet · everything unlocked · press any key':'press any key', cx, H*0.95); ctx.globalAlpha=1;
+  ctx.fillText(ARCADE?'25¢ PER PLAY':OG?'your cabinet · everything unlocked':'', cx, H*0.95); ctx.globalAlpha=1;
 }
 // cab bezel over the live screen — green/gold HYSCORE FOREST in arcade, red BLACKSITE in the jailbreak cut
 function drawBezel(){ ctx.save(); ctx.globalAlpha=0.5; ctx.strokeStyle=CAB_ACCENT; ctx.lineWidth=5; roundRect(8,8,W-16,H-16,16); ctx.stroke();
@@ -2596,6 +2617,13 @@ function fitFont(txt, weight, px, fam, maxW){
   var w = ctx.measureText(txt).width;
   if(w > maxW && w > 0) ctx.font = weight+' '+Math.max(9,Math.floor(px*maxW/w))+'px '+fam;
 }
+function drawTitleCard(){ ctx.fillStyle='#04080e'; ctx.fillRect(0,0,W,H); ctx.textAlign='center';   // CK BOOT STANDARD S3
+  if(ok('title')){ drawImg('title', W/2, H*0.5, W, 0, 1); drawTitleBeam(1); }
+  else { ctx.fillStyle='#39ff14'; ctx.font='900 '+clamp(W*0.09,40,120)+'px system-ui'; ctx.fillText('SUCK UP',W/2,H*0.42); }
+  ctx.globalAlpha=0.4+0.6*Math.abs(Math.sin(t*4)); ctx.fillStyle='#ffd23f'; ctx.font='800 '+clamp(W*0.03,18,26)+'px system-ui';
+  ctx.fillText('PRESS BEAM', W/2, H*0.93); ctx.globalAlpha=1;
+  if(!OG){ ctx.globalAlpha=0.75; ctx.fillStyle='#9c89c4'; ctx.font='700 12px ui-monospace';
+    ctx.fillText((STICK?'WARBLE':'WARBLE (RIGHT-CLICK)')+' = DEFCON 1'+(defconArmed?' · ARMED':'')+(cheatsUnlocked()?'   ·   C = CHEATS VAULT':''), W/2, H*0.965); ctx.globalAlpha=1; } }
 function drawLockin(){
   drawBG(); ctx.fillStyle='rgba(2,6,12,.82)'; ctx.fillRect(0,0,W,H); ctx.textAlign='center';
   ctx.fillStyle='#39ff14'; fitFont('PLAYER 1  IS IN','800',clamp(W*0.02,15,24),'system-ui',W*0.92); ctx.fillText('PLAYER 1  IS IN', W/2, H*0.28);
@@ -3434,7 +3462,7 @@ function frame(ts){
       else if(scr==='result'){ startCampaign(); score=48200; rivalScore=41000; lives=2; level=1; resKind='round'; resBonus=2000; resPerfect=false; resLast=false; segIdx=1; showResult(); }   // preview the between-stage tally
       else if(scr==='resultbonus'){ startCampaign(); score=52000; rivalScore=52000; lives=3; resKind='bonus'; resBonus=5000; resPerfect=true; resLast=false; segIdx=2; showResult(); }
       else if(scr==='board'){ SAVE.scores=[{n:'JOE',s:98200},{n:'DAV',s:71050},{n:'MO ',s:44300},{n:'DRL',s:22000},{n:'AAA',s:8000}]; state='board'; boardT=1.0; boardHi=0; }
-      else if(scr==='initials'){ state='initials'; iniQueue=[48200]; iniChars=['A','A','A']; iniPos=0; boardHi=-1; }
+      else if(scr==='initials'){ iniQueue=[{ who:'YOU', col:'#39ff14', s:48200 }]; nextInitials(); boardHi=-1; }   // a real queue entry (drawInitials reads iniCur.who/col/s)
     } }
   if(DEV && STAGE_PARAM && !_devStageBooted){ _devStageBooted=true;     // dev background-review boot: jump straight into a stage's play frame
     soloStage=true; score=0; rivalScore=0; hp=maxHP; lives=STARTING_LIVES; held={}; planting=false;
@@ -3482,6 +3510,7 @@ function frame(ts){
     drawWakeHint(); requestAnimationFrame(frame); return;
   }
   if(state==='ending'){ drawEnding(); requestAnimationFrame(frame); return; }
+  if(state==='title'){ drawTitleCard(); drawBezel(); drawWakeHint(); requestAnimationFrame(frame); return; }
   if(state==='lockin'){ drawLockin(); drawBezel(); requestAnimationFrame(frame); return; }
   if(state==='initials'){ drawInitials(); drawBezel(); requestAnimationFrame(frame); return; }
   if(state==='board'){ drawBoard(); drawBezel(); requestAnimationFrame(frame); return; }
@@ -3780,10 +3809,13 @@ requestAnimationFrame(frame);
   function peek(){ try{ return window.__suPeek?window.__suPeek():{}; }catch(_){ return {}; } }
   function key(type,k){ window.dispatchEvent(new KeyboardEvent(type,{key:k,bubbles:true,cancelable:true})); }
   function buzz(ms){ try{ navigator.vibrate&&navigator.vibrate(ms||10); }catch(_){} }
+  // env(safe-area-inset-*) in px (0 off-notch): the pad column pads by it, so its width must include it
+  function safeInset(side){ var d=document.createElement('div'); d.style.cssText='position:fixed;visibility:hidden;pointer-events:none;padding-left:env(safe-area-inset-'+side+')';
+    document.body.appendChild(d); var v=parseFloat(getComputedStyle(d).paddingLeft)||0; d.remove(); return v; }
   function layout(){
     TMODE=innerWidth>=innerHeight;
     document.body.classList.toggle('smode',TMODE); document.body.classList.toggle('trot',!TMODE);
-    var btn=Math.round(Math.min((innerHeight-56)/2.75,128)); colW=TMODE?Math.round(Math.max(btn*1.3,118)):0;
+    var btn=Math.round(Math.min((innerHeight-56)/2.75,128)); colW=TMODE?Math.round(Math.max(btn*1.3,118)+safeInset(HAND==='R'?'right':'left')):0;   // + the notch: the column pads by it (border-box), so the buttons keep their full lane and the divider clears the rings
     var r=document.documentElement.style; r.setProperty('--btn',btn+'px'); r.setProperty('--col',colW+'px');
     var home=HAND==='R'?cR:cL; cL.classList.toggle('on',TMODE&&home===cL); cR.classList.toggle('on',TMODE&&home===cR);
     home.appendChild(bW); home.appendChild(bB);   // top->bottom WARBLE · BEAM (BEAM = the resting thumb)
