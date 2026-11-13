@@ -163,6 +163,6 @@ The rules are identical.
 [deckstory]: https://anderspartnersck.github.io/suck-up/deck-3d.html?story
 [deckog]: https://anderspartnersck.github.io/suck-up/deck-3d.html?og
 [old]: https://anderspartnersck.github.io/suck-up/?arcade
-[oldstory]: https://anderspartnersck.github.io/suck-up/
+[oldstory]: https://anderspartnersck.github.io/suck-up/?story
 [oldog]: https://anderspartnersck.github.io/suck-up/?og
 [olddeck]: https://anderspartnersck.github.io/suck-up/deck.html
