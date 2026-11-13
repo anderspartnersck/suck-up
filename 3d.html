@@ -2732,7 +2732,7 @@ function drawEnding(){
 // STAGE SELECT — the jailbreak level select (pick any zone / base / bonus / the full run / the reel)
 // INITIALS — arcade high-score entry
 function drawInitials(){
-  drawBG(); ctx.fillStyle='rgba(2,6,12,.86)'; ctx.fillRect(0,0,W,H); ctx.textAlign='center';
+  L3.menuBG(.86);   // LAB3D ctx.textAlign='center';
   ctx.fillStyle=iniCur.col; ctx.font='800 '+clamp(W*0.022,16,26)+'px system-ui'; ctx.fillText(iniCur.who+'  —  NEW HIGH SCORE', W/2, H*0.24);
   ctx.fillStyle='#ffd23f'; ctx.font='900 '+clamp(W*0.05,30,62)+'px system-ui'; ctx.fillText(iniCur.s.toLocaleString(), W/2, H*0.38);
   ctx.fillStyle='#dff7e4'; ctx.font='700 13px ui-monospace'; ctx.fillText('ENTER YOUR INITIALS', W/2, H*0.50);
@@ -2744,7 +2744,7 @@ function drawInitials(){
 }
 // HIGH SCORES board
 function drawBoard(){
-  drawBG(); ctx.fillStyle='rgba(2,6,12,.86)'; ctx.fillRect(0,0,W,H); ctx.textAlign='center';
+  L3.menuBG(.86);   // LAB3D ctx.textAlign='center';
   ctx.fillStyle='#ffd23f'; ctx.font='900 '+clamp(W*0.045,28,56)+'px system-ui'; ctx.fillText('HIGH SCORES', W/2, H*0.15);
   var top=H*0.27, gap=Math.min(46,(H*0.60)/10), fs=clamp(W*0.022,16,26);
   if(!SAVE.scores.length){ ctx.fillStyle='#6f9a80'; ctx.font='700 16px ui-monospace'; ctx.fillText('— no scores yet —', W/2, H*0.45); }
@@ -2768,7 +2768,7 @@ function fitFont(txt, weight, px, fam, maxW){
   if(w > maxW && w > 0) ctx.font = weight+' '+Math.max(9,Math.floor(px*maxW/w))+'px '+fam;
 }
 function drawLockin(){
-  drawBG(); ctx.fillStyle='rgba(2,6,12,.82)'; ctx.fillRect(0,0,W,H); ctx.textAlign='center';
+  L3.menuBG(.82);   // LAB3D ctx.textAlign='center';
   ctx.fillStyle='#39ff14'; fitFont('PLAYER 1  IS IN','800',clamp(W*0.02,15,24),'system-ui',W*0.92); ctx.fillText('PLAYER 1  IS IN', W/2, H*0.28);
   ctx.fillStyle='#ffd23f'; fitFont('DO YOU THINK YOU ARE ALONE?','900',clamp(W*0.048,28,60),'system-ui',W*0.92); ctx.fillText('DO YOU THINK YOU ARE ALONE?', W/2, H*0.44);
   if(Math.floor(t*2)%2===0){ ctx.fillStyle='#3cc8ff'; fitFont('PLAYER 2 —  BEAM ( ; )  TO JOIN','800',clamp(W*0.028,18,32),'system-ui',W*0.92); ctx.fillText('PLAYER 2 —  BEAM ( ; )  TO JOIN', W/2, H*0.60); }
@@ -2780,7 +2780,7 @@ function drawLockin(){
   if(msgT>0){ ctx.globalAlpha=clamp(msgT,0,1); ctx.fillStyle=msgColor; ctx.font='800 24px system-ui'; ctx.fillText(msg,W/2,H*0.28); ctx.globalAlpha=1; }
 }
 function drawSelect(){
-  drawBG(); ctx.fillStyle='rgba(2,6,12,.80)'; ctx.fillRect(0,0,W,H);
+  L3.menuBG(.80);   // LAB3D
   ctx.textAlign='center';
   if(ok('suck_logo')) drawImg('suck_logo',W/2,H*0.15,Math.min(W*0.40,420),0,1);
   else { ctx.fillStyle='#39ff14'; ctx.font='900 '+clamp(W*0.06,40,80)+'px system-ui'; ctx.fillText('SUCK UP',W/2,H*0.15); }
@@ -2919,6 +2919,7 @@ function moonCanvas(){
   _moonCv=cv; _moonKey=key; return cv;
 }
 function drawMoon(x,y,w){
+  if(L3.moon(x,y,w)) return;   // LAB3D
   var cv=moonCanvas(); if(!cv) return;
   var d=w*50/78;                                                     // same disc size the 78px sprite drew at width w
   ctx.save(); ctx.imageSmoothingEnabled=false; ctx.globalAlpha=0.95; ctx.drawImage(cv, Math.round(x-d/2), Math.round(y-d/2), Math.round(d), Math.round(d)); ctx.restore();
@@ -3005,7 +3006,7 @@ function drawBG(){
     var ar=im.naturalWidth/im.naturalHeight, h=L3.propH(scnH(p.s)*p.sc, dep, im, p.s), w=h*ar, pcy=gy-h/2+4-L3.propLift(p.s,dep);
     var pn = /^smoker_/.test(p.s) ? ['smoker_c','smoker_b','smoker_a','smoker_b'][Math.floor(t*1.4)%4] : L3.propSub(p.s,p);   // DAVE'S SMOKER breathes: the three plume frames cycle
     if(p.s==='string_lights') propLightPool(p.x, gy, w*0.62, '255,196,110', 0.13+0.02*Math.sin(t*2.1));   // the patio pool under the Edison bulbs (drawn first: it lights the lawn, not the posts)
-    L3.propShadowQ(pn, p.x, pcy, w, h, dep, !!p.fl); drawImg(pn, p.x, pcy, w, 0, 0.5+0.45*dep, !!p.fl, L3.propSmooth(im));
+    L3.propShadowQ(pn, p.x, pcy, w, h, dep, !!p.fl); drawImg(pn, p.x, pcy, w, 0, L3.propA(p.s,dep), !!p.fl, L3.propSmooth(im));
     if(p.s==='kettle_grill') propGrillGlow(p.x, pcy, h, w); }
   if(_fence) gpDrawFence(gy);
   drawGround(); L3.propShadows();
@@ -3606,7 +3607,7 @@ var last=0;
    until a sheet is ready the original art draws, so nothing ever pops mid-play.
 =============================================================================================================== */
 var L3 = (function(){
-  var M = {"foot":0.92,"shaft":{"green":{"file":"shaft_green.webp","fw":192,"fh":512,"n":8,"cols":8,"gut":2},"blue":{"file":"shaft_blue.webp","fw":192,"fh":512,"n":8,"cols":8,"gut":2},"super":{"file":"shaft_super.webp","fw":192,"fh":512,"n":8,"cols":8,"gut":2}},"pool":{"green":{"file":"pool_green.webp","fw":256,"fh":80,"n":8,"cols":8,"gut":2},"blue":{"file":"pool_blue.webp","fw":256,"fh":80,"n":8,"cols":8,"gut":2},"super":{"file":"pool_super.webp","fw":256,"fh":80,"n":8,"cols":8,"gut":2}},"clash":{"file":"clash.webp","fw":128,"fh":128,"n":8,"cols":8,"gut":2},"beam2":{"geo":{"w":256,"h":768,"apex":6.14399999999996,"ringtop":694.2719999999999,"base":721.92,"ringbot":749.5680000000001,"r_px":102.4,"crop":176,"foot_px":87.0748299319728,"squash":0.27},"green":{"file":"beam2_green.webp","fw":256,"fh":768,"n":8,"cols":8,"gut":2},"c_green":{"file":"contact_green.webp","fw":256,"fh":176,"n":8,"cols":8,"gut":2},"blue":{"file":"beam2_blue.webp","fw":256,"fh":768,"n":8,"cols":8,"gut":2},"c_blue":{"file":"contact_blue.webp","fw":256,"fh":176,"n":8,"cols":8,"gut":2},"super":{"file":"beam2_super.webp","fw":256,"fh":768,"n":8,"cols":8,"gut":2},"c_super":{"file":"contact_super.webp","fw":256,"fh":176,"n":8,"cols":8,"gut":2}},"jet_roll":{"file":"jet_roll.webp","fw":112,"fh":80,"n":9,"cols":9,"gut":2,"span":1.0777777777777777},"jet_tumble":{"file":"jet_tumble.webp","fw":112,"fh":112,"n":16,"cols":8,"gut":2,"span":1.0777777777777777},"tank":{"file":"tank.webp","w":109,"h":54},"props":{"windmill":{"files":["prop_windmill_0.webp","prop_windmill_1.webp","prop_windmill_2.webp","prop_windmill_3.webp","prop_windmill_4.webp","prop_windmill_5.webp","prop_windmill_6.webp","prop_windmill_7.webp"],"w":86,"h":219},"water_tower":{"files":["prop_water_tower_0.webp"],"w":100,"h":202},"tree":{"files":["prop_tree_0.webp","prop_tree_1.webp"],"w":120,"h":171},"haybale":{"files":["prop_haybale_0.webp"],"w":83,"h":75},"radar":{"files":["prop_radar_0.webp"],"w":133,"h":168},"it_corn_1":{"files":["farm_it_corn_1.webp"],"w":1472,"h":146,"scn":0.95},"it_corn_2":{"files":["farm_it_corn_2.webp"],"w":1460,"h":150,"scn":0.8636363636363636},"it_corn_3":{"files":["farm_it_corn_3.webp"],"w":1472,"h":149,"scn":1.1176470588235294},"it_corn_4":{"files":["farm_it_corn_4.webp"],"w":1471,"h":146,"scn":0.9047619047619048},"it_corn_5":{"files":["farm_it_corn_5.webp"],"w":1481,"h":142,"scn":0.9047619047619048},"farm_barn_red":{"files":["farm_farm_barn_red.webp"],"w":420,"h":220,"scn":1.0},"farm_barn_grey":{"files":["farm_farm_barn_grey.webp"],"w":462,"h":200,"scn":1.0},"farm_shed":{"files":["farm_farm_shed.webp"],"w":218,"h":150,"scn":1.0},"farm_crib":{"files":["farm_farm_crib.webp"],"w":159,"h":150,"scn":1.0}},"units":{"brisket":{"file":"unit_brisket.webp","w":184,"h":54}},"plates":{"rural":{"file":"plate_rural.webp","fw":1024,"fh":160,"h":0.085,"par":0.42,"alpha":0.8,"drop":0.0},"city":{"file":"plate_city.webp","fw":1024,"fh":160,"h":0.115,"par":0.4,"alpha":0.82,"drop":0.0},"suburb":{"file":"plate_suburb.webp","fw":1024,"fh":160,"h":0.09,"par":0.42,"alpha":0.6,"drop":0.0},"base":{"file":"plate_base.webp","fw":1024,"fh":160,"h":0.1,"par":0.4,"alpha":0.82,"drop":0.0}},"gnome3d":{"gn_cart":{"file":"g3_gn_cart.webp","w":364,"h":174},"gn_flag":{"file":"g3_gn_flag.webp","w":147,"h":122},"gn_flame":{"file":"g3_gn_flame.webp","w":131,"h":104},"gn_flame_fire":{"file":"g3_gn_flame_fire.webp","w":196,"h":97},"gn_heavy":{"file":"g3_gn_heavy.webp","w":136,"h":102},"gn_knife":{"file":"g3_gn_knife.webp","w":153,"h":130},"gn_knife_run":{"file":"g3_gn_knife_run.webp","w":129,"h":136},"gn_knife_slash":{"file":"g3_gn_knife_slash.webp","w":154,"h":131},"gn_mortar":{"file":"g3_gn_mortar.webp","w":205,"h":114},"gn_mower":{"file":"g3_gn_mower.webp","w":167,"h":137},"gn_pistol":{"file":"g3_gn_pistol.webp","w":148,"h":129},"gn_pistol_fire":{"file":"g3_gn_pistol_fire.webp","w":197,"h":124},"gn_rpg":{"file":"g3_gn_rpg.webp","w":116,"h":116},"gn_rpg_fire":{"file":"g3_gn_rpg_fire.webp","w":219,"h":113},"gn_smg":{"file":"g3_gn_smg.webp","w":144,"h":117},"gn_smg_fire":{"file":"g3_gn_smg_fire.webp","w":179,"h":121},"gn_wizard":{"file":"g3_gn_wizard.webp","w":150,"h":168},"gn_wizard_b":{"file":"g3_gn_wizard_b.webp","w":141,"h":170},"gn_wizard_cast":{"file":"g3_gn_wizard_cast.webp","w":222,"h":188},"gn_wizard_gun":{"file":"g3_gn_wizard_gun.webp","w":182,"h":136},"gn_wizard_raise":{"file":"g3_gn_wizard_raise.webp","w":142,"h":210},"gnome":{"file":"g3_gnome.webp","w":46,"h":86},"gnome_heavy":{"file":"g3_gnome_heavy.webp","w":71,"h":74},"gnome_knife":{"file":"g3_gnome_knife.webp","w":72,"h":67},"gnome_pistol":{"file":"g3_gnome_pistol.webp","w":81,"h":80},"gnome_smg":{"file":"g3_gnome_smg.webp","w":71,"h":70}},"scenery":{"road_rural":{"file":"road_rural.webp","w":960,"h":120},"road_city":{"file":"road_city.webp","w":960,"h":120},"sound_wall":{"file":"sw3_sound_wall.webp","w":1086,"h":195},"sound_wall_ivy":{"file":"sw3_sound_wall_ivy.webp","w":1086,"h":195}},"bk":{"props":{"tree":{"files":["bk_prop_tree_0.webp","bk_prop_tree_1.webp","bk_prop_tree_2.webp"],"w":150,"h":121},"water_tower":{"files":["bk_prop_water_tower_0.webp"],"w":88,"h":208},"haybale":{"files":["bk_prop_haybale_0.webp"],"w":102,"h":88}},"plates":{"rural":{"file":"bk_plate_rural.webp","fw":1024,"fh":160,"h":0.085,"par":0.42,"alpha":0.8,"drop":0.0},"suburb":{"file":"bk_plate_suburb.webp","fw":1024,"fh":160,"h":0.09,"par":0.42,"alpha":0.6,"drop":0.0}}}}, ROOT = window.SU3D_ROOT || '';
+  var M = {"foot":0.92,"shaft":{"green":{"file":"shaft_green.webp","fw":192,"fh":512,"n":8,"cols":8,"gut":2},"blue":{"file":"shaft_blue.webp","fw":192,"fh":512,"n":8,"cols":8,"gut":2},"super":{"file":"shaft_super.webp","fw":192,"fh":512,"n":8,"cols":8,"gut":2}},"pool":{"green":{"file":"pool_green.webp","fw":256,"fh":80,"n":8,"cols":8,"gut":2},"blue":{"file":"pool_blue.webp","fw":256,"fh":80,"n":8,"cols":8,"gut":2},"super":{"file":"pool_super.webp","fw":256,"fh":80,"n":8,"cols":8,"gut":2}},"clash":{"file":"clash.webp","fw":128,"fh":128,"n":8,"cols":8,"gut":2},"beam2":{"geo":{"w":256,"h":768,"apex":6.14399999999996,"ringtop":694.2719999999999,"base":721.92,"ringbot":749.5680000000001,"r_px":102.4,"crop":176,"foot_px":87.0748299319728,"squash":0.27},"green":{"file":"beam2_green.webp","fw":256,"fh":768,"n":8,"cols":8,"gut":2},"c_green":{"file":"contact_green.webp","fw":256,"fh":176,"n":8,"cols":8,"gut":2},"blue":{"file":"beam2_blue.webp","fw":256,"fh":768,"n":8,"cols":8,"gut":2},"c_blue":{"file":"contact_blue.webp","fw":256,"fh":176,"n":8,"cols":8,"gut":2},"super":{"file":"beam2_super.webp","fw":256,"fh":768,"n":8,"cols":8,"gut":2},"c_super":{"file":"contact_super.webp","fw":256,"fh":176,"n":8,"cols":8,"gut":2}},"jet_roll":{"file":"jet_roll.webp","fw":112,"fh":80,"n":9,"cols":9,"gut":2,"span":1.0777777777777777},"jet_tumble":{"file":"jet_tumble.webp","fw":112,"fh":112,"n":16,"cols":8,"gut":2,"span":1.0777777777777777},"tank":{"file":"tank.webp","w":109,"h":54},"props":{"windmill":{"files":["prop_windmill_0.webp","prop_windmill_1.webp","prop_windmill_2.webp","prop_windmill_3.webp","prop_windmill_4.webp","prop_windmill_5.webp","prop_windmill_6.webp","prop_windmill_7.webp"],"w":86,"h":219},"water_tower":{"files":["prop_water_tower_0.webp"],"w":100,"h":202},"tree":{"files":["prop_tree_0.webp","prop_tree_1.webp"],"w":120,"h":171},"haybale":{"files":["prop_haybale_0.webp"],"w":83,"h":75},"radar":{"files":["prop_radar_0.webp"],"w":133,"h":168},"it_corn_1":{"files":["farm_it_corn_1.webp"],"w":1472,"h":146,"scn":0.95},"it_corn_2":{"files":["farm_it_corn_2.webp"],"w":1460,"h":150,"scn":0.8636363636363636},"it_corn_3":{"files":["farm_it_corn_3.webp"],"w":1472,"h":149,"scn":1.1176470588235294},"it_corn_4":{"files":["farm_it_corn_4.webp"],"w":1471,"h":146,"scn":0.9047619047619048},"it_corn_5":{"files":["farm_it_corn_5.webp"],"w":1481,"h":142,"scn":0.9047619047619048},"farm_barn_red":{"files":["farm_farm_barn_red.webp"],"w":420,"h":220,"scn":1.0},"farm_barn_grey":{"files":["farm_farm_barn_grey.webp"],"w":462,"h":200,"scn":1.0},"farm_shed":{"files":["farm_farm_shed.webp"],"w":218,"h":150,"scn":1.0},"farm_crib":{"files":["farm_farm_crib.webp"],"w":159,"h":150,"scn":1.0}},"units":{"brisket":{"file":"unit_brisket.webp","w":184,"h":54}},"plates":{"rural":{"file":"plate_rural.webp","fw":1024,"fh":160,"h":0.085,"par":0.42,"alpha":0.8,"drop":0.0},"city":{"file":"plate_city.webp","fw":1024,"fh":160,"h":0.115,"par":0.4,"alpha":0.82,"drop":0.0},"suburb":{"file":"plate_suburb.webp","fw":1024,"fh":160,"h":0.09,"par":0.42,"alpha":0.6,"drop":0.0},"base":{"file":"plate_base.webp","fw":1024,"fh":160,"h":0.1,"par":0.4,"alpha":0.82,"drop":0.0}},"gnome3d":{"gn_cart":{"file":"g3_gn_cart.webp","w":364,"h":174},"gn_flag":{"file":"g3_gn_flag.webp","w":147,"h":122},"gn_flame":{"file":"g3_gn_flame.webp","w":131,"h":104},"gn_flame_fire":{"file":"g3_gn_flame_fire.webp","w":196,"h":97},"gn_heavy":{"file":"g3_gn_heavy.webp","w":136,"h":102},"gn_knife":{"file":"g3_gn_knife.webp","w":153,"h":130},"gn_knife_run":{"file":"g3_gn_knife_run.webp","w":129,"h":136},"gn_knife_slash":{"file":"g3_gn_knife_slash.webp","w":154,"h":131},"gn_mortar":{"file":"g3_gn_mortar.webp","w":205,"h":114},"gn_mower":{"file":"g3_gn_mower.webp","w":167,"h":137},"gn_pistol":{"file":"g3_gn_pistol.webp","w":148,"h":129},"gn_pistol_fire":{"file":"g3_gn_pistol_fire.webp","w":197,"h":124},"gn_rpg":{"file":"g3_gn_rpg.webp","w":116,"h":116},"gn_rpg_fire":{"file":"g3_gn_rpg_fire.webp","w":219,"h":113},"gn_smg":{"file":"g3_gn_smg.webp","w":144,"h":117},"gn_smg_fire":{"file":"g3_gn_smg_fire.webp","w":179,"h":121},"gn_wizard":{"file":"g3_gn_wizard.webp","w":150,"h":168},"gn_wizard_b":{"file":"g3_gn_wizard_b.webp","w":141,"h":170},"gn_wizard_cast":{"file":"g3_gn_wizard_cast.webp","w":222,"h":188},"gn_wizard_gun":{"file":"g3_gn_wizard_gun.webp","w":182,"h":136},"gn_wizard_raise":{"file":"g3_gn_wizard_raise.webp","w":142,"h":210},"gnome":{"file":"g3_gnome.webp","w":46,"h":86},"gnome_heavy":{"file":"g3_gnome_heavy.webp","w":71,"h":74},"gnome_knife":{"file":"g3_gnome_knife.webp","w":72,"h":67},"gnome_pistol":{"file":"g3_gnome_pistol.webp","w":81,"h":80},"gnome_smg":{"file":"g3_gnome_smg.webp","w":71,"h":70}},"scenery":{"road_rural":{"file":"road_rural.webp","w":960,"h":120},"road_city":{"file":"road_city.webp","w":960,"h":120},"sound_wall":{"file":"sw3_sound_wall.webp","w":1086,"h":195},"sound_wall_ivy":{"file":"sw3_sound_wall_ivy.webp","w":1086,"h":195}},"bk":{"props":{"tree":{"files":["bk_prop_tree_0.webp","bk_prop_tree_1.webp","bk_prop_tree_2.webp"],"w":150,"h":121},"water_tower":{"files":["bk_prop_water_tower_0.webp"],"w":88,"h":208},"haybale":{"files":["bk_prop_haybale_0.webp"],"w":102,"h":88}},"plates":{"rural":{"file":"bk_plate_rural.webp","fw":1024,"fh":160,"h":0.085,"par":0.42,"alpha":0.8,"drop":0.0},"suburb":{"file":"bk_plate_suburb.webp","fw":1024,"fh":160,"h":0.09,"par":0.42,"alpha":0.6,"drop":0.0}},"cop":{"file":"bk_cop_cruiser.webp","w":550,"h":187,"replaces":"veh_cop_cruiser"}},"paintb":{"barn":"pb_barn.webp","barracks":"pb_barracks.webp","bunker":"pb_bunker.webp","fort_gate":"pb_fort_gate.webp","fort_guardhouse":"pb_fort_guardhouse.webp","fort_house":"pb_fort_house.webp","fort_px":"pb_fort_px.webp","fort_tower":"pb_fort_tower.webp","house":"pb_house.webp","it_bldg6":"pb_it_bldg6.webp","it_brick":"pb_it_brick.webp","it_highrise":"pb_it_highrise.webp","it_house_1":"pb_it_house_1.webp","it_house_10":"pb_it_house_10.webp","it_house_11":"pb_it_house_11.webp","it_house_12":"pb_it_house_12.webp","it_house_2":"pb_it_house_2.webp","it_house_3":"pb_it_house_3.webp","it_house_4":"pb_it_house_4.webp","it_house_5":"pb_it_house_5.webp","it_house_6":"pb_it_house_6.webp","it_house_7":"pb_it_house_7.webp","it_house_8":"pb_it_house_8.webp","it_house_9":"pb_it_house_9.webp","it_morale_corp":"pb_it_morale_corp.webp","it_office":"pb_it_office.webp","it_penalty_box":"pb_it_penalty_box.webp","it_shops":"pb_it_shops.webp","mb_array":"pb_mb_array.webp","mb_barracks":"pb_mb_barracks.webp","mb_bunkhouse":"pb_mb_bunkhouse.webp","mb_chapel":"pb_mb_chapel.webp","mb_commissary":"pb_mb_commissary.webp","mb_gate":"pb_mb_gate.webp","mb_hangar":"pb_mb_hangar.webp","mb_motorpool":"pb_mb_motorpool.webp","mb_radar_trailer":"pb_mb_radar_trailer.webp","mb_shed":"pb_mb_shed.webp","mb_watchtower":"pb_mb_watchtower.webp","res_garage":"pb_res_garage.webp","res_shed":"pb_res_shed.webp","silo":"pb_silo.webp","tower_a":"pb_tower_a.webp","tower_b":"pb_tower_b.webp","tower_c":"pb_tower_c.webp"},"moon":{"file":"moon.webp","fw":256,"fh":256,"cols":3,"n":9,"phases":[0.15,0.25,0.38,0.44,0.5,0.56,0.62,0.75,0.85]},"cars":{"files":{"veh_cop_cruiser":"car3_veh_cop_cruiser.webp","veh_cop_flash":"car3_veh_cop_flash.webp","veh_cop_interceptor":"car3_veh_cop_interceptor.webp","veh_cop_k9":"car3_veh_cop_k9.webp","veh_cop_lights":"car3_veh_cop_lights.webp","veh_cop_suv":"car3_veh_cop_suv.webp","veh_minivan_silver":"car3_veh_minivan_silver.webp","veh_minivan_tan":"car3_veh_minivan_tan.webp","veh_pickup_silver":"car3_veh_pickup_silver.webp","veh_pickup_white":"car3_veh_pickup_white.webp","veh_sedan_dark":"car3_veh_sedan_dark.webp","veh_sedan_unmarked":"car3_veh_sedan_unmarked.webp","veh_sedan_white":"car3_veh_sedan_white.webp","veh_suv_dark":"car3_veh_suv_dark.webp","veh_van_white":"car3_veh_van_white.webp","veh_van_work":"car3_veh_van_work.webp","veh_wagon_gold":"car3_veh_wagon_gold.webp"},"ship":["veh_cop_cruiser","veh_cop_interceptor","veh_cop_lights","veh_cop_flash","veh_sedan_dark","veh_sedan_unmarked","veh_sedan_white","veh_pickup_white","veh_pickup_silver","veh_van_white"]},"farm3":{"file":"farm3.webp","fw":2400,"fh":273,"h":0.15,"par":0.36,"alpha":0.72,"drop":0.0}}, ROOT = window.SU3D_ROOT || '';
   var Q = location.search;
   var BEAM2 = !!M.beam2 && !/[?&]l3beam=(v1|vol)\b/.test(Q);   // the integrated beam (take 2) is the default; &l3beam=v1 = the first overlay
   var MIXB = !/[?&]l3beam=vol\b/.test(Q), VOLA = +((Q.match(/[?&]l3vola=([0-9.]+)/)||[])[1]||0.55), POOLA = +((Q.match(/[?&]l3poola=([0-9.]+)/)||[])[1]||0.30);
@@ -3657,7 +3658,30 @@ var L3 = (function(){
   // fitted into veh_cop_cruiser's exact frame. LAB ONLY and OFF by default (&l3cop=1). Only the IMAGE drawn into the game's own
   // box changes: the box, and the light-bar spot the cops fire from (COPSPOT), are still computed from the painted cruiser.
   var COPB = (LAB && /[?&]l3cop=1\b/.test(Q) && M.bk && M.bk.cop) ? M.bk.cop : null; if(COPB) sheet('bkcop', COPB.file);
-  function veh(n, im){ return (COPB && live() && n==='veh_cop_cruiser' && has('bkcop')) ? S.bkcop : im; }
+  // THE CARS (Joe 1112: "the moon and car sprites still look bad"): every veh_* that tools/bake_final1112.py judged better than its
+  // painted sprite (M.cars.ship) is a cached-BlenderKit 3D render fitted into that sprite's exact frame; drawCarLane still sizes
+  // and places the car (and COPSPOT, the light bar the cops fire from) from the painted image, only the pixels drawn change.
+  // &l3cars=0 = the painted cars; &l3cars=all (lab / ?dev) = every render, including the held ones, for review.
+  var CARS3 = {}, CQ = (Q.match(/[?&]l3cars=([a-z0-9]+)/) || [])[1];
+  if(M.cars && CQ !== '0'){ var cl = (CQ === 'all' && (LAB || DEV)) ? Object.keys(M.cars.files) : (M.cars.ship || []);
+    cl.forEach(function(n){ if(M.cars.files[n]){ CARS3[n] = 1; sheet('car_' + n, M.cars.files[n]); } }); }
+  function veh(n, im){ if(!live()) return im; if(CARS3[n] && has('car_' + n)) return S['car_' + n];
+    return (COPB && n==='veh_cop_cruiser' && has('bkcop')) ? S.bkcop : im; }
+  // THE MENUS (Joe 1112: "make sure you hit the UI menus"): the vault / lock-in / initials / high-score screens drew the live
+  // scene under a flat 80-86% black scrim. With 3D on they stand on THE FARM DIORAMA (the same 3D plate as the farm zones, drawn
+  // big as a stage) under the 3D moon, the scrim graded instead of flat (dark where the type sits, the diorama showing at the
+  // foot), and the cab's own colour (HYSCORE green / BLACKSITE red) glowing along the horizon.
+  function menuBG(a){
+    if(!live() || !M.farm3 || !has('farm3')){ drawBG(); ctx.fillStyle = 'rgba(2,6,12,' + a + ')'; ctx.fillRect(0, 0, W, H); return; }
+    drawBG(); var m = M.farm3, ph = H * 0.19, pw = ph * m.fw / m.fh, gy = H * 0.995, off = ((t * 6) % pw + pw) % pw;
+    ctx.save(); ctx.fillStyle = 'rgba(2,6,12,0.55)'; ctx.fillRect(0, 0, W, H);                            // knock the live scene back first
+    ctx.globalAlpha = 0.8; for(var x = -off; x < W; x += pw - 1) ctx.drawImage(S.farm3, x, gy - ph, pw, ph); ctx.globalAlpha = 1;
+    var cab = ARCADE ? '57,255,20' : '255,59,48', hg = ctx.createLinearGradient(0, gy - ph * 0.9, 0, gy - ph * 0.2);
+    hg.addColorStop(0, 'rgba(' + cab + ',0)'); hg.addColorStop(0.6, 'rgba(' + cab + ',0.06)'); hg.addColorStop(1, 'rgba(' + cab + ',0)');
+    ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = hg; ctx.fillRect(0, gy - ph, W, ph); ctx.globalCompositeOperation = 'source-over';
+    var sg = ctx.createLinearGradient(0, 0, 0, H);                                                       // the graded scrim: the type keeps its contrast
+    sg.addColorStop(0, 'rgba(2,6,12,' + Math.min(0.9, a + 0.02) + ')'); sg.addColorStop(0.70, 'rgba(2,6,12,' + (a - 0.04) + ')'); sg.addColorStop(1, 'rgba(2,6,12,' + Math.max(0.30, a - 0.40) + ')');
+    ctx.fillStyle = sg; ctx.fillRect(0, 0, W, H); ctx.restore(); }
 
   function live(){ return on && ready; }
   function has(k){ return S[k] && S[k].ok; }
@@ -3802,8 +3826,11 @@ var L3 = (function(){
     var a=clamp((gy-o.y)/Math.max(1,gy-b.top),0,1);                       // 0 = skimming the ground, 1 = top of the band
     var rw=w*(0.38+0.42*a), sq=0.20, al=(0.55*(1-a)+0.18);
     if(o.invuln>0 && Math.floor(clock*20)%2) al*=0.5;
-    ctx.save(); ctx.translate(o.x, gy+9+beltBase()); ctx.scale(1, sq);
-    var g=ctx.createRadialGradient(0,0,0,0,0,rw); g.addColorStop(0,'rgba(0,0,0,'+(al*0.9)+')'); g.addColorStop(0.5,'rgba(0,0,0,'+(al*0.45)+')'); g.addColorStop(1,'rgba(0,0,0,0)');
+    // (1112) DYNAMIC: the shadow falls AWAY from the moon (the moon is behind the scene, so it lands toward the viewer and off to
+    // the side opposite the moon's x), drifting further the higher the saucer flies; a low (harvest) moon throws it longer.
+    var mo=moonPull(), mdx=clamp((o.x-W*mo.x)/(W*0.55),-1.4,1.4)*(gy-o.y)*0.30*moonLen();
+    ctx.save(); ctx.translate(o.x+mdx, gy+9+beltBase()); ctx.scale(1, sq);
+    var g=ctx.createRadialGradient(0,0,0,0,0,rw); g.addColorStop(0,'rgba(0,0,0,'+(al*0.9*(0.55+0.45*shadowStrength()))+')'); g.addColorStop(0.5,'rgba(0,0,0,'+(al*0.45)+')'); g.addColorStop(1,'rgba(0,0,0,0)');
     ctx.fillStyle=g; ctx.beginPath(); ctx.arc(0,0,rw,0,6.2832); ctx.fill();
     ctx.globalCompositeOperation='lighter';                               // the belly lights on the grass: tight + bright low, wide + faint high
     var lr=rw*1.15, la=0.30*(1-a)+0.06, lg=ctx.createRadialGradient(0,0,lr*0.35,0,0,lr);
@@ -3865,7 +3892,14 @@ var L3 = (function(){
     if(mode==='bonus' && typeof bonusKind!=='undefined' && bonusKind==='backyard') return 'suburb';
     return null;
   }
+  // THE FARM DIORAMA (1112, blender/su_final1112.py --part plate): the populated 3D farm country (barns, silos, farmhouses with lit
+  // windows, trees, hay, a far herd) in three haze-graded depth rows, a parallax plane between the painted horizon and the painted
+  // props in the farm zones (Dairy Flats, Corn Country, County Road 9, the Champion Lap). &l3farm=0 = without it.
+  var FARM3 = !!M.farm3 && !/[?&]l3farm=0\b/.test(Q); if(M.farm3) sheet('farm3', M.farm3.file);
+  function farmZone(){ return (mode==='campaign' && (level===0 || level===1 || level===3)) || (mode==='bonus' && typeof bonusKind!=='undefined' && bonusKind==='champ'); }
   function plates(gy){
+    if(FARM3 && farmZone() && has('farm3')){ var f3=M.farm3, fph=H*f3.h, fpw=fph*f3.fw/f3.fh, fo=((worldScroll()*f3.par)%fpw+fpw)%fpw;
+      ctx.save(); ctx.globalAlpha=f3.alpha; for(var fx3=-fo; fx3<W; fx3+=fpw-1) ctx.drawImage(S.farm3, fx3, gy+6-fph+H*f3.drop, fpw, fph); ctx.restore(); }
     var fam=family(); if(!fam) return; var key=(MB.plates[fam] && has('bkpl_'+fam)) ? 'bkpl_'+fam : 'plate_'+fam;   // BLENDKIT plate first
     var m=(key==='plate_'+fam) ? M.plates[fam] : MB.plates[fam]; if(!m || !has(key)) return;
     var ph=H*m.h, pw=ph*m.fw/m.fh, off=((worldScroll()*m.par)%pw+pw)%pw;
@@ -3920,9 +3954,47 @@ var L3 = (function(){
   // THE LAST PIXEL STUBS -> 3D (blender/su_props.py): windmill (turning, 8 frames), water tower, tree (2 variants), hay bale.
   // Swapped by name at draw time; a node keeps its tree variant for life (a presentation-only tag, no RNG).
   var propN=0;
-  function propSub(n, p){ if(!live()) return n;
+  // the RE-BRUSHED buildings (tools/bake_buildings.py): the painted building sheets through the house painterly pass, at 2x their
+  // tallest draw size; &l3pb=0 = the painted originals (the haze below still applies)
+  var PB = (!/[?&]l3pb=0\b/.test(Q) && M.paintb) ? M.paintb : {};
+  for(var pbn in PB) (function(n){ sheet('pb_'+n, PB[n]); Object.defineProperty(IMG, 'l3pb_'+n, { get:function(){ return S['pb_'+n]; }, enumerable:false }); })(pbn);
+  // AERIAL PERSPECTIVE (Joe 1112: "mainly buildings ... make them look even more painterly and background esque"). The ORIGINAL
+  // fades a far building by ALPHA (0.5 + 0.45*depth): the night sky shows THROUGH the barn, so far props read as ghosts at the
+  // same crispness and contrast as near ones. With 3D on, every BUILDING is drawn nearly solid but graded by its depth into the
+  // zone's night haze (colour pulled toward the haze, contrast flattened), a ground mist rising from its foot, and a soft
+  // painterly blur that grows with distance; near buildings keep their full paint. Each (sprite, depth bucket, zone) is built
+  // once on a small canvas (never larger than the source, capped at 2x its tallest draw size) and cached. Pure draw.
+  var BLD = /^(barn|silo|house|windmill|water_tower|radar|bunker|barracks|tower_[abc]|farm_|it_(office|highrise|bldg6|shops|house_\d+|brick|morale_corp|penalty_box|skyline_[ab])|mb_(barracks|motorpool|hangar|array|watchtower|shed|radar_trailer|gate|commissary|chapel|bunkhouse)|fort_(tower|px|house|guardhouse|gate)|res_(shed|garage)|crab_house)/;
+  var HZ = {}, HZN = 0;
+  function hazeRGB(){ var z = (typeof sceneZone === 'function') ? sceneZone() : null;
+    return (z === 'DOWNTOWN TOWSON' || z === 'THE BELTWAY' || z === 'OUTSKIRTS OF TOWSON') ? [74, 82, 112] : (z === 'base') ? [62, 68, 92] : [50, 64, 86]; }
+  function hazeK(d){ return Math.pow(clamp(1 - d, 0, 1), 0.85); }
+  function hazed(n, d){
+    var src = IMG[n]; if(!src || !src.ok) return n;
+    var b = Math.round(clamp(1 - d, 0, 1) * 8); if(b === 0) return n;              // the nearest row keeps its paint untouched
+    var c3 = hazeRGB(), key = 'l3h_' + n + '_' + b + '_' + c3[0];
+    if(!HZ[key]){
+      var sw = src.naturalWidth, sh = src.naturalHeight, cap = Math.min(sh, Math.round(H * 0.85)), k = cap / sh;
+      var cw = Math.max(2, Math.round(sw * k)), ch = Math.max(2, Math.round(sh * k)), cv = document.createElement('canvas'); cv.width = cw; cv.height = ch;
+      var g = cv.getContext('2d'), hk = hazeK(1 - b / 8), blur = hk * Math.max(0.6, ch / 260);
+      g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+      try{ if(blur > 0.25) g.filter = 'blur(' + blur.toFixed(2) + 'px)'; }catch(e){}
+      g.drawImage(src, 0, 0, cw, ch); try{ g.filter = 'none'; }catch(e){}
+      g.globalCompositeOperation = 'source-atop';
+      g.fillStyle = 'rgba(' + c3.join(',') + ',' + (0.75 * hk).toFixed(3) + ')'; g.fillRect(0, 0, cw, ch);   // pulled toward the haze
+      var mg = g.createLinearGradient(0, ch * 0.55, 0, ch);                                                 // the ground mist at its foot
+      mg.addColorStop(0, 'rgba(' + c3.join(',') + ',0)'); mg.addColorStop(1, 'rgba(' + c3.join(',') + ',' + (0.10 + 0.40 * hk).toFixed(3) + ')');
+      g.fillStyle = mg; g.fillRect(0, 0, cw, ch);
+      cv.ok = true; cv.naturalWidth = cw; cv.naturalHeight = ch; HZ[key] = cv; HZN++;
+      Object.defineProperty(IMG, key, { get:function(){ return HZ[key]; }, configurable:true, enumerable:false }); }
+    return key; }
+  function bld(s){ return BLD.test(s); }
+  // the prop's draw alpha: the original's see-through fade, or (3D) nearly solid for a hazed building
+  function propA(name, dep){ return (live() && bld(name)) ? 0.86 + 0.14 * dep : 0.5 + 0.45 * dep; }
+  function propSub(n, p){ var r = propSub0(n, p); return (live() && p && bld(n) && !/^smoker_/.test(n)) ? hazed(r, p.d == null ? 1 : p.d) : r; }
+  function propSub0(n, p){ if(!live()) return n;
     var mb=MB.props[n]; if(mb){ var j=(mb.files.length>1) ? ((p?(p.__l3v||(p.__l3v=++propN)):0) % mb.files.length) : 0; if(has('bkp_'+n+'_'+j)) return 'l3b_'+n+'_'+j; }   // BLENDKIT first
-    if(!M.props || !M.props[n]) return n; var m=M.props[n], i=0;
+    if(!M.props || !M.props[n]) return (PB[n] && has('pb_'+n)) ? 'l3pb_'+n : n; var m=M.props[n], i=0;
     if(n==='windmill') i=(Math.floor(t*7 + (p?(p.__l3v||(p.__l3v=++propN)):0)*3) % m.files.length);
     else if(m.files.length>1) i=(p?(p.__l3v||(p.__l3v=++propN)):0) % m.files.length;
     var k='prop_'+n+'_'+i; return has(k) ? 'l3p_'+n+'_'+i : n; }
@@ -4008,11 +4080,12 @@ var L3 = (function(){
     g.globalCompositeOperation = 'source-in'; g.fillStyle = '#05080c'; g.fillRect(0, 0, c.width, c.height);
     c.pad = pad / hh; SIL[name] = c; return c; }
   function moonPull(){ return (typeof MOON === 'object' && MOON) ? MOON : { x: 0.84, y: 0.15, phase: 0.5 }; }
+  function moonLen(){ var m = moonPull(); return clamp(0.75 + (m.y - 0.13) / 0.08 * 0.55, 0.7, 1.4); }   // MOON.y .13 (high) .. .21 (low, long shadows)
   function shadowStrength(){ var m = moonPull(), lit = (typeof moonLit === 'function') ? moonLit() : 1; return 0.35 + 0.65 * lit; }
   // throw `name`'s silhouette from its base (x, by), drawn w×h, length `len` (fraction of h), alpha a
   function cast(name, x, by, w, h, flip, len, a){
     var sc = silhouette(name); if(!sc || a <= 0.01) return;
-    var m = moonPull(), lean = clamp((x - W * m.x) / (W * 0.55), -1.4, 1.4);   // away from the moon's x
+    var m = moonPull(), lean = clamp((x - W * m.x) / (W * 0.55), -1.4, 1.4); len *= moonLen();   // away from the moon's x; a low moon throws longer
     var pw = w * (1 + 2 * sc.pad), ph = h * (1 + 2 * sc.pad);
     ctx.save(); ctx.globalAlpha = a; ctx.translate(x, by);
     ctx.transform(1, 0, -lean * len, -len, 0, 0);                              // mirror down + lean: the top lands at (lean·len·h, len·h)
@@ -4107,14 +4180,45 @@ var L3 = (function(){
       ctx.restore();
     }
   }
-  Object.defineProperty(IMG, 'l3_tank', { get:function(){ return S.tank; }, enumerable:false });
+  // ---------------------------------------------------------------- THE 3D MOON (Joe 1112: "the moons in suck up are pretty low res")
+  // The ORIGINAL crops moon.png's 49 px disc and blows it up with smoothing OFF to 70..107 px (pixel-stepped terminator).
+  // Here: blender/su_moon.py renders a real lit sphere (BlenderKit lunar regolith + maria + craters) once per phase rollMoon
+  // can pick, tools/bake_moon.py downsizes them to 256 px discs (>= 2x the largest drawn disc, so it is only ever scaled DOWN).
+  // Drawn at the SAME centre + disc size, the zone tint (harvest / haze / blood) laid on like the original, then mip-stepped
+  // (halved with high-quality smoothing) to the drawn size and cached. Pure draw: reads MOON, no RNG.
+  var MO = M.moon || null; if(MO) sheet('moon', MO.file);
+  var MC = {};
+  function moon3(x, y, w){
+    if(!live() || !MO || !has('moon') || typeof MOON !== 'object') return false;
+    var fi = 0, best = 9; for(var i = 0; i < MO.phases.length; i++){ var dd = Math.abs(MO.phases[i] - MOON.phase); if(dd < best){ best = dd; fi = i; } }
+    var d = Math.max(4, Math.round(w * 50 / 78)), key = fi + '|' + MOON.kind + '|' + d, cv = MC[key];
+    if(!cv){
+      var s = MO.fw, src = document.createElement('canvas'); src.width = src.height = s; var g = src.getContext('2d');
+      g.drawImage(S.moon, (fi % MO.cols) * s, Math.floor(fi / MO.cols) * s, s, s, 0, 0, s, s);
+      var tint = (typeof MOON_TINT === 'object') ? MOON_TINT[MOON.kind] : null;
+      if(tint){ g.globalCompositeOperation = 'source-atop'; g.fillStyle = tint; g.fillRect(0, 0, s, s); }
+      var cur = src, cs = s;
+      while(cs / 2 >= d){ var n = document.createElement('canvas'); n.width = n.height = Math.round(cs / 2); var ng = n.getContext('2d');   // mip steps: halve, never upscale
+        ng.imageSmoothingEnabled = true; ng.imageSmoothingQuality = 'high'; ng.drawImage(cur, 0, 0, n.width, n.height); cur = n; cs = n.width; }
+      cv = document.createElement('canvas'); cv.width = cv.height = d; var fg = cv.getContext('2d'); fg.imageSmoothingEnabled = true; fg.imageSmoothingQuality = 'high';
+      fg.drawImage(cur, 0, 0, d, d); MC[key] = cv;
+      var ks = Object.keys(MC); if(ks.length > 24) delete MC[ks[0]]; }
+    var lit = (typeof moonLit === 'function') ? moonLit() : 1, gc = MOON.glow || '214,228,255';
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';                                    // a soft glow hugging the limb (the halo itself is the original's)
+    var gg = ctx.createRadialGradient(x, y, d * 0.42, x, y, d * 0.95); gg.addColorStop(0, 'rgba(' + gc + ',' + (0.16 * (0.4 + 0.6 * lit)) + ')'); gg.addColorStop(1, 'rgba(' + gc + ',0)');
+    ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(x, y, d * 0.95, 0, 6.2832); ctx.fill();
+    ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 0.97;
+    ctx.drawImage(cv, Math.round(x - d / 2), Math.round(y - d / 2)); ctx.restore();
+    return true; }
+  Object.defineProperty(IMG, 'l3_tank',{ get:function(){ return S.tank; }, enumerable:false });
   for(var uk2 in U3) (function(k){ Object.defineProperty(IMG, 'l3u_'+k, { get:function(){ return S['u_'+k]; }, enumerable:false }); })(uk2);
   Object.keys(G3).forEach(function(gk){ Object.defineProperty(IMG, 'l3g_'+gk, { get:function(){ return S['g3_'+gk]; }, enumerable:false }); });
   return { on:live, ON:true, beam:function(o,pre,beamOn){ drawBeamAt(o, beamOn, false); }, demoBeam:function(d,sp){ drawBeamAt(d, true, sp); },
            ground:ground, spill:spill, liftGlow:liftGlow, cover:cover, truckY:truckY, truckH:truckH, truckShadow:truckShadow, clash:clashFx, strain:strain, sub:sub, jets:drawJetsL3, farJets:function(){ if(live()) farJets(); },
            plates:function(gy){ if(live()) plates(gy); }, bgScroll:bgScroll, propH:propH, propSmooth:propSmooth, propSub:propSub, veh:veh, propShadowQ:propShadowQ, propShadows:propShadows, unitShadow:unitShadow, emitter:emitter, post:post, badge:badge, toggle:toggle,
            demoEmitter:function(d, blue){ if(d) emitter(d, !!(d.cow && !d.cow.gone), blue ? '90,190,255' : '90,255,80'); },
-           foot:foot, truckQ:queueTruck, shot:shot, fxDy:fxDy, propLift:propLift, road:road, wall:wall,
+           moon:moon3, propA:propA, menuBG:menuBG, foot:foot, truckQ:queueTruck, shot:shot, fxDy:fxDy, propLift:propLift, road:road, wall:wall,
            state:function(){ return { on:on, ready:ready, have:have, fail:fail, need:need, lab:LAB, chrome:CHROME, caption:CAPTION }; } };
 })();
 
