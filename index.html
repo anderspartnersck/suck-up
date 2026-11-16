@@ -121,7 +121,10 @@
 "use strict";
 var cv=document.getElementById('c'), ctx=cv.getContext('2d');
 var reelVid=document.getElementById('reel');                      // THE SUCK UP FILES — the real baked reel (mp4)
-var W=0,H=0; function resize(){ W=cv.width=innerWidth-(window.__suPanelW||0); H=cv.height=innerHeight-(window.__suPanelH||0); } addEventListener('resize',resize); resize();   // __suPanelH: the PHONE PANEL band under the game (script at the end of the page)
+var W=0,H=0, PHONE_W=1280, PHONE_H=720; function resize(){ var aw=innerWidth-(window.__suPanelW||0), ah=innerHeight-(window.__suPanelH||0), st=cv.style;   // LAB3D: THE PHONE RECTANGLE
+  if((window.__suPanelW||0)>0 && !/[?&]phonefit=0\b/.test(location.search)){ W=cv.width=PHONE_W; H=cv.height=PHONE_H; var k=Math.min(aw/PHONE_W, ah/PHONE_H), cw=Math.floor(PHONE_W*k), ch=Math.floor(PHONE_H*k);
+    st.width=cw+'px'; st.height=ch+'px'; st.top=Math.floor((ah-ch)/2)+'px'; st.marginLeft=Math.floor((aw-cw)/2)+'px'; }
+  else { W=cv.width=aw; H=cv.height=ah; st.width=st.height=st.top=st.marginLeft=''; } } addEventListener('resize',resize); resize();   // __suPanelH: the PHONE PANEL band under the game (script at the end of the page)
 function rnd(a,b){ return a+(b-a)*Math.random(); }
 function clamp(v,a,b){ return v<a?a:v>b?b:v; }
 function chance(p){ return Math.random()<p; }
@@ -2885,7 +2888,7 @@ function drawAttract(){
     drawFx();
   }
   // the still, full-frame in the square with a subtle Ken-Burns push
-  if(pod.bg && ok(pod.bg)){ var zoom=1.0+0.05*prog; if(!(pod.bg==='title' && L3.title(fade, zoom))){ ctx.save(); ctx.globalAlpha=fade; drawImg(pod.bg, W/2, H*0.5, W*zoom, 0, 1); ctx.restore(); if(pod.bg==='title' && ok('title')) drawTitleBeam(fade); } }   // LAB3D            // the SUCK UP marquee's tractor beam shimmers (logo -> circle)
+  if(pod.bg && ok(pod.bg)){ var zoom=1.0+0.05*prog; if(!L3.still(pod.bg, fade, zoom)){ ctx.save(); ctx.globalAlpha=fade; drawImg(pod.bg, W/2, H*0.5, W*zoom, 0, 1); ctx.restore(); if(pod.bg==='title' && ok('title')) drawTitleBeam(fade); } }   // LAB3D            // the SUCK UP marquee's tractor beam shimmers (logo -> circle)
   ctx.globalAlpha=fade;
   if(pod.plate || pod.quiet){ ctx.globalAlpha=1; return; }           // full-frame image, no overlay (TONIGHT ON plate / the cosmic breath)
   if(pod.coin){
@@ -4339,34 +4342,40 @@ var L3 = (function(){
     ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 0.97;
     ctx.drawImage(cv, Math.round(x - d / 2), Math.round(y - d / 2)); ctx.restore();
     return true; }
-  // THE TITLE FRAMING (1116, Q883). The title painting (title-screen-1, square) drew cover-fit at the screen's WIDTH, centred:
-  // at 16:9 the SUCK UP logo sat above the top edge (and the tractor-beam overlay, placed in screen fractions, missed the art's
-  // beam). 3D: the painting is anchored by its CONTENT — the logo's top (17% down the art) lands 5% down the screen and the
-  // beam's ground circle (62%) stays above PRESS BEAM — scaled down when the screen is wider than that allows (phone landscape,
-  // ultrawide); the side bars then show the same painting, blurred + darkened, behind a feathered edge. The beam overlay rides
-  // the art's own beam (x 0.55, y 0.29..0.60 of the painting). Pure draw (t only, no RNG).
-  var TC = {};
-  function titleCanvas(kind){ if(TC[kind]) return TC[kind]; var im = IMG.title; if(!im || !im.ok) return null;
-    var n = kind === 'bg' ? 384 : Math.min(im.naturalWidth, 1600), cv = document.createElement('canvas'); cv.width = cv.height = n; var g = cv.getContext('2d');
+  // THE TITLE + ATTRACT STILLS, LETTERBOXED (Joe 1116: "the suck up main title screen and attract can be letter boxed to
+  // maintain sizing"). The ORIGINAL drew every still cover-fit at the screen's WIDTH, so a square title lost its logo off the
+  // top at 16:9 and the b-roll stills cropped differently on every screen. 3D: each still is drawn WHOLE at its native aspect
+  // (contained, centred), the bars filled with the same picture blurred + darkened (pillar- or letterbox), the same picture at
+  // every aspect. The title's beam shimmer rides the art's own beam (x 0.55, y 0.29..0.60 of the painting). &l3title=fit = the
+  // earlier logo-anchored framing (fills more of a 16:9 screen, still never crops the logo). Pure draw (t only, no RNG).
+  var TFIT = /[?&]l3title=fit\b/.test(Q), TC = {};
+  function stillCanvas(n, kind){ var key = n + '|' + kind; if(TC[key]) return TC[key]; var im = IMG[n]; if(!im || !im.ok) return null;
+    var iw = im.naturalWidth, ih = im.naturalHeight, k = (kind === 'bg' ? 384 : 1600) / Math.max(iw, ih); if(kind !== 'bg' && k > 1) k = 1;
+    var cv = document.createElement('canvas'); cv.width = Math.max(2, Math.round(iw * k)); cv.height = Math.max(2, Math.round(ih * k)); var g = cv.getContext('2d');
     g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
-    if(kind === 'bg'){ try{ g.filter = 'blur(6px) brightness(0.45) saturate(0.8)'; }catch(e){} g.drawImage(im, 0, 0, n, n); try{ g.filter = 'none'; }catch(e){} }
-    else { g.drawImage(im, 0, 0, n, n); g.globalCompositeOperation = 'destination-out';
-      var f = n * 0.07, l = g.createLinearGradient(0, 0, f, 0); l.addColorStop(0, 'rgba(0,0,0,1)'); l.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = l; g.fillRect(0, 0, f, n);
-      var r = g.createLinearGradient(n - f, 0, n, 0); r.addColorStop(0, 'rgba(0,0,0,0)'); r.addColorStop(1, 'rgba(0,0,0,1)'); g.fillStyle = r; g.fillRect(n - f, 0, f, n); }
-    TC[kind] = cv; return cv; }
-  function title3(fade, zoom){
-    if(!live() || !IMG.title || !IMG.title.ok) return false;
-    var a = fade == null ? 1 : fade, z = zoom || 1, D0 = Math.min(W, H * 0.81 / 0.45), top0 = Math.max(H * 0.05 - 0.17 * D0, H - D0);
-    var D = D0 * z, cx = W / 2, cy = top0 + D0 * 0.40, x0 = cx - D * 0.5, y0 = cy - D * 0.40;
+    if(kind === 'bg'){ try{ g.filter = 'blur(6px) brightness(0.42) saturate(0.8)'; }catch(e){} }
+    g.drawImage(im, 0, 0, cv.width, cv.height); try{ g.filter = 'none'; }catch(e){}
+    if(kind === 'fg'){ g.globalCompositeOperation = 'destination-out'; var fx = cv.width * 0.04, fy = cv.height * 0.04;   // a feathered rim melts into the bars
+      [[0, 0, fx, 0, 0, 0, fx, cv.height], [cv.width, 0, cv.width - fx, 0, cv.width - fx, 0, fx, cv.height], [0, 0, 0, fy, 0, 0, cv.width, fy], [0, cv.height, 0, cv.height - fy, 0, cv.height - fy, cv.width, fy]].forEach(function(q){
+        var gr = g.createLinearGradient(q[0], q[1], q[2], q[3]); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(q[4], q[5], q[6], q[7]); }); }
+    TC[key] = cv; return cv; }
+  function still3(n, fade, zoom){
+    if(!live() || !IMG[n] || !IMG[n].ok) return false;
+    var im = IMG[n], a = fade == null ? 1 : fade, z = zoom || 1, ar = im.naturalWidth / im.naturalHeight, x0, y0, dw, dh;
+    if(n === 'title' && TFIT){ var D0 = Math.min(W, H * 0.81 / 0.45), top0 = Math.max(H * 0.05 - 0.17 * D0, H - D0); dw = dh = D0; x0 = (W - D0) / 2; y0 = top0; }
+    else { var k = Math.min(W / im.naturalWidth, H / im.naturalHeight); dw = im.naturalWidth * k; dh = im.naturalHeight * k; x0 = (W - dw) / 2; y0 = (H - dh) / 2; }
+    var cx = x0 + dw / 2, cy = y0 + dh / 2; dw *= z; dh *= z; x0 = cx - dw / 2; y0 = cy - dh / 2;
     ctx.save(); ctx.globalAlpha = a; ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
-    if(D0 < W - 1){ var bg = titleCanvas('bg'), Dw = W * z; if(bg) ctx.drawImage(bg, cx - Dw / 2, cy - Dw * 0.40, Dw, Dw);
-      var fg = titleCanvas('fg'); if(fg) ctx.drawImage(fg, x0, y0, D, D); }
-    else ctx.drawImage(IMG.title, x0, y0, D, D);
-    if(ok('beam')){ var bx = x0 + D * 0.55, bt = y0 + D * 0.29, bb = y0 + D * 0.60, bw = D * 0.14;   // the art's beam shimmers (the original overlay, re-anchored)
+    var full = dw >= W - 1 && dh >= H - 1;
+    if(!full){ var bg = stillCanvas(n, 'bg'); if(bg){ var kb = Math.max(W / bg.width, H / bg.height) * z; ctx.drawImage(bg, cx - bg.width * kb / 2, cy - bg.height * kb / 2, bg.width * kb, bg.height * kb); }
+      var fg = stillCanvas(n, 'fg'); if(fg) ctx.drawImage(fg, x0, y0, dw, dh); }
+    else ctx.drawImage(im, x0, y0, dw, dh);
+    if(n === 'title' && ok('beam')){ var bx = x0 + dw * 0.55, bt = y0 + dh * 0.29, bb = y0 + dh * 0.60, bw = dw * 0.14;   // the art's beam shimmers (the original overlay, re-anchored)
       ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = (0.28 + 0.22 * Math.sin(t * 4)) * a; ctx.drawImage(IMG.beam, bx - bw / 2, bt, bw, bb - bt);
       ctx.globalAlpha = 0.7 * a; ctx.fillStyle = '#bfffce';
       for(var i = 0; i < 7; i++){ var ph = (t * 0.55 + i * 0.17) % 1, yy = bb - (bb - bt) * ph, xx = bx + Math.sin((i + t) * 3) * bw * 0.16; ctx.fillRect(xx, yy, 2, 7); } }
     ctx.restore(); return true; }
+  function title3(fade, zoom){ return still3('title', fade, zoom); }
   Object.defineProperty(IMG, 'l3_tank',{ get:function(){ return S.tank; }, enumerable:false });
   for(var uk2 in U3) (function(k){ Object.defineProperty(IMG, 'l3u_'+k, { get:function(){ return S['u_'+k]; }, enumerable:false }); })(uk2);
   Object.keys(G3).forEach(function(gk){ Object.defineProperty(IMG, 'l3g_'+gk, { get:function(){ return S['g3_'+gk]; }, enumerable:false }); });
@@ -4374,7 +4383,7 @@ var L3 = (function(){
            ground:ground, spill:spill, liftGlow:liftGlow, cover:cover, truckY:truckY, truckH:truckH, truckShadow:truckShadow, clash:clashFx, strain:strain, sub:sub, jets:drawJetsL3, farJets:function(){ if(live()) farJets(); },
            plates:function(gy){ if(live()){ plates(gy); dress(gy); } }, bgScroll:bgScroll, propH:propH, propSmooth:propSmooth, propSub:propSub, veh:veh, propShadowQ:propShadowQ, propShadows:propShadows, unitShadow:unitShadow, emitter:emitter, post:post, badge:badge, toggle:toggle,
            demoEmitter:function(d, blue){ if(d) emitter(d, !!(d.cow && !d.cow.gone), blue ? '90,190,255' : '90,255,80'); },
-           moon:moon3, title:title3, propA:propA, menuBG:menuBG, foot:foot, truckQ:queueTruck, shot:shot, fxDy:fxDy, propLift:propLift, road:road, wall:wall,
+           moon:moon3, title:title3, still:still3, propA:propA, menuBG:menuBG, foot:foot, truckQ:queueTruck, shot:shot, fxDy:fxDy, propLift:propLift, road:road, wall:wall,
            state:function(){ return { on:on, ready:ready, have:have, fail:fail, need:need, lab:LAB, chrome:CHROME, caption:CAPTION }; } };
 })();
 
@@ -4800,7 +4809,7 @@ requestAnimationFrame(frame);
   cv.addEventListener('pointermove',function(e){ if(e.pointerId!==sid||!o) return;
     var dx=e.clientX-o.cx, dy=e.clientY-o.cy;
     if(o.play){
-      var nx=Math.max(0,Math.min(cv.width,o.vx+dx*GAIN)), ny=Math.max(0,Math.min(cv.height,o.vy+dy*GAIN));
+      var _r=cv.getBoundingClientRect(), _sx=cv.width/(_r.width||cv.width), _sy=cv.height/(_r.height||cv.height), nx=Math.max(0,Math.min(cv.width,o.vx+dx*GAIN*_sx)), ny=Math.max(0,Math.min(cv.height,o.vy+dy*GAIN*_sy));   // LAB3D: the phone rectangle is CSS-scaled
       o.vx=nx; o.vy=ny; o.cx=e.clientX; o.cy=e.clientY;   // re-anchor every move: pinned at an edge, the way back is instant
       var c=toClient(nx,ny); cv.dispatchEvent(new MouseEvent('mousemove',{clientX:c[0],clientY:c[1],bubbles:true}));
     } else if(Math.hypot(dx,dy)>34){   // a swipe = one arrow press (keeps swiping = more presses)
