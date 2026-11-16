@@ -2819,7 +2819,7 @@ function fitFont(txt, weight, px, fam, maxW){
   if(w > maxW && w > 0) ctx.font = weight+' '+Math.max(9,Math.floor(px*maxW/w))+'px '+fam;
 }
 function drawTitleCard(){ ctx.fillStyle='#04080e'; ctx.fillRect(0,0,W,H); ctx.textAlign='center';   // CK BOOT STANDARD S3
-  if(ok('title')){ drawImg('title', W/2, H*0.5, W, 0, 1); drawTitleBeam(1); }
+  if(ok('title')){ if(!L3.title(1)){ drawImg('title', W/2, H*0.5, W, 0, 1); drawTitleBeam(1); } }   // LAB3D
   else { ctx.fillStyle='#39ff14'; ctx.font='900 '+clamp(W*0.09,40,120)+'px system-ui'; ctx.fillText('SUCK UP',W/2,H*0.42); }
   ctx.globalAlpha=0.4+0.6*Math.abs(Math.sin(t*4)); ctx.fillStyle='#ffd23f'; ctx.font='800 '+clamp(W*0.03,18,26)+'px system-ui';
   ctx.fillText('PRESS BEAM', W/2, H*0.93); ctx.globalAlpha=1;
@@ -2885,8 +2885,7 @@ function drawAttract(){
     drawFx();
   }
   // the still, full-frame in the square with a subtle Ken-Burns push
-  if(pod.bg && ok(pod.bg)){ var zoom=1.0+0.05*prog; ctx.save(); ctx.globalAlpha=fade; drawImg(pod.bg, W/2, H*0.5, W*zoom, 0, 1); ctx.restore(); }
-  if(pod.bg==='title' && ok('title')) drawTitleBeam(fade);            // the SUCK UP marquee's tractor beam shimmers (logo -> circle)
+  if(pod.bg && ok(pod.bg)){ var zoom=1.0+0.05*prog; if(!(pod.bg==='title' && L3.title(fade, zoom))){ ctx.save(); ctx.globalAlpha=fade; drawImg(pod.bg, W/2, H*0.5, W*zoom, 0, 1); ctx.restore(); if(pod.bg==='title' && ok('title')) drawTitleBeam(fade); } }   // LAB3D            // the SUCK UP marquee's tractor beam shimmers (logo -> circle)
   ctx.globalAlpha=fade;
   if(pod.plate || pod.quiet){ ctx.globalAlpha=1; return; }           // full-frame image, no overlay (TONIGHT ON plate / the cosmic breath)
   if(pod.coin){
@@ -4340,6 +4339,34 @@ var L3 = (function(){
     ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 0.97;
     ctx.drawImage(cv, Math.round(x - d / 2), Math.round(y - d / 2)); ctx.restore();
     return true; }
+  // THE TITLE FRAMING (1116, Q883). The title painting (title-screen-1, square) drew cover-fit at the screen's WIDTH, centred:
+  // at 16:9 the SUCK UP logo sat above the top edge (and the tractor-beam overlay, placed in screen fractions, missed the art's
+  // beam). 3D: the painting is anchored by its CONTENT — the logo's top (17% down the art) lands 5% down the screen and the
+  // beam's ground circle (62%) stays above PRESS BEAM — scaled down when the screen is wider than that allows (phone landscape,
+  // ultrawide); the side bars then show the same painting, blurred + darkened, behind a feathered edge. The beam overlay rides
+  // the art's own beam (x 0.55, y 0.29..0.60 of the painting). Pure draw (t only, no RNG).
+  var TC = {};
+  function titleCanvas(kind){ if(TC[kind]) return TC[kind]; var im = IMG.title; if(!im || !im.ok) return null;
+    var n = kind === 'bg' ? 384 : Math.min(im.naturalWidth, 1600), cv = document.createElement('canvas'); cv.width = cv.height = n; var g = cv.getContext('2d');
+    g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+    if(kind === 'bg'){ try{ g.filter = 'blur(6px) brightness(0.45) saturate(0.8)'; }catch(e){} g.drawImage(im, 0, 0, n, n); try{ g.filter = 'none'; }catch(e){} }
+    else { g.drawImage(im, 0, 0, n, n); g.globalCompositeOperation = 'destination-out';
+      var f = n * 0.07, l = g.createLinearGradient(0, 0, f, 0); l.addColorStop(0, 'rgba(0,0,0,1)'); l.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = l; g.fillRect(0, 0, f, n);
+      var r = g.createLinearGradient(n - f, 0, n, 0); r.addColorStop(0, 'rgba(0,0,0,0)'); r.addColorStop(1, 'rgba(0,0,0,1)'); g.fillStyle = r; g.fillRect(n - f, 0, f, n); }
+    TC[kind] = cv; return cv; }
+  function title3(fade, zoom){
+    if(!live() || !IMG.title || !IMG.title.ok) return false;
+    var a = fade == null ? 1 : fade, z = zoom || 1, D0 = Math.min(W, H * 0.81 / 0.45), top0 = Math.max(H * 0.05 - 0.17 * D0, H - D0);
+    var D = D0 * z, cx = W / 2, cy = top0 + D0 * 0.40, x0 = cx - D * 0.5, y0 = cy - D * 0.40;
+    ctx.save(); ctx.globalAlpha = a; ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+    if(D0 < W - 1){ var bg = titleCanvas('bg'), Dw = W * z; if(bg) ctx.drawImage(bg, cx - Dw / 2, cy - Dw * 0.40, Dw, Dw);
+      var fg = titleCanvas('fg'); if(fg) ctx.drawImage(fg, x0, y0, D, D); }
+    else ctx.drawImage(IMG.title, x0, y0, D, D);
+    if(ok('beam')){ var bx = x0 + D * 0.55, bt = y0 + D * 0.29, bb = y0 + D * 0.60, bw = D * 0.14;   // the art's beam shimmers (the original overlay, re-anchored)
+      ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = (0.28 + 0.22 * Math.sin(t * 4)) * a; ctx.drawImage(IMG.beam, bx - bw / 2, bt, bw, bb - bt);
+      ctx.globalAlpha = 0.7 * a; ctx.fillStyle = '#bfffce';
+      for(var i = 0; i < 7; i++){ var ph = (t * 0.55 + i * 0.17) % 1, yy = bb - (bb - bt) * ph, xx = bx + Math.sin((i + t) * 3) * bw * 0.16; ctx.fillRect(xx, yy, 2, 7); } }
+    ctx.restore(); return true; }
   Object.defineProperty(IMG, 'l3_tank',{ get:function(){ return S.tank; }, enumerable:false });
   for(var uk2 in U3) (function(k){ Object.defineProperty(IMG, 'l3u_'+k, { get:function(){ return S['u_'+k]; }, enumerable:false }); })(uk2);
   Object.keys(G3).forEach(function(gk){ Object.defineProperty(IMG, 'l3g_'+gk, { get:function(){ return S['g3_'+gk]; }, enumerable:false }); });
@@ -4347,7 +4374,7 @@ var L3 = (function(){
            ground:ground, spill:spill, liftGlow:liftGlow, cover:cover, truckY:truckY, truckH:truckH, truckShadow:truckShadow, clash:clashFx, strain:strain, sub:sub, jets:drawJetsL3, farJets:function(){ if(live()) farJets(); },
            plates:function(gy){ if(live()){ plates(gy); dress(gy); } }, bgScroll:bgScroll, propH:propH, propSmooth:propSmooth, propSub:propSub, veh:veh, propShadowQ:propShadowQ, propShadows:propShadows, unitShadow:unitShadow, emitter:emitter, post:post, badge:badge, toggle:toggle,
            demoEmitter:function(d, blue){ if(d) emitter(d, !!(d.cow && !d.cow.gone), blue ? '90,190,255' : '90,255,80'); },
-           moon:moon3, propA:propA, menuBG:menuBG, foot:foot, truckQ:queueTruck, shot:shot, fxDy:fxDy, propLift:propLift, road:road, wall:wall,
+           moon:moon3, title:title3, propA:propA, menuBG:menuBG, foot:foot, truckQ:queueTruck, shot:shot, fxDy:fxDy, propLift:propLift, road:road, wall:wall,
            state:function(){ return { on:on, ready:ready, have:have, fail:fail, need:need, lab:LAB, chrome:CHROME, caption:CAPTION }; } };
 })();
 
