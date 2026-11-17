@@ -596,7 +596,7 @@ if(ARCADE){ var _h=document.getElementById('hint'); if(_h) _h.innerHTML='<kbd>WA
 else if(DESKTOP){ var _hd=document.getElementById('hint'); if(_hd) _hd.innerHTML='<b>MOUSE</b> fly · <b>hold-click</b> SUCK UP · <b>right-click</b> WARBLE (phase through fire) &nbsp;·&nbsp; <kbd>WASD</kbd> also fly · <kbd>M</kbd> mute · <b id="hintbuild">SUCK UP — DESKTOP (keyboard + mouse)</b>'; }
 else if(OG){ var _hb=document.getElementById('hintbuild'); if(_hb) _hb.textContent="COLEMAN'S ORIGINAL — EVERYTHING UNLOCKED"; }   // which is which, right on the bar
 var P=null, R=null, rivalScore=0, targets=[], jets=[], shots=[], fx=[], scenery=[];
-window.__suPeek=function(){ return { state:state, paused:PAUSED, canPause:canPause(), clk:clock, sc:stageClock, sel:pauseSel, ship:P?{x:P.tx,y:P.ty}:null, wcd:P?Math.max(0,P.warbleCd-clock):0 }; };   // read-only: the PHONE PAD (script at the end) steers relative to the ship + draws the WARBLE cooldown   // R = the blue rival UFO (CPU); rounds + bonus only
+window.__suPeek=function(){ return { state:state, paused:PAUSED, canPause:canPause(), clk:clock, sc:stageClock, sel:pauseSel, mode:mode, twoP:!!twoP, defcon:!!defcon, mvol:(mCur?+mCur.volume.toFixed(3):0), mpaused:!!(mCur&&mCur.paused), how:(typeof HOW!=='undefined')?{b:HOW.beamed,w:HOW.warbled,wt:HOW.warbleT,pt:HOW.playT}:null, rw:R?Math.max(0,R.warbleCd-clock):0, ship:P?{x:P.tx,y:P.ty}:null, wcd:P?Math.max(0,P.warbleCd-clock):0 }; };   // read-only: the PHONE PAD (script at the end) steers relative to the ship + draws the WARBLE cooldown   // R = the blue rival UFO (CPU); rounds + bonus only
 var meter=0, score=0, hp=100, maxHP=100, stageClock=0, level=0, levelLen=78;
 var STARTING_LIVES=3, lives=STARTING_LIVES;                // HULL = this life's damage gauge; out of lives = GAME OVER (score carries)
 var defconArmed=false, defcon=false, defconUnlimited=false, unlockMsg='';   // DEFCON 1: WARBLE arms at coin-up -> 1 CREDIT, NO continues (the real high-score run + the CHEATS-unlock challenge). defconUnlimited = the CHEATS-vault practice version (continues allowed).
@@ -789,7 +789,34 @@ function pauseDo(i){ closePause();
   if(CONSOLE) toFront(); else if(ARCADE) enterAttract(); else enterTitle(); }
 function pauseHit(x,y){ for(var i=0;i<PAUSE_ROWS.length;i++){ var r=PAUSE_ROWS[i]; if(x>=r.x&&x<=r.x+r.w&&y>=r.y&&y<=r.y+r.h) return i; } return -1; }
 function pauseClick(x,y){ if(!PAUSED) return false; var i=pauseHit(x,y); if(i<0||pauseT<0.15) return false; pauseSel=i; pauseDo(i); return true; }
-window.__suPause={ open:openPause, at:pauseClick };   // the PHONE PAD's ❚❚ button and its row taps (script at the end)
+window.__suPause={ open:openPause, at:pauseClick };
+// (1117) a hidden tab / minimised window mid-run opens the PAUSE, so nobody comes back to a ship already under fire (rAF
+// stops while hidden, but the HTML audio bed kept playing). The cab (CABOP) has no pause, so canPause() keeps it out.
+try{ document.addEventListener('visibilitychange',function(){ if(document.hidden) openPause(); }); }catch(_){}
+// HOW-TO WHISPERS (1117 how-to audit; Joe: "telling the audience how to play subtly where needed"). RENDER-ONLY: it reads the
+// sim (planting / P.warbleCd / hp / clock), never writes it, uses no RNG -- sim_match holds. Session-only (the web saves
+// nothing). Each one shows ONLY to a player who hasn't found the move yet, in this build's own input words:
+//   BEAM   -- 6 s of play time without ever beaming -> "HOLD CLICK TO SUCK UP" (pulsing, under the clock) until they beam
+//   WARBLE -- the first hull hit to a player who has never warbled -> "RIGHT-CLICK = WARBLE ..." for 4.5 s
+var HOW={ beamed:false, warbled:false, playT:0, lastClk:-1, lastHp:-1, warbleT:0, warbleShown:false, pad:false };
+function howDev(){ if(window.__suTouch) return 'touch'; if(STICK||HOW.pad) return 'stick'; if(DESKTOP||moveSrc==='mouse') return 'mouse'; return 'keys'; }
+function howWords(){ var d=howDev(), cab=CABOP;
+  if(d==='touch') return { beam:'HOLD BEAM TO SUCK UP', warble:'TAP WARBLE — PHASE THROUGH FIRE', line:'DRAG = FLY   ·   HOLD BEAM = SUCK UP   ·   WARBLE = PHASE THROUGH FIRE' };
+  if(d==='stick') return { beam:'HOLD BEAM TO SUCK UP', warble:'WARBLE — PHASE THROUGH FIRE', line:'STICK = FLY   ·   HOLD BEAM = SUCK UP   ·   WARBLE = PHASE THROUGH FIRE'+(cab?'':'   ·   START = PAUSE') };
+  if(d==='mouse') return { beam:'HOLD CLICK TO SUCK UP', warble:'RIGHT-CLICK = WARBLE — PHASE THROUGH FIRE', line:'MOUSE = FLY   ·   HOLD CLICK = SUCK UP   ·   RIGHT-CLICK = WARBLE   ·   M = MUTE'+(cab?'':'   ·   ESC = PAUSE') };
+  return { beam:'HOLD Z / SPACE TO SUCK UP', warble:'X = WARBLE — PHASE THROUGH FIRE', line:'WASD / ARROWS = FLY   ·   HOLD Z / SPACE = SUCK UP   ·   X = WARBLE   ·   M = MUTE'+(cab?'':'   ·   ESC = PAUSE') }; }
+function howTick(){ if(state!=='play'||PAUSED||!P){ HOW.lastClk=clock; HOW.lastHp=-1; return; }
+  var dt=HOW.lastClk<0?0:clamp(clock-HOW.lastClk,0,0.1); HOW.lastClk=clock;
+  if(planting) HOW.beamed=true; if(P.warbleCd>0) HOW.warbled=true;
+  if(mode!=='base') HOW.playT+=dt;
+  if(HOW.lastHp>=0 && hp<HOW.lastHp && !HOW.warbled && !HOW.warbleShown){ HOW.warbleShown=true; HOW.warbleT=4.5; }
+  HOW.lastHp=hp; if(HOW.warbleT>0) HOW.warbleT=HOW.warbled?Math.min(HOW.warbleT-dt,0.5):HOW.warbleT-dt; }
+function drawHow(){ howTick(); if(state!=='play'||PAUSED) return; var w=howWords(), txt='', a=0;
+  if(!HOW.beamed && HOW.playT>6 && mode!=='base'){ txt=w.beam; a=0.5+0.3*Math.abs(Math.sin(t*2.5)); }
+  else if(HOW.warbleT>0){ txt=w.warble; a=Math.min(1,HOW.warbleT)*0.8; }
+  if(!txt) return; ctx.save(); ctx.textAlign='center'; ctx.globalAlpha=a; ctx.fillStyle='#bdf2cf'; ctx.shadowColor='#000'; ctx.shadowBlur=6;
+  fitFont(txt,'800',clamp(W*0.015,12,17),'ui-monospace',W*0.7); ctx.fillText(txt, W/2, runActive?96:78); ctx.restore(); }
+   // the PHONE PAD's ❚❚ button and its row taps (script at the end)
 // LOCK-IN with no answer (Joe 1113, Q245 -- the never-auto-start rule): back to the attract (the console's front door) after
 // LOCKIN_WAIT s. Only the coin-op cab (?arcade link, a paid credit) still starts solo after 7 s.
 function LOCKIN_WAIT(){ return CABOP?7:12; }
@@ -1691,7 +1718,7 @@ var WAKE_TOUCH=false; try{ WAKE_TOUCH=matchMedia('(pointer:coarse)').matches; }c
 function drawWakeHint(){ if(!audioBlocked || wakeSwallowUntil>=0) return;   // only until the wake gesture lands
   ctx.save(); ctx.textAlign='center'; ctx.globalAlpha=0.55+0.45*Math.abs(Math.sin(t*3)); ctx.fillStyle='#ffd23f'; ctx.font='800 '+clamp(W*0.018,12,18)+'px ui-monospace';
   ctx.textAlign='right'; ctx.globalAlpha=0.55; ctx.font='700 16px ui-monospace'; ctx.fillText('\u266A\u2715', W-18, 26); ctx.restore(); }   // CK BOOT STANDARD S5: a quiet glyph, not a banner
-function updateAudio(dt){ var tv=AUDIO_ON?mTargetVol*MIX.mus:0, r=Math.min(1,dt*2.4);   // MIX.mus applied HERE (not at playMusic) so a slider move takes effect on the bed already playing
+function updateAudio(dt){ var tv=AUDIO_ON?mTargetVol*MIX.mus*(PAUSED?0.35:1):0, r=Math.min(1,dt*2.4);   // MIX.mus applied HERE (not at playMusic) so a slider move takes effect on the bed already playing
   mCur.volume=clamp(mCur.volume+(tv-mCur.volume)*r,0,1);
   if(mOther!==mCur){ mOther.volume=clamp(mOther.volume+(0-mOther.volume)*r,0,1); if(mOther.volume<0.02 && !mOther.paused){ try{mOther.pause();}catch(e){} } } }
 function audioDirector(){ var path=null,vol=0.5;
@@ -1763,6 +1790,11 @@ addEventListener('keydown',function(e){
   if(state==='boot'||state==='cabboot'){ e.preventDefault(); return; }   // CK BOOT STANDARD: idents play out (wakeGate already used the press for sound)
   // attract: WARBLE (F / stick warble button) ARMS DEFCON 1 (the arcade high-score run AND the CHEATS-unlock
   // challenge); any other key/BEAM inserts a coin. STANDALONE: coin CONTINUES your story; C opens the vault once earned.
+  // ESC NEVER LAUNCHES (1117 quit audit): the keyboard's Escape is a way OUT, so on the front screens it backs out instead
+  // of coining up -- title -> attract, attract stays put (the browser tab / app QUIT is the exit). Before this, mashing ESC
+  // to leave cycled attract -> title -> ARE YOU ALONE? -> attract ... and on the ?arcade cab ESC coined a run that
+  // auto-started 7 s later. The pad's START (synthesized Escape, e.__padStart) is still a press on these screens.
+  if(k==='escape' && !e.__padStart && (state==='attract'||state==='title') && !CONSOLE){ if(state==='title'){ sfx('denied',0.4); enterAttract(); } e.preventDefault(); return; }
   if(state==='attract' && CONSOLE){ toFront(); e.preventDefault(); return; }   // desktop console: the attract never starts a run itself
   if(state==='attract' && !ARCADE){ try{reelVid.pause();}catch(e){} sfx('select',0.5); enterTitle(); e.preventDefault(); return; }   // CK BOOT STANDARD S3: the title beat (non-arcade)
   if((state==='attract'||state==='title') && !OG && (k==='f'||k==='x')){ defconArmed=!defconArmed; sfx(defconArmed?'snatch':'denied',0.7); e.preventDefault(); return; }   // WARBLE (X/F) arms DEFCON 1
@@ -1794,7 +1826,9 @@ addEventListener('keydown',function(e){
   if(state==='over'||state==='clear'){ if(e.repeat||idleT<0.9){ e.preventDefault(); return; }   // CK BOOT STANDARD S4: results hold 0.9 s
     if(e.key===' '||e.key==='Enter'||k==='r'){
       if(state==='over' && !(defcon&&!defconUnlimited) && !soloStage) insertContinue();   // continue — unless a REAL DEFCON-1 run OR a vault single-stage (those go back to the vault, matching the overlay + idle path)
-      else finishRun(); } e.preventDefault(); return; }                     // no continue -> leaderboard (real runs) / vault (solo stages)
+      else finishRun(); }
+    else if(state==='over' && (k==='escape'||k==='x'||k==='f')) finishRun();   // (1117) WARBLE / ESC / START = no continue -> the board / front (before: only the 12 s wait got you out)
+    e.preventDefault(); return; }                     // no continue -> leaderboard (real runs) / vault (solo stages)
   if(state==='result'){ if(!e.repeat && resT>0.9 && (e.key===' '||e.key==='Enter'||k==='w'||k==='i')){ proceedSegment(); } e.preventDefault(); return; }   // BEAM/any advance skips the tally (short guard so the clear keypress doesn't skip it instantly)
   if(state==='ending'){ if(!e.repeat && endT>0.9) endGame(); e.preventDefault(); return; }            // skip credits -> leaderboard
   // INITIALS entry (arcade-style: stick cycles the letter, BEAM advances, WARBLE backs up)
@@ -1888,7 +1922,7 @@ function gpPoll(){
   var nav=(typeof navigator!=='undefined')?navigator:null; if(!nav||!nav.getGamepads) return;
   var pads=nav.getGamepads(), gp=null; for(var i=0;i<pads.length;i++){ if(pads[i]&&pads[i].connected!==false){ gp=pads[i]; break; } }
   var now={};
-  if(gp){ var b=gp.buttons||[], m=(gp.mapping==='standard')?{}:gpMap(); function bd(i){ return i!=null && b[i] && b[i].pressed; }   // STANDARD pads (8BitDo/Xbox X-input) use the canonical layout; only NON-standard (F300 on macOS) use the custom ckGamepad map -> mapping the F300 can't break the 8BitDo
+  if(gp){ var b=gp.buttons||[], m=(gp.mapping==='standard')?{}:gpMap(); for(var hb=0;hb<b.length&&!HOW.pad;hb++) if(b[hb]&&b[hb].pressed) HOW.pad=true; function bd(i){ return i!=null && b[i] && b[i].pressed; }   // STANDARD pads (8BitDo/Xbox X-input) use the canonical layout; only NON-standard (F300 on macOS) use the custom ckGamepad map -> mapping the F300 can't break the 8BitDo
     var g=Ghost.read(gp);                                                   // THE GHOST: self-calibrating normalizer — folds in d-pad, POV hat, right-stick, and filters F300 dead axes (2/3 rest at ±1). up=-1, left=-1.
     var L=g.x<0, R=g.x>0, U=g.y<0, D=g.y>0;
     // ONLY the buttons the game needs: A = BEAM (also coin / confirm / menu-select), B = WARBLE. START = BACK/EXIT,
@@ -1897,14 +1931,15 @@ function gpPoll(){
          Escape: !CABOP && bd(m.coin!=null?m.coin:9)};   // START: back/exit in menus, PAUSE in play (Q246); dead on the coin-op cab
   }
   ['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' ','f','Escape'].forEach(function(key){ var d=!!now[key], w=!!GPprev[key];
-    if(d&&!w){ try{ dispatchEvent(new KeyboardEvent('keydown',{key:key})); }catch(e){} }
+    if(d&&!w){ try{ var kev=new KeyboardEvent('keydown',{key:key}); if(key==='Escape') kev.__padStart=true; dispatchEvent(kev); }catch(e){} }   // __padStart: START still presses on the title (ESC-never-launches only covers the keyboard)
     else if(!d&&w){ try{ dispatchEvent(new KeyboardEvent('keyup',{key:key})); }catch(e){} } });
   // ---- PAD 2 -> PLAYER 2 (2-player): the JOIN at lock-in, and rival control in-run ----
   var pad2=null,seen=0; for(var pi=0;pi<pads.length;pi++){ if(pads[pi]&&pads[pi].connected!==false){ if(seen===1){ pad2=pads[pi]; break; } seen++; } }
   if(pad2){ var b2=pad2.buttons||[], m2=(pad2.mapping==='standard')?{}:gpMap(); var beam2=(m2.beam!=null?b2[m2.beam]:b2[0])&&(m2.beam!=null?b2[m2.beam]:b2[0]).pressed;
     var war2=(m2.warble!=null?b2[m2.warble]:b2[1])&&(m2.warble!=null?b2[m2.warble]:b2[1]).pressed;
     if(state==='lockin'){ if(beam2 && !GP2beam){ twoP=true; try{sfx('snatch',0.5);}catch(e){} flash('PLAYER 2 IS IN','#3cc8ff',1.2); startRun(); } }
-    else if(twoP){ var g2=Ghost.read(pad2); held2.left=g2.x<0; held2.right=g2.x>0; held2.up=g2.y<0; held2.down=g2.y>0; planting2=!!beam2;
+    else if(twoP && !PAUSED){   // (1117) paused: pad 2 can't steer or WARBLE the frozen rival (it used to spend R's warble under the menu)
+      var g2=Ghost.read(pad2); held2.left=g2.x<0; held2.right=g2.x>0; held2.up=g2.y<0; held2.down=g2.y>0; planting2=!!beam2;
       if(war2 && !GP2war && R && clock>R.warbleCd){ R.warbleU=clock+0.60; R.warbleCd=clock+2.0; planting2=false; } }
     GP2war=war2; GP2beam=beam2;
   } else { GP2war=false; GP2beam=false; }
@@ -2713,7 +2748,7 @@ function drawTitleCard(){ ctx.fillStyle='#04080e'; ctx.fillRect(0,0,W,H); ctx.te
   ctx.globalAlpha=0.4+0.6*Math.abs(Math.sin(t*4)); ctx.fillStyle='#ffd23f'; ctx.font='800 '+clamp(W*0.03,18,26)+'px system-ui';
   ctx.fillText('PRESS BEAM', W/2, H*0.93); ctx.globalAlpha=1;
   if(!OG){ ctx.globalAlpha=0.75; ctx.fillStyle='#9c89c4'; ctx.font='700 12px ui-monospace';
-    ctx.fillText((STICK?'WARBLE':'WARBLE (RIGHT-CLICK)')+' = DEFCON 1'+(defconArmed?' · ARMED':'')+(cheatsUnlocked()?'   ·   C = CHEATS VAULT':''), W/2, H*0.965); ctx.globalAlpha=1; } }
+    ctx.fillText(((STICK||window.__suTouch)?'WARBLE':'WARBLE (RIGHT-CLICK)')+' = DEFCON 1'+(defconArmed?' · ARMED':'')+(cheatsUnlocked()?'   ·   C = CHEATS VAULT':''), W/2, H*0.965); ctx.globalAlpha=1; } }
 function drawLockin(){
   drawBG(); ctx.fillStyle='rgba(2,6,12,.82)'; ctx.fillRect(0,0,W,H); ctx.textAlign='center';
   ctx.fillStyle='#39ff14'; fitFont('PLAYER 1  IS IN','800',clamp(W*0.02,15,24),'system-ui',W*0.92); ctx.fillText('PLAYER 1  IS IN', W/2, H*0.28);
@@ -2789,7 +2824,7 @@ function drawAttract(){
       : 'PRESS ANY KEY — BEGIN';
     ctx.fillText(coinTxt, W/2, H*0.93); ctx.globalAlpha=1;
     if(!OG){ ctx.globalAlpha=fade*0.75; ctx.fillStyle='#9c89c4'; ctx.font='700 12px ui-monospace';
-      ctx.fillText((STICK?'WARBLE':'WARBLE (RIGHT-CLICK)')+' = DEFCON 1'+(cheatsUnlocked()?'   ·   C = CHEATS VAULT':'  (clear it to unlock CHEATS)'), W/2, H*0.965); ctx.globalAlpha=1; }
+      ctx.fillText(((STICK||window.__suTouch)?'WARBLE':'WARBLE (RIGHT-CLICK)')+' = DEFCON 1'+(cheatsUnlocked()?'   ·   C = CHEATS VAULT':'  (clear it to unlock CHEATS)'), W/2, H*0.965); ctx.globalAlpha=1; }
     return;
   }
   if(pod.hook){                                                      // cold-open HOOK — white line + red turn, centered mid-screen
@@ -3169,7 +3204,10 @@ function drawPause(){ ctx.save(); ctx.fillStyle='rgba(2,6,12,.74)'; ctx.fillRect
     if(on){ ctx.strokeStyle='#39ff14'; ctx.lineWidth=2; ctx.stroke(); }
     ctx.fillStyle=on?'#39ff14':'#bdf2cf'; ctx.fillText(lab,W/2,y); PAUSE_ROWS.push(r); }
   ctx.fillStyle='#9c89c4'; fitFont('BEAM = SELECT   ·   WARBLE / ESC / START = RESUME','700',clamp(W*0.014,11,15),'ui-monospace',W*0.92);
-  ctx.fillText('BEAM = SELECT   ·   WARBLE / ESC / START = RESUME',W/2,y0+PAUSE_ITEMS.length*gap+fs*0.4); ctx.restore(); }
+  ctx.fillText('BEAM = SELECT   ·   WARBLE / ESC / START = RESUME',W/2,y0+PAUSE_ITEMS.length*gap+fs*0.4);
+  var hl=howWords().line; ctx.globalAlpha=0.7; ctx.fillStyle='#6f9a80'; fitFont(hl,'700',clamp(W*0.012,10,13),'ui-monospace',W*0.92); ctx.fillText(hl,W/2,H*0.90);   // (1117) PAUSE HELP: this build's controls
+  if(twoP){ var p2l="P2:  I J K L = FLY   ·   M = SUCK UP   ·   , = WARBLE   (or a 2nd gamepad)"; fitFont(p2l,'700',clamp(W*0.012,10,13),'ui-monospace',W*0.92); ctx.fillText(p2l,W/2,H*0.935); }
+  ctx.restore(); }
 function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
 /* ---------- THE GUNPOWDER HORROR — render (presentation only: reads the mission, never writes it) ---------- */
 // THE PERIMETER — a chain-link + barbed-wire run along the BACK of the compound (drawn between the far and mid scenery
@@ -3496,6 +3534,7 @@ function drawHUD(){
     ctx.fillText('FPS '+Math.round(fps)+'  · jets '+jets.length+' · shots '+shots.length+' · fx '+fx.length+(stress?'  · BLITZ':''), W-22, H-26);
   }
   if(mode==='gunpowder' && state==='play') gpDrawBanner();
+  drawHow();   // (1117) the one-time how-to whispers (render-only)
   if(msgT>0){ ctx.textAlign='center'; ctx.globalAlpha=clamp(msgT,0,1); ctx.fillStyle=msgColor; ctx.font='800 26px system-ui'; ctx.fillText(msg,W/2,H*0.30); ctx.globalAlpha=1; }
 }
 function overlay(title,sub,col){
@@ -3567,6 +3606,7 @@ function frame(ts){
   if(DEV && STAGE_PARAM && !_devStageBooted){ _devStageBooted=true;     // dev background-review boot: jump straight into a stage's play frame
     soloStage=true; score=0; rivalScore=0; hp=maxHP; lives=STARTING_LIVES; held={}; planting=false;
     twoP=/[?&]twop\b/.test(location.search); defcon=/[?&]defcon\b/.test(location.search);   // dev: review 2-player / DEFCON-1
+    sel=Math.max(0,MENU.findIndex(function(m){ var r=STAGE_ROUNDS[STAGE_PARAM]; return r!=null?(m.kind==='round'&&m.idx===r):STAGE_PARAM==='base'?m.kind==='base':STAGE_PARAM==='gunpowder'?m.kind==='gunpowder':(m.kind==='bonus'&&m.idx===({backyard:0,claw:1,champion:2})[STAGE_PARAM]); }));   // (1117) dev: the vault row this stage IS, so PAUSE > RESTART retries it like a real vault pick
     if(STAGE_ROUNDS[STAGE_PARAM]!=null){ segIdx=0; startLevel(STAGE_ROUNDS[STAGE_PARAM]); }
     else if(STAGE_PARAM==='base'){ startBase(true); }
     else if(STAGE_PARAM==='backyard'){ startBonus(0); }
@@ -3782,6 +3822,7 @@ if(window.parent && window.parent!==window){
   },50);
   window.addEventListener('message',function(e){
     var d=e&&e.data; if(!d||d.su!=='press'||state!=='play') return;
+    if(PAUSED){ if(d.p!==2){ if(d.b==='warble') closePause(); else if(d.b==='beam' && d.on && pauseT>0.15) pauseDo(pauseSel); } return; }   // (1117) the DECK's buttons drive the PAUSE like the stick does (WARBLE resumes, BEAM picks); before, a deck WARBLE under the menu spent P1's warble on the frozen sim
     try{
       if(d.p===2){
         if(!twoP||!R) return;
@@ -3907,6 +3948,7 @@ requestAnimationFrame(frame);
   var Q=new URLSearchParams(location.search), pad=document.getElementById('spad'); if(!pad||!document.body||!document.body.classList) return;
   var TOUCHDEV=Q.has('touch')||((('ontouchstart' in window)||navigator.maxTouchPoints>0)&&matchMedia('(pointer:coarse)').matches);
   if(!TOUCHDEV||window.top!==window) return;
+  window.__suTouch=true;   // (1117) the game's hints speak the pad's words (BEAM / WARBLE buttons, drag to fly)
   if(['band','alt','1up'].indexOf(Q.get('panel'))>=0) return;   // the old cab band owns the phone
   var cv=document.getElementById('c'), cL=document.getElementById('scolL'), cR=document.getElementById('scolR'),
       bB=document.getElementById('sbBeam'), bW=document.getElementById('sbWarble'), chip=document.getElementById('shand'), pz=document.getElementById('spause');
