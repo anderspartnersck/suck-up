@@ -612,7 +612,7 @@ var SAVE_KEY='suckupBlacksite1';
 // it). The web never has the bridge, so the web still writes nothing. ?coleman / ?og never touch the box's save.
 var SAVEBOX=(function(){ try{ var b=window.ckSave; return (b && typeof b.getItem==='function' && typeof b.setItem==='function' && !/[?&](coleman|og)\b/.test(location.search)) ? b : null; }catch(e){ return null; } })();
 function loadSave(){ if(SAVEBOX){ try{ var o=JSON.parse(SAVEBOX.getItem(SAVE_KEY)||'{}'); return (o && typeof o==='object') ? o : {}; }catch(e){ return {}; } }
-  try{ localStorage.removeItem(SAVE_KEY); localStorage.removeItem('suckupMix'); }catch(e){} return {}; }
+  try{ localStorage.removeItem(SAVE_KEY); localStorage.removeItem('suckupMix'); localStorage.removeItem('suPanelSkin'); }catch(e){} return {}; }
 var SAVE=loadSave(); if(SAVE.storyMax==null) SAVE.storyMax=0;   // highest STORY zone unlocked (0 = only DAIRY FLATS open)
 function persist(){ if(SAVEBOX){ try{ SAVEBOX.setItem(SAVE_KEY, JSON.stringify(SAVE)); }catch(e){} } }   // web: a no-op (session-only). Desktop app: the box's save file.
 function cheatsUnlocked(){ return OG || !!SAVE.cheats; }        // CHEATS vault — earned by a DEFCON-1 full clear (always open in OG)
@@ -846,7 +846,9 @@ function pauseDo(i){ closePause();
   if(i===0){ sfx('select',0.4); return; }                                                   // RESUME
   if(i===1){ sfx('launch',0.5);                                                             // RESTART: a vault stage retries itself; a run starts over
     if(soloStage){ launchSel(); return; }
-    var unl=defconUnlimited; defconArmed=defcon; startRun(); if(unl) defconUnlimited=true; return; }
+    // (1116 test pass) restart the SAME kind of run: a top-of-the-run campaign (the vault's RUN ALL / DEFCON practice) stays a
+    // campaign -- startRun() is "a coin-up", which on the blacksite page is a STORY run and resumed at the furthest zone instead
+    var unl=defconUnlimited; defconArmed=defcon; held={}; held2={}; planting=false; planting2=false; (ARCADE||!story)?startCampaign():startStory(); if(unl) defconUnlimited=true; return; }
   sfx('denied',0.4); mode='campaign'; targets=[]; jets=[]; shots=[]; fx=[]; truck=null; superT=0; twoP=false;   // QUIT TO TITLE (the run is dropped, never posted)
   if(CONSOLE) toFront(); else if(ARCADE) enterAttract(); else enterTitle(); }
 function pauseHit(x,y){ for(var i=0;i<PAUSE_ROWS.length;i++){ var r=PAUSE_ROWS[i]; if(x>=r.x&&x<=r.x+r.w&&y>=r.y&&y<=r.y+r.h) return i; } return -1; }
@@ -4678,9 +4680,9 @@ requestAnimationFrame(frame);
            p2stick:{x:0.675,y:0.55,col:'#2fd4ff'}, p2beam:{x:0.800,y:0.47,col:'#2fd4ff'}, p2warble:{x:0.895,y:0.47,col:'#2fd4ff'} };
   var KEYS={ p1:{up:'ArrowUp',down:'ArrowDown',left:'ArrowLeft',right:'ArrowRight',beam:' ',warble:'x'},
              p2:{up:'i',down:'k',left:'j',right:'l',beam:';',warble:"'"} };
-  var SKINS=['alt','1up'], skin='alt'; try{ var sv=localStorage.getItem('suPanelSkin'); if(SKINS.indexOf(sv)>=0) skin=sv; }catch(_){}
+  var SKINS=['alt','1up'], skin='alt';   // SESSION-ONLY (1116 test pass): the skin choice used to live in localStorage -- the one write left on the web build; ?panel=1up picks it now
   if(Q.get('panel')==='1up'||Q.get('panel')==='alt') skin=Q.get('panel');
-  function setSkin(s){ skin=s; img.src='assets/cab/phone/panel-'+s+'-band.png'; try{localStorage.setItem('suPanelSkin',s);}catch(_){} }
+  function setSkin(s){ skin=s; img.src='assets/cab/phone/panel-'+s+'-band.png'; }
   setSkin(skin);
   var TMODE=false, bw=0, bh=0;
   function layout(){
