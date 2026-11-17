@@ -75,8 +75,11 @@ buttons: WARBLE on top, BEAM below it, both for one thumb.
   right-click to warble.
 - On the keyboard it's WASD or the arrow keys to fly, **Z** to beam, **X** to
   warble. Space starts a game (and also beams), and M mutes.
-- **Esc** (or P) pauses: RESUME, RESTART or QUIT TO TITLE. On a pad it's
-  START; on a phone, the ❚❚ PAUSE chip in the top corner.
+- **Esc** (or P) pauses: RESUME, RESTART or QUIT TO TITLE. On a phone it's
+  the ❚❚ PAUSE chip in the top corner. Switching tabs pauses too.
+- Esc never starts anything: on the title it backs out to the attract, and at
+  GAME OVER, warble (X, right-click or Esc) ends the run instead of continuing.
+  To leave for good, close the tab.
 - A second player can join on the same keyboard. When the game asks DO YOU
   THINK YOU ARE ALONE?, press `;` to jump in, then fly with IJKL, beam with M
   and warble with the comma key. M stops muting once two people are playing.
