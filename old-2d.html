@@ -815,7 +815,7 @@ function drawHow(){ howTick(); if(state!=='play'||PAUSED) return; var w=howWords
   if(!HOW.beamed && HOW.playT>6 && mode!=='base'){ txt=w.beam; a=0.5+0.3*Math.abs(Math.sin(t*2.5)); }
   else if(HOW.warbleT>0){ txt=w.warble; a=Math.min(1,HOW.warbleT)*0.8; }
   if(!txt) return; ctx.save(); ctx.textAlign='center'; ctx.globalAlpha=a; ctx.fillStyle='#bdf2cf'; ctx.shadowColor='#000'; ctx.shadowBlur=6;
-  fitFont(txt,'800',clamp(W*0.015,12,17),'ui-monospace',W*0.7); ctx.fillText(txt, W/2, runActive?96:78); ctx.restore(); }
+  fitFont(txt,'800',clamp(W*0.015,12,17),'ui-monospace',W*0.7); ctx.fillText(txt, W/2, (runActive?96:78)+(superT>0?26:0)); ctx.restore(); }   // (HUD 1117) steps under the SUPER BEAM row when it is up
    // the PHONE PAD's ❚❚ button and its row taps (script at the end)
 // LOCK-IN with no answer (Joe 1113, Q245 -- the never-auto-start rule): back to the attract (the console's front door) after
 // LOCKIN_WAIT s. Only the coin-op cab (?arcade link, a paid credit) still starts solo after 7 s.
@@ -3310,7 +3310,7 @@ function gpDrawBanner(){
   ctx.fillStyle='#dff7e4'; ctx.font='800 '+clamp(W*0.011,11,15)+'px ui-monospace'; ctx.fillText(gpBan.sub, W/2, y+24); ctx.restore();
 }
 function gpDrawHUD(){
-  var o=gpCounts(), my=H-30, warn=o.alive<=GP_MUST_SAVE, close=o.alive===GP_MUST_SAVE+1;
+  var o=gpCounts(), my=H-34, warn=o.alive<=GP_MUST_SAVE, close=o.alive===GP_MUST_SAVE+1;
   // the people strip: one pip per person (green fighting / orange wounded / cyan aboard / dark red lost)
   var pw=14, gap=5, tot=o.total*(pw+gap)-gap, x0=W/2-tot/2, py=my-30, k=0;
   for(var i=0;i<targets.length;i++){ var c=targets[i]; if(!gpIsPerson(c)) continue; var civ=c.dkind==='civilian';
@@ -3426,7 +3426,7 @@ function clawDrawFront(){
     ctx.fillText(CLAW_BULL_VAL+' · GUARDED', claw.bull.x, groundY()+6-bh-18); }
 }
 function clawDrawHUD(){
-  var my=H-30, mw=clamp(W*0.30,240,460), mx=(W-mw)/2, lv=claw.lv, L=CLAW_LV[lv];
+  var my=H-40, mw=clamp(W*0.30,240,460), mx=(W-mw)/2, lv=claw.lv, L=CLAW_LV[lv];   // (HUD 1117) backing plate ends at H-20 like the top HUD's inset (was H-30: the plate sat ON the bezel)
   var bw=Math.min(W-40, mw*1.7); ctx.fillStyle='rgba(4,8,14,0.58)'; roundRect(W/2-bw/2, my-76, bw, 96, 12); ctx.fill();   // backing plate: the dock planks are busy
   // the dock's greed meter (CALM / SORE / ANGRY / RIOT), with the tier ticks
   ctx.fillStyle='#160c10'; ctx.strokeStyle='#3a1c24'; ctx.lineWidth=1; roundRect(mx,my,mw,12,6); ctx.fill(); ctx.stroke();
@@ -3496,9 +3496,9 @@ function drawHUD(){
     ctx.fillStyle = score>=rivalScore?'#39ff14':'#3cc8ff'; ctx.font='800 11px ui-monospace';
     ctx.fillText(score>=rivalScore?'▲ LEADING':'▼ BEHIND', 22, 72);
   } else { ctx.fillStyle='#dff7e4'; ctx.font='800 22px system-ui'; ctx.fillText('SCORE  '+score, 22, 36); }
-  if(superT>0){ ctx.textAlign='center'; var spp=clamp(superT/SUPER_SECS,0,1);            // SUPER BEAM badge + drain bar
-    ctx.fillStyle=(Math.floor(t*8)%2)?'#ffd23f':'#fff'; ctx.font='800 14px ui-monospace'; ctx.fillText('★ SUPER BEAM ★', W/2, 30);
-    ctx.fillStyle='rgba(255,210,63,.85)'; ctx.fillRect(W/2-60, 38, 120*spp, 4); ctx.textAlign='left'; }
+  if(superT>0){ ctx.textAlign='center'; var spp=clamp(superT/SUPER_SECS,0,1), suy=runActive?96:74;   // SUPER BEAM badge + drain bar -- (HUD 1117) in the row UNDER the clock (was y 30/38: over the zone label and through the clock digits)
+    ctx.fillStyle=(Math.floor(t*8)%2)?'#ffd23f':'#fff'; ctx.font='800 14px ui-monospace'; ctx.fillText('★ SUPER BEAM ★', W/2, suy);
+    ctx.fillStyle='rgba(255,210,63,.85)'; ctx.fillRect(W/2-60, suy+6, 120*spp, 4); ctx.textAlign='left'; }
   // HULL life bar (replaces the hit-count) — not in THE GUNPOWDER HORROR (the saucer can't die there; the fort can)
   var hbw=clamp(W*0.18,170,300), hbx=W-22-hbw, hby=20;
   if(mode!=='gunpowder'){
@@ -3516,7 +3516,7 @@ function drawHUD(){
   ctx.fillStyle= stageClock<10?'#ff5d6c':'#fff'; ctx.font='800 30px system-ui'; ctx.fillText(Math.max(0,Math.ceil(stageClock))+'', W/2, 52);
   if(runActive){ ctx.fillStyle='#ff9d3a'; ctx.font='800 14px system-ui'; ctx.globalAlpha=0.6+0.4*Math.sin(clock*9); ctx.fillText('>>> THE RUN <<<', W/2, 74); ctx.globalAlpha=1; }
   // meter — or, in a bonus sweep, the loot-remaining readout (no military response)
-  var stg=stageOf(), mw=clamp(W*0.34,260,520), mx=(W-mw)/2, my=H-30;
+  var stg=stageOf(), mw=clamp(W*0.34,260,520), mx=(W-mw)/2, my=H-34;   // (HUD 1117) bottom edge H-20 = the HULL bar's 20 px top inset mirrored (was H-30: 5.5 px off the bezel)
   if(mode==='gunpowder'){ gpDrawHUD(); }
   else if(clawOn()){ clawDrawHUD(); }
   else if(mode==='bonus'){ var left=0; for(var i=0;i<targets.length;i++) if(!targets[i].gone) left++;
@@ -3970,7 +3970,8 @@ requestAnimationFrame(frame);
     home.appendChild(bW); home.appendChild(bB);   // top->bottom WARBLE · BEAM (BEAM = the resting thumb)
     chip.style.left=HAND==='R'?'calc(env(safe-area-inset-left) + 10px)':''; chip.style.right=HAND==='R'?'':'calc(env(safe-area-inset-right) + 10px)';   // chip on the free side's top corner
     chip.textContent=HAND==='R'?'⇄ RIGHTY':'⇄ LEFTY';
-    if(pz){ pz.style.left=chip.style.left; pz.style.right=chip.style.right; }   // ❚❚ PAUSE sits where the chip sits (chip off-play, pause in play)
+    if(pz){ var pzc=Math.round((colW+safeInset(HAND==='R'?'right':'left'))/2);   // (HUD 1117) ❚❚ PAUSE rides the TOP of the pad column (clear above WARBLE), centred on the buttons -- in the game's top corner it sat over the HULL bar
+      pz.style.left=HAND==='R'?'':pzc+'px'; pz.style.right=HAND==='R'?pzc+'px':''; pz.style.transform=HAND==='R'?'translateX(50%)':'translateX(-50%)'; }
     window.__suPanelW=colW; window.__suPanelH=0;
     cv.style.left=(TMODE&&HAND==='L')?colW+'px':'0px';
     window.dispatchEvent(new Event('resize'));   // the game re-reads W/H (its resize subtracts __suPanelW)
