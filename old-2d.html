@@ -90,7 +90,7 @@
     background:#13301f;border:1px solid #28543a;border-radius:4px;color:#bdf2cf}
   #mix button.off{background:#3a1414;border-color:#7a2a2a;color:#ff9d9d}
 </style>
-<script>window.__SUCKUP_BUILD='mouse';window.__SUCKUP_MODE='arcade';</script><!-- tools/build_editions.py replaces this marker with `<script>window.__SUCKUP_BUILD='mouse'|'stick'</script>` to BAKE a distributable edition (no URL param needed). Left as an inert comment in the master/dev build. -->
+<!--@BUILD@--><!-- tools/build_editions.py replaces this marker with `<script>window.__SUCKUP_BUILD='mouse'|'stick'</script>` to BAKE a distributable edition (no URL param needed). Left as an inert comment in the master/dev build. -->
 </head>
 <body>
 <div id="tpanel"><div class="art"><img id="tpimg" alt=""><canvas id="tpfx"></canvas></div></div>
@@ -3139,8 +3139,17 @@ function emitBubbles(o,col,dt){ if(!o||o.stun>0) return; var sp=Math.hypot(o.vx|
   if(sp>26 && o._bubT>0.07 && fx.length<MAX_FX-4){ o._bubT=0; var w=SAUCER_W();
     fx.push({ x:o.x+rnd(-w*0.14,w*0.14), y:o.y+w*0.14+rnd(-2,3), kind:'bubble', col:col, t:0, life:0.45, dx:rnd(-12,12)-(o.vx||0)*0.02, r:2+Math.random()*2 }); } }
 // additive radial glow — the building block for the projectile/FX glow-up (rgba col so callers can fade by life)
-function glow(x,y,r,col){ ctx.save(); ctx.globalCompositeOperation='lighter'; var g=ctx.createRadialGradient(x,y,0,x,y,r);
-  g.addColorStop(0,col); g.addColorStop(0.45,col); g.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r,0,6.28); ctx.fill(); ctx.restore(); }
+// PERF 1117 (HIGH TABLE docs/PERF-3D-RULES.md rule 3/5): glow() was a new radial gradient + arc fill per call, dozens a
+// frame (every shot, spark, flare). Now one baked 64 px disc per base colour (the same stops: solid to 45%, then fading
+// out), blitted at the same radius; the colour's alpha rides globalAlpha, so the cache stays small. Render-only.
+var GLOWC={}, GLOWN=0;
+function glowDot(base){ var c=GLOWC[base]; if(c) return c; if(GLOWN>64){ GLOWC={}; GLOWN=0; }
+  c=document.createElement('canvas'); c.width=c.height=64; var g=c.getContext('2d'), gr=g.createRadialGradient(32,32,0,32,32,32);
+  gr.addColorStop(0,base); gr.addColorStop(0.45,base); gr.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=gr; g.fillRect(0,0,64,64);
+  GLOWN++; return GLOWC[base]=c; }
+function glow(x,y,r,col){ if(!(r>0)) return; var m=/^rgba\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.eE+-]+)\s*\)$/.exec(col), a=1, base=col;
+  if(m){ a=+m[4]; base='rgb('+m[1]+','+m[2]+','+m[3]+')'; } if(!(a>0)) return;
+  ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.globalAlpha*=Math.min(1,a); ctx.drawImage(glowDot(base),x-r,y-r,2*r,2*r); ctx.restore(); }
 function drawShots(){
   for(var s=0;s<shots.length;s++){ var sh=shots[s];
     if(sh.kind==='tracer'){ ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.globalAlpha=0.75; ctx.strokeStyle=sh.col; ctx.lineWidth=3.5; ctx.lineCap='round';

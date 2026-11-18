@@ -93,7 +93,7 @@
     background:#13301f;border:1px solid #28543a;border-radius:4px;color:#bdf2cf}
   #mix button.off{background:#3a1414;border-color:#7a2a2a;color:#ff9d9d}
 </style>
-<script>window.__SUCKUP_BUILD='mouse';window.__SUCKUP_MODE='arcade';</script><!-- tools/build_editions.py replaces this marker with `<script>window.__SUCKUP_BUILD='mouse'|'stick'</script>` to BAKE a distributable edition (no URL param needed). Left as an inert comment in the master/dev build. -->
+<!--@BUILD@--><!-- tools/build_editions.py replaces this marker with `<script>window.__SUCKUP_BUILD='mouse'|'stick'</script>` to BAKE a distributable edition (no URL param needed). Left as an inert comment in the master/dev build. -->
 </head>
 <body>
 <div id="tpanel"><div class="art"><img id="tpimg" alt=""><canvas id="tpfx"></canvas></div></div>
@@ -3262,8 +3262,17 @@ function emitBubbles(o,col,dt){ if(!o||o.stun>0) return; var sp=Math.hypot(o.vx|
   if(sp>26 && o._bubT>0.07 && fx.length<MAX_FX-4){ o._bubT=0; var w=SAUCER_W();
     fx.push({ x:o.x+rnd(-w*0.14,w*0.14), y:o.y+w*0.14+rnd(-2,3), kind:'bubble', col:col, t:0, life:0.45, dx:rnd(-12,12)-(o.vx||0)*0.02, r:2+Math.random()*2 }); } }
 // additive radial glow — the building block for the projectile/FX glow-up (rgba col so callers can fade by life)
-function glow(x,y,r,col){ ctx.save(); ctx.globalCompositeOperation='lighter'; var g=ctx.createRadialGradient(x,y,0,x,y,r);
-  g.addColorStop(0,col); g.addColorStop(0.45,col); g.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r,0,6.28); ctx.fill(); ctx.restore(); }
+// PERF 1117 (HIGH TABLE docs/PERF-3D-RULES.md rule 3/5): glow() was a new radial gradient + arc fill per call, dozens a
+// frame (every shot, spark, flare). Now one baked 64 px disc per base colour (the same stops: solid to 45%, then fading
+// out), blitted at the same radius; the colour's alpha rides globalAlpha, so the cache stays small. Render-only.
+var GLOWC={}, GLOWN=0;
+function glowDot(base){ var c=GLOWC[base]; if(c) return c; if(GLOWN>64){ GLOWC={}; GLOWN=0; }
+  c=document.createElement('canvas'); c.width=c.height=64; var g=c.getContext('2d'), gr=g.createRadialGradient(32,32,0,32,32,32);
+  gr.addColorStop(0,base); gr.addColorStop(0.45,base); gr.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=gr; g.fillRect(0,0,64,64);
+  GLOWN++; return GLOWC[base]=c; }
+function glow(x,y,r,col){ if(!(r>0)) return; var m=/^rgba\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.eE+-]+)\s*\)$/.exec(col), a=1, base=col;
+  if(m){ a=+m[4]; base='rgb('+m[1]+','+m[2]+','+m[3]+')'; } if(!(a>0)) return;
+  ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.globalAlpha*=Math.min(1,a); ctx.drawImage(glowDot(base),x-r,y-r,2*r,2*r); ctx.restore(); }
 function drawShots(){
   for(var s=0;s<shots.length;s++){ var sh=shots[s]; L3.shot(sh);
     if(sh.kind==='tracer'){ ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.globalAlpha=0.75; ctx.strokeStyle=sh.col; ctx.lineWidth=3.5; ctx.lineCap='round';
@@ -4297,6 +4306,11 @@ var L3 = (function(){
   // lens to the rim. Drawn OVER the saucer sprite (the beam is drawn under it). Pure draw: the ramp clock lives in a
   // render-side table keyed by owner (never on the sim objects), the arcs come from hash(), never Math.random.
   var EM = [], EMFULL = /[?&]l3charge=1\b/.test(Q);
+  // PERF 1117 (HIGH TABLE docs/PERF-3D-RULES.md): a render-side frame-time EMA. Above 24 ms (back under 19 ms) the
+  // emitter drops its extras (the crackle's glow pass + forks); the crackle is capped at 8 arcs a saucer (was up to 16).
+  var PF = { ema: 16.7, last: 0, lt: -1, low: false };
+  function l3low(){ if(t !== PF.lt){ var n = performance.now(); if(PF.last) PF.ema += (Math.min(200, n - PF.last) - PF.ema) * 0.08;
+      PF.last = n; PF.lt = t; PF.low = PF.low ? PF.ema > 19 : PF.ema > 24; } return PF.low; }
   function emRec(o){ for(var i = 0; i < EM.length; i++) if(EM[i].o === o) return EM[i]; var r = { o:o, on:0, off:9 }; EM.push(r); return r; }
   // the attract demo saucers (demo / demo2: not P or R, no stun) charge too (audit 1026): demoRgb is their beam colour and
   // beamOn says whether they hold a cow; they are never in a contest.
@@ -4344,7 +4358,7 @@ var L3 = (function(){
     // 2/3 crackle -> the skirt: jagged arcs from the lens, out + down toward the rim (more + longer as the charge builds)
     var charge = act ? sstep(0.15, 0.9, r.on) : 0; if(late) charge *= 0.5;
     if(charge > 0.02){
-      var seed = Math.floor(t * 18), n = Math.round(3 + 9 * charge + (sup ? 4 : 0)), reach = w * (0.14 + 0.28 * charge);
+      var low = l3low(), seed = Math.floor(t * 18), n = Math.min(low ? 5 : 8, Math.round(3 + 5 * charge + (sup ? 2 : 0))), reach = w * (0.14 + 0.28 * charge);
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
       for(var j = 0; j < n; j++){   // radial in the UNDERSIDE plane (an ellipse seen from below the rim), front half brighter
         var hs = seed * 13 + j * 7 + (o === R ? 911 : 0), th = Math.PI * (0.06 + 0.88 * ((j + hash(hs)) / n)), len = reach * (0.55 + 0.45 * hash(hs + 1));
@@ -4352,9 +4366,9 @@ var L3 = (function(){
         var segs = 6; ctx.beginPath(); ctx.moveTo(ox, oy);
         for(var s = 1; s <= segs; s++){ var f = s / segs, nx = -Math.sin(th), ny = Math.cos(th) * 0.22, d = (hash(hs + 10 + s) - 0.5) * w * 0.045 * (s < segs ? 1 : 0);
           ctx.lineTo(ox + (ex - ox) * f + nx * d, oy + (ey - oy) * f + ny * d); }
-        ctx.strokeStyle = 'rgba(' + rgb + ',' + (0.30 * charge) + ')'; ctx.lineWidth = 3.5; ctx.stroke();      // the glow
+        if(!low){ ctx.strokeStyle = 'rgba(' + rgb + ',' + (0.30 * charge) + ')'; ctx.lineWidth = 3.5; ctx.stroke(); }      // the glow
         ctx.strokeStyle = 'rgba(235,255,255,' + (0.70 * charge) + ')'; ctx.lineWidth = 1.1; ctx.stroke();    // the white-hot filament
-        if(hash(hs + 5) < 0.45){ var fx2 = ex + (hash(hs + 6) - 0.5) * w * 0.04, fy2 = ey + w * (0.015 + 0.03 * hash(hs + 7));   // a short fork off the tip
+        if(!low && hash(hs + 5) < 0.45){ var fx2 = ex + (hash(hs + 6) - 0.5) * w * 0.04, fy2 = ey + w * (0.015 + 0.03 * hash(hs + 7));   // a short fork off the tip
           ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(fx2, fy2); ctx.lineWidth = 0.9; ctx.stroke(); }
       }
       // the skirt haze under the hull at full charge (the 06_37 sprite's lit underside)
