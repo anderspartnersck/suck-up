@@ -3771,9 +3771,10 @@ var L3 = (function(){
   // THE 3D CAST (1117, Joe: "recreate the farmer and cow painterly sprites as 3d blender ones using blendkit" + "make completely
   // our own worlds based on existing sprites"): each painted sprite NAME gets one 3D sheet (ROUND 2, 1117b: blender/su_cast1117b.py, the
   // painting's cartoon shapes + palette, cel shading, ink at the 1x weight; tools/bake_art1117b.py), swapped by name in sub() exactly like the units above:
-  // same frame count, same facing/flip, same height-keyed size. Flag groups: &l3farmer=0 (farmer + cows); pilots opt-in &l3gnome=1, &l3town=1.
-  var CHOFF = { farmer:/[?&]l3farmer=0\b/.test(Q), gnome:!/[?&]l3gnome=1\b/.test(Q), town:!/[?&]l3town=1\b/.test(Q) }, CH = {};   // 1117: gnome/town 3D = PILOTS, opt-in (&l3gnome=1 / &l3town=1) until Joe picks the style (Q1081)
-  for(var chk in (M.chars || {})) if(!CHOFF[M.chars[chk].grp || 'farmer']){ CH[chk] = M.chars[chk]; sheet('ch_' + chk, CH[chk].file); }
+  // same frame count, same facing/flip, same height-keyed size. Flag groups: &l3farmer=0 (the 3D cows off); PEOPLE are opt-in pilots:
+  // &l3farmer3d=1 (the farmer), &l3gnome=1, &l3town=1. Joe 1118 (X2): every human, gnomes + townspeople included, is a painted 2D cutout.
+  var CHOFF = { farmer:/[?&]l3farmer=0\b/.test(Q), farmer3d:/[?&]l3farmer=0\b/.test(Q) || !/[?&]l3farmer3d=1\b/.test(Q), gnome:!/[?&]l3gnome=1\b/.test(Q), town:!/[?&]l3town=1\b/.test(Q) }, CH = {};
+  for(var chk in (M.chars || {})) if(!CHOFF[chk === 'farmer' ? 'farmer3d' : (M.chars[chk].grp || 'farmer')]){ CH[chk] = M.chars[chk]; sheet('ch_' + chk, CH[chk].file); }
   // THE PICKUPS RE-SHADED (1117): brisket (pepper bark, the glossy subsurface fat cap, the smoke ring + juicy cut faces), repair
   // (clear-coat case, chrome latches, a glowing cross), corn + the backyard loot under the rim-lit rig. &l3loot=0 = the 1110/1116 units.
   var L7 = /[?&]l3loot=0\b/.test(Q) ? {} : (M.loot1117 || {});
