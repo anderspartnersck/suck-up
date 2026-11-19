@@ -44,49 +44,64 @@
   #spad{display:none}
   body.smode #spad{display:block;position:fixed;inset:0;pointer-events:none;z-index:20}
   body.smode #c{touch-action:none} body.smode #mix{display:none!important}
+  /* (1119b, Joe: "back to the more arcade cab menu style for all selectables" — no app pills / outlined boxes.) The pad
+     column IS the cab's P1 control deck: its distressed metal + green frame line + rivets, the PAINTED arcade buttons and
+     their stencil label plates (cut from assets/cab/panel-1up-ref.png into assets/cab/phone/). Lit = pressed, unlit =
+     cooling down (the deck's OFF/ON layers). Text selectables speak the in-game vault/pause vocabulary (system-ui caps,
+     ▸ cursor ◂, the faint red select band) and the panel's stencil caps. */
   #spad .col{position:absolute;top:0;bottom:0;width:var(--col,150px);display:none;flex-direction:column;align-items:center;justify-content:flex-end;
-    gap:calc(var(--btn,110px)*0.22);padding-bottom:max(16px,calc(var(--btn,110px)*0.26));
-    background:radial-gradient(120% 80% at 50% 100%,#08160d,#010305)}
+    gap:calc(var(--btn,110px)*0.10);padding-bottom:max(12px,calc(var(--btn,110px)*0.14));
+    background:linear-gradient(180deg,rgba(0,0,0,.62),rgba(0,0,0,.42) 40%,rgba(0,0,0,.66)),url(assets/cab/phone/metal.jpg) center/260px auto repeat #07090a}
+  #spad .col::before{content:"";position:absolute;inset:7px;border:1.5px solid rgba(124,201,40,.55);pointer-events:none;
+    background:radial-gradient(circle at 7px 7px,#59605c 0 2.5px,#111 3px,transparent 3.5px) left top/16px 16px no-repeat,
+      radial-gradient(circle at 9px 7px,#59605c 0 2.5px,#111 3px,transparent 3.5px) right top/16px 16px no-repeat,
+      radial-gradient(circle at 7px 9px,#59605c 0 2.5px,#111 3px,transparent 3.5px) left bottom/16px 16px no-repeat,
+      radial-gradient(circle at 9px 9px,#59605c 0 2.5px,#111 3px,transparent 3.5px) right bottom/16px 16px no-repeat}
   #spad .col.on{display:flex}
-  #spad .L{left:0;padding-left:env(safe-area-inset-left);box-shadow:inset -3px 0 0 #39ff14,inset -6px 0 0 #000,inset -8px 0 0 #1c4a2a}
-  #spad .R{right:0;padding-right:env(safe-area-inset-right);box-shadow:inset 3px 0 0 #39ff14,inset 6px 0 0 #000,inset 8px 0 0 #1c4a2a}
+  #spad .L{left:0;padding-left:env(safe-area-inset-left);box-shadow:inset -3px 0 0 #000,inset -5px 0 0 #2b3a20}
+  #spad .R{right:0;padding-right:env(safe-area-inset-right);box-shadow:inset 3px 0 0 #000,inset 5px 0 0 #2b3a20}
   #spad .sb{pointer-events:auto;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;
-    position:relative;width:var(--btn,110px);height:var(--btn,110px);border-radius:50%;
-    background:radial-gradient(circle at 50% 42%,rgba(255,255,255,.14),rgba(4,16,10,.5) 62%,rgba(0,0,0,.6));
-    border:2px solid color-mix(in srgb,var(--c) 75%,transparent);box-shadow:0 0 14px color-mix(in srgb,var(--c) 30%,transparent),inset 0 0 12px rgba(0,0,0,.6);
-    transition:transform .08s,box-shadow .15s}
-  #spad .sb .ring{position:absolute;inset:-6px;border-radius:50%;pointer-events:none;background:conic-gradient(var(--c) calc(var(--p,1)*360deg),rgba(255,255,255,.07) 0);
-    -webkit-mask:radial-gradient(closest-side,transparent calc(100% - 5px),#000 calc(100% - 4px));mask:radial-gradient(closest-side,transparent calc(100% - 5px),#000 calc(100% - 4px))}
-  #spad .sb img{position:absolute;left:50%;top:50%;width:70%;height:70%;object-fit:contain;transform:translate(-50%,-50%);pointer-events:none;filter:drop-shadow(0 3px 4px rgba(0,0,0,.7))}
-  #spad .sb.beam img{height:80%;width:46%}
-  #spad .sb .lb{position:absolute;left:50%;bottom:-2px;transform:translate(-50%,100%);font:italic 900 calc(var(--btn,110px)*0.15)/1.3 "Helvetica Neue",Arial;
-    letter-spacing:.04em;color:var(--c);text-shadow:0 1px 3px #000,0 0 8px rgba(0,0,0,.9);white-space:nowrap;pointer-events:none}
-  #spad .sb.beam{--c:#39ff14} #spad .sb.warble{--c:#7fe9ff}
-  #spad .sb.down{transform:scale(.94);box-shadow:0 0 28px var(--c),inset 0 0 18px rgba(0,0,0,.5)}
-  #spad .sb.cd img{opacity:.4;filter:grayscale(.7)}
-  #spause{position:absolute;top:max(10px,env(safe-area-inset-top));pointer-events:auto;touch-action:none;padding:0 13px;height:30px;border-radius:15px;display:none;
-    border:1px solid rgba(255,210,63,.5);background:rgba(2,8,4,.7);color:#ffd23f;font:900 11px/28px "Helvetica Neue",Arial;letter-spacing:.1em}
-  #shand{position:absolute;top:max(10px,env(safe-area-inset-top));pointer-events:auto;touch-action:none;padding:0 11px;height:30px;border-radius:15px;
-    border:1px solid rgba(57,255,20,.4);background:rgba(2,8,4,.7);color:#39ff14;font:900 11px/28px "Helvetica Neue",Arial;letter-spacing:.1em}
-  body.trot #trot{display:flex;position:fixed;inset:0;z-index:60;background:#020604;color:#39ff14;flex-direction:column;align-items:center;justify-content:center;gap:14px;
-    font:900 20px/1.2 "Helvetica Neue",Arial;letter-spacing:.06em;text-align:center}
-  #trot .ph{width:46px;height:78px;border:3px solid #39ff14;border-radius:9px;animation:tRot 1.6s ease-in-out infinite}
-  @keyframes tRot{40%,100%{transform:rotate(-90deg)}}
-  /* THE TOUCH FRONT DOOR menu (X7 1119): big thumb targets over the title art; clears the notch + home bar */
+    position:relative;width:var(--btn,110px);height:calc(var(--btn,110px)*1.16);transition:transform .06s}
+  #spad .sb .ring{display:none}
+  #spad .sb .bt{position:absolute;left:50%;top:0;width:calc(var(--btn,110px)*0.86);height:calc(var(--btn,110px)*0.86);transform:translateX(-50%);pointer-events:none;
+    filter:brightness(.92) drop-shadow(0 4px 5px rgba(0,0,0,.8));transition:filter .1s}
+  #spad .sb .lb{position:absolute;left:50%;bottom:0;height:calc(var(--btn,110px)*0.30);width:auto;transform:translateX(-50%);pointer-events:none;
+    box-shadow:0 2px 4px rgba(0,0,0,.7)}
+  #spad .sb.down{transform:translateY(2px)}
+  #spad .sb.down .bt{filter:brightness(1.45) saturate(1.25) drop-shadow(0 0 12px #8dff3a) drop-shadow(0 0 4px #c8ff7a)}
+  #spad .sb.cd .bt{filter:brightness(.42) saturate(.35) drop-shadow(0 4px 5px rgba(0,0,0,.8))}
+  #spad .sb.cd .lb{opacity:.45}
+  #spause,#shand{position:absolute;top:max(8px,env(safe-area-inset-top));pointer-events:auto;touch-action:none;padding:8px 10px;white-space:nowrap;
+    font:900 13px/1 system-ui,-apple-system,"Helvetica Neue",Arial;letter-spacing:.14em;text-shadow:0 1px 0 #000,0 0 6px rgba(0,0,0,.9)}
+  #spause{display:none;color:#ffd23f} #spause:active{color:#fff}
+  #shand{color:#9affc0} #shand:active{color:#fff}
+  body.trot #trot{display:flex;position:fixed;inset:0;z-index:60;flex-direction:column;align-items:center;justify-content:center;gap:2.2vh;text-align:center;
+    background:radial-gradient(90% 60% at 50% 45%,rgba(0,0,0,.5),rgba(0,0,0,.85)),url(assets/cab/phone/metal.jpg) center/260px auto repeat #050706}
+  #trot .lg{width:min(62vw,300px);filter:drop-shadow(0 4px 8px #000)}
+  #trot .cd{height:min(34vh,300px);box-shadow:0 8px 22px rgba(0,0,0,.85);animation:tRot 2.4s ease-in-out infinite}
+  #trot b{font:900 22px/1.1 system-ui,-apple-system,"Helvetica Neue",Arial;letter-spacing:.08em;color:#39ff14;text-shadow:0 2px 0 #000}
+  #trot i{font:800 13px/1.2 "Avenir Next Condensed","Helvetica Neue",Arial;font-style:normal;letter-spacing:.16em;color:#d9d2bd}
+  @keyframes tRot{0%,25%{transform:rotate(0)}55%,100%{transform:rotate(-90deg)}}
+  /* THE TOUCH FRONT DOOR menu (X7 1119): the in-game vault / pause select, for a thumb — the logo, the red ▌ tag, centred caps
+     rows (▸ cursor ◂ + the faint red band on the row under the thumb), the mono footer. Big rows; clears the notch + home bar. */
   #sfm{display:none;position:fixed;inset:0;z-index:30;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;
-    background:linear-gradient(90deg,rgba(1,4,8,.25),rgba(1,4,8,.82) 30%,rgba(1,4,8,.82) 70%,rgba(1,4,8,.25));
-    padding:max(12px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+    background:rgba(2,6,12,.90);   /* the title's own logo stays a ghost under the menu's logo */
+    padding:max(8px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
   body.smode #sfm.on{display:flex;align-items:center;justify-content:center}
-  #sfm .in{display:flex;flex-direction:column;gap:min(10px,2.2vh);width:min(440px,70vw);max-height:100%}
-  #sfm .hd{font:900 13px/1 "Helvetica Neue",Arial;letter-spacing:.3em;color:#9c89c4;text-align:center;margin-bottom:2px}
-  #sfm .fb{pointer-events:auto;min-height:max(52px,min(64px,15vh));border-radius:14px;padding:6px 18px;display:flex;flex-direction:column;justify-content:center;
-    border:2px solid var(--c);background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(2,8,4,.7));box-shadow:0 0 14px color-mix(in srgb,var(--c) 30%,transparent),inset 0 0 10px rgba(0,0,0,.5)}
-  #sfm .fb:active{transform:scale(.97);box-shadow:0 0 26px var(--c)}
-  #sfm .fb b{font:italic 900 clamp(18px,5.4vh,26px)/1.05 "Helvetica Neue",Arial;letter-spacing:.05em;color:var(--c);text-shadow:0 1px 3px #000}
-  #sfm .fb i{font:700 clamp(10px,3vh,13px)/1.3 ui-monospace,Menlo,monospace;font-style:normal;color:#bdf2cf;opacity:.8}
+  #sfm .in{display:flex;flex-direction:column;align-items:center;gap:0;width:min(560px,80vw);max-height:100%}
+  #sfm .lg{height:clamp(34px,13vh,64px);width:auto;filter:drop-shadow(0 3px 6px #000)}
+  #sfm .hd{font:800 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;color:#ff5d6c;text-align:center;margin:6px 0 4px}
+  #sfm .fb{pointer-events:auto;align-self:stretch;min-height:max(48px,min(62px,15vh));border-radius:8px;padding:2px 12px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center}
+  #sfm .fb.cur{background:rgba(255,93,108,.14)}
+  #sfm .fb b{font:900 clamp(20px,6.4vh,30px)/1.05 system-ui,-apple-system,"Helvetica Neue",Arial;letter-spacing:.03em;color:var(--c);text-shadow:0 2px 0 #000}
+  #sfm .fb.cur b::before{content:"▸  "} #sfm .fb.cur b::after{content:"  ◂"}
+  #sfm .fb i{font:800 clamp(10px,2.9vh,13px)/1.25 "Avenir Next Condensed","Helvetica Neue",Arial;font-style:normal;letter-spacing:.16em;text-transform:uppercase;color:#d9d2bd;opacity:.78}
   #sfm .play{--c:#39ff14} #sfm .defcon{--c:#ff5d6c} #sfm .vault{--c:#ffd23f} #sfm .files{--c:#7fe9ff}
-  #sfback{position:absolute;top:max(10px,env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));height:34px;padding:0 14px;border-radius:17px;
-    border:1px solid rgba(57,255,20,.45);background:rgba(2,8,4,.75);color:#39ff14;font:900 12px/32px "Helvetica Neue",Arial;letter-spacing:.1em;pointer-events:auto}
+  #sfm .ft{font:700 11px/1 ui-monospace,Menlo,monospace;color:#5f8a70;margin-top:6px;white-space:nowrap}
+  #sfback{position:absolute;top:max(4px,env(safe-area-inset-top));left:max(8px,env(safe-area-inset-left));padding:12px 12px;pointer-events:auto;
+    font:900 13px/1 system-ui,-apple-system,"Helvetica Neue",Arial;letter-spacing:.14em;color:#9affc0;text-shadow:0 1px 0 #000}
+  #sfback:active{color:#fff}
 
   #hint{display:none}   /* control readout retired — it blocked the attract text (controls live on the panel / rules card) */
   #hint b{color:#9c89c4} kbd{background:#13301f;border:1px solid #28543a;border-radius:4px;padding:0 5px;color:#bdf2cf;font-size:11px}
@@ -113,16 +128,17 @@
 <body>
 <div id="tpanel"><div class="art"><img id="tpimg" alt=""><canvas id="tpfx"></canvas></div></div>
 <div id="spad"><div class="col L" id="scolL"></div><div class="col R" id="scolR"></div>
-  <div class="sb warble" id="sbWarble"><div class="ring"></div><img src="assets/sprites/p1-warble-2.png" alt=""><span class="lb">WARBLE</span></div>
-  <div class="sb beam" id="sbBeam"><div class="ring"></div><img src="assets/sprites/beam-green.png" alt=""><span class="lb">BEAM</span></div>
+  <div class="sb warble" id="sbWarble"><div class="ring"></div><img class="bt" src="assets/cab/phone/btn-warble.png" alt=""><img class="lb" src="assets/cab/phone/lbl-warble.png" alt="WARBLE"></div>
+  <div class="sb beam" id="sbBeam"><div class="ring"></div><img class="bt" src="assets/cab/phone/btn-beam.png" alt=""><img class="lb" src="assets/cab/phone/lbl-beam.png" alt="BEAM"></div>
   <div id="shand">⇄ LEFTY</div><div id="spause">❚❚ PAUSE</div></div>
-<div id="sfm"><div class="in"><div class="hd">SELECT</div>
-  <div class="fb play" id="sfPlay"><b>PLAY</b><i>one ship · the farm to Dave's door</i></div>
+<div id="sfm"><div class="in"><img class="lg" src="assets/logo/suck-up-logo.png" alt="SUCK UP"><div class="hd">▌ SELECT YOUR RUN</div>
+  <div class="fb play cur" id="sfPlay"><b>PLAY</b><i>one ship · the farm to Dave's door</i></div>
   <div class="fb defcon" id="sfDefcon"><b>DEFCON 1</b><i>one credit · no continues</i></div>
   <div class="fb vault" id="sfVault"><b>THE VAULT</b><i>cheats · stage select</i></div>
-  <div class="fb files" id="sfFiles"><b>THE SUCK UP FILES</b><i>watch the special</i></div></div>
-  <div id="sfback">‹ BACK</div></div>
-<div id="trot"><div class="ph"></div>TURN YOUR PHONE<br><span style="font-size:13px;color:#9fd8a8;font-weight:700">suck up flies sideways</span></div>
+  <div class="fb files" id="sfFiles"><b>THE SUCK UP FILES</b><i>watch the special</i></div>
+  <div class="ft">TAP A LINE TO GO   ·   ◂ BACK = THE ATTRACT</div></div>
+  <div id="sfback">◂ BACK</div></div>
+<div id="trot"><img class="lg" src="assets/logo/suck-up-logo.png" alt="SUCK UP"><img class="cd" src="assets/cab/phone/card.jpg" alt=""><b>★ TURN YOUR PHONE ★</b><i>suck up flies sideways</i></div>
 <canvas id="c"></canvas>
 <!-- THE SUCK UP FILES — the REAL pre-airy reel, baked from the Python build (suck_up_art.py) to mp4. Played verbatim as the attract; no JS reimplementation. -->
 <video id="reel" src="assets/attract-reel.mp4" loop muted playsinline preload="auto" style="position:absolute;left:-9999px;width:8px;height:8px"></video>
@@ -2915,7 +2931,7 @@ function drawLockin(){
   ctx.fillStyle='#5f8a70'; fitFont("P2:  I J K L  move   ·   ;  beam   ·   '  warble   (or a 2nd gamepad)",'700',12,'ui-monospace',W*0.94);
   ctx.fillText("P2:  I J K L  move   ·   ;  beam   ·   '  warble   (or a 2nd gamepad)", W/2, H*0.78);
   var left=Math.max(0,Math.ceil(LOCKIN_WAIT()-lockinT)); ctx.fillStyle='#9c89c4'; ctx.font='800 13px ui-monospace'; ctx.fillText((CABOP?'starting solo in ':'standing down in ')+left+'…', W/2, H*0.86);
-  if(msgT>0){ ctx.globalAlpha=clamp(msgT,0,1); ctx.fillStyle=msgColor; ctx.font='800 24px system-ui'; ctx.fillText(msg,W/2,H*0.28); ctx.globalAlpha=1; }
+  if(msgT>0){ ctx.globalAlpha=clamp(msgT,0,1); ctx.fillStyle=msgColor; fitFont(msg,'800',24,'system-ui',W*0.94); ctx.fillText(msg,W/2,H*0.28); ctx.globalAlpha=1; }
 }
 function drawSelect(){
   L3.menuBG(.80);   // LAB3D
@@ -3710,7 +3726,7 @@ function drawHUD(){
   }
   if(mode==='gunpowder' && state==='play') gpDrawBanner();
   drawHow();   // (1117) the one-time how-to whispers (render-only)
-  if(msgT>0){ ctx.textAlign='center'; ctx.globalAlpha=clamp(msgT,0,1); ctx.fillStyle=msgColor; ctx.font='800 26px system-ui'; ctx.fillText(msg,W/2,H*0.30); ctx.globalAlpha=1; }
+  if(msgT>0){ ctx.textAlign='center'; ctx.globalAlpha=clamp(msgT,0,1); ctx.fillStyle=msgColor; fitFont(msg,'800',26,'system-ui',W*0.94); ctx.fillText(msg,W/2,H*0.30); ctx.globalAlpha=1; }   // 1119: fitFont = fits a phone (Dr. L's long line clipped both edges at 687 px); a no-op wherever it already fit
 }
 function overlay(title,sub,col){
   ctx.fillStyle='rgba(2,6,12,.72)'; ctx.fillRect(0,0,W,H);
@@ -3781,7 +3797,7 @@ var L3 = (function(){
   var LAB = !window.SU3D_EDITION, LKEY = 'su3d.lab';
   var on = !((LAB || DEV) && /[?&]l3=0\b/.test(Q));   // the 2D art is lab / ?dev only in the edition (Joe 2026-11-02: hide the original 2D)
   if(LAB){ try{ var sv = localStorage.getItem(LKEY); if(sv!=null && !/[?&]l3=/.test(Q)) on = (sv==='1'); }catch(e){} }
-  var TOUCH = /[?&]touch\b/.test(Q) || ((('ontouchstart' in window) || navigator.maxTouchPoints > 0) && !!window.matchMedia && matchMedia('(pointer:coarse)').matches);
+  var TOUCH = /[?&]touch=0\b/.test(Q) ? false : (/[?&]touch\b/.test(Q) || ((('ontouchstart' in window) || navigator.maxTouchPoints > 0) && !!window.matchMedia && matchMedia('(pointer:coarse)').matches));
   var INFRAME = true; try{ INFRAME = (window.top !== window); }catch(e){}
   var DESK = !STICK && !ARCADE && !TOUCH && !INFRAME && !/[?&]panel=(band|alt|1up)\b/.test(Q);   // ?dev doesn't bring them back on a stick / cab / phone
   var CHROME = LAB || (DEV && DESK);   // the 2D<->3D flip chip + key 3: lab, or the desktop page with ?dev (Joe 2026-11-02)
