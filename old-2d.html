@@ -69,6 +69,21 @@
     font:900 20px/1.2 "Helvetica Neue",Arial;letter-spacing:.06em;text-align:center}
   #trot .ph{width:46px;height:78px;border:3px solid #39ff14;border-radius:9px;animation:tRot 1.6s ease-in-out infinite}
   @keyframes tRot{40%,100%{transform:rotate(-90deg)}}
+  /* THE TOUCH FRONT DOOR menu (X7 1119): big thumb targets over the title art; clears the notch + home bar */
+  #sfm{display:none;position:fixed;inset:0;z-index:30;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;
+    background:linear-gradient(90deg,rgba(1,4,8,.25),rgba(1,4,8,.82) 30%,rgba(1,4,8,.82) 70%,rgba(1,4,8,.25));
+    padding:max(12px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+  body.smode #sfm.on{display:flex;align-items:center;justify-content:center}
+  #sfm .in{display:flex;flex-direction:column;gap:min(10px,2.2vh);width:min(440px,70vw);max-height:100%}
+  #sfm .hd{font:900 13px/1 "Helvetica Neue",Arial;letter-spacing:.3em;color:#9c89c4;text-align:center;margin-bottom:2px}
+  #sfm .fb{pointer-events:auto;min-height:max(52px,min(64px,15vh));border-radius:14px;padding:6px 18px;display:flex;flex-direction:column;justify-content:center;
+    border:2px solid var(--c);background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(2,8,4,.7));box-shadow:0 0 14px color-mix(in srgb,var(--c) 30%,transparent),inset 0 0 10px rgba(0,0,0,.5)}
+  #sfm .fb:active{transform:scale(.97);box-shadow:0 0 26px var(--c)}
+  #sfm .fb b{font:italic 900 clamp(18px,5.4vh,26px)/1.05 "Helvetica Neue",Arial;letter-spacing:.05em;color:var(--c);text-shadow:0 1px 3px #000}
+  #sfm .fb i{font:700 clamp(10px,3vh,13px)/1.3 ui-monospace,Menlo,monospace;font-style:normal;color:#bdf2cf;opacity:.8}
+  #sfm .play{--c:#39ff14} #sfm .defcon{--c:#ff5d6c} #sfm .vault{--c:#ffd23f} #sfm .files{--c:#7fe9ff}
+  #sfback{position:absolute;top:max(10px,env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));height:34px;padding:0 14px;border-radius:17px;
+    border:1px solid rgba(57,255,20,.45);background:rgba(2,8,4,.75);color:#39ff14;font:900 12px/32px "Helvetica Neue",Arial;letter-spacing:.1em;pointer-events:auto}
 
   #hint{display:none}   /* control readout retired — it blocked the attract text (controls live on the panel / rules card) */
   #hint b{color:#9c89c4} kbd{background:#13301f;border:1px solid #28543a;border-radius:4px;padding:0 5px;color:#bdf2cf;font-size:11px}
@@ -90,7 +105,7 @@
     background:#13301f;border:1px solid #28543a;border-radius:4px;color:#bdf2cf}
   #mix button.off{background:#3a1414;border-color:#7a2a2a;color:#ff9d9d}
 </style>
-<!--@BUILD@--><!-- tools/build_editions.py replaces this marker with `<script>window.__SUCKUP_BUILD='mouse'|'stick'</script>` to BAKE a distributable edition (no URL param needed). Left as an inert comment in the master/dev build. -->
+<script>window.__SUCKUP_BUILD='mouse';window.__SUCKUP_MODE='arcade';</script><!-- tools/build_editions.py replaces this marker with `<script>window.__SUCKUP_BUILD='mouse'|'stick'</script>` to BAKE a distributable edition (no URL param needed). Left as an inert comment in the master/dev build. -->
 </head>
 <body>
 <div id="tpanel"><div class="art"><img id="tpimg" alt=""><canvas id="tpfx"></canvas></div></div>
@@ -98,6 +113,12 @@
   <div class="sb warble" id="sbWarble"><div class="ring"></div><img src="assets/sprites/p1-warble-2.png" alt=""><span class="lb">WARBLE</span></div>
   <div class="sb beam" id="sbBeam"><div class="ring"></div><img src="assets/sprites/beam-green.png" alt=""><span class="lb">BEAM</span></div>
   <div id="shand">⇄ LEFTY</div><div id="spause">❚❚ PAUSE</div></div>
+<div id="sfm"><div class="in"><div class="hd">SELECT</div>
+  <div class="fb play" id="sfPlay"><b>PLAY</b><i>one ship · the farm to Dave's door</i></div>
+  <div class="fb defcon" id="sfDefcon"><b>DEFCON 1</b><i>one credit · no continues</i></div>
+  <div class="fb vault" id="sfVault"><b>THE VAULT</b><i>cheats · stage select</i></div>
+  <div class="fb files" id="sfFiles"><b>THE SUCK UP FILES</b><i>watch the special</i></div></div>
+  <div id="sfback">‹ BACK</div></div>
 <div id="trot"><div class="ph"></div>TURN YOUR PHONE<br><span style="font-size:13px;color:#9fd8a8;font-weight:700">suck up flies sideways</span></div>
 <canvas id="c"></canvas>
 <!-- THE SUCK UP FILES — the REAL pre-airy reel, baked from the Python build (suck_up_art.py) to mp4. Played verbatim as the attract; no JS reimplementation. -->
@@ -799,6 +820,15 @@ function pauseDo(i){ closePause();
 function pauseHit(x,y){ for(var i=0;i<PAUSE_ROWS.length;i++){ var r=PAUSE_ROWS[i]; if(x>=r.x&&x<=r.x+r.w&&y>=r.y&&y<=r.y+r.h) return i; } return -1; }
 function pauseClick(x,y){ if(!PAUSED) return false; var i=pauseHit(x,y); if(i<0||pauseT<0.15) return false; pauseSel=i; pauseDo(i); return true; }
 window.__suPause={ open:openPause, at:pauseClick };
+// THE TOUCH FRONT DOOR (X7 1119): the phone's TAP TO START menu (script at the end) launches through these -- the same calls the
+// title / lock-in keys make (a phone is one player, so PLAY goes straight in solo, as P1 BEAM at the lock-in does). Wrapper only.
+window.__suFront={ state:function(){ return state; }, arcade:ARCADE, og:OG, console:CONSOLE,
+  vaultOpen:function(){ return !ARCADE && cheatsUnlocked(); },
+  play:function(){ if(state!=='title') return; try{reelVid.pause();}catch(e){} held={}; planting=false; twoP=false; defconArmed=false; sfx('launch',0.6); startRun(); },
+  defcon:function(){ if(state!=='title'||OG) return; try{reelVid.pause();}catch(e){} held={}; planting=false; twoP=false; defconArmed=true; sfx('launch',0.6); startRun(); },
+  vault:function(){ if(state!=='title'||ARCADE||!cheatsUnlocked()) return; sfx('launch',0.6); enterCheats(); },
+  files:function(){ if(state!=='title') return; sfx('select',0.5); attractMute=false; enterAttract(); },
+  title:function(){ if(state==='attract'){ try{reelVid.pause();}catch(e){} sfx('select',0.5); enterTitle(); } } };
 // (1117) a hidden tab / minimised window mid-run opens the PAUSE, so nobody comes back to a ship already under fire (rAF
 // stops while hidden, but the HTML audio bed kept playing). The cab (CABOP) has no pause, so canPause() keeps it out.
 try{ document.addEventListener('visibilitychange',function(){ if(document.hidden) openPause(); }); }catch(_){}
@@ -1805,7 +1835,7 @@ addEventListener('keydown',function(e){
   // auto-started 7 s later. The pad's START (synthesized Escape, e.__padStart) is still a press on these screens.
   if(k==='escape' && !e.__padStart && (state==='attract'||state==='title') && !CONSOLE){ if(state==='title'){ sfx('denied',0.4); enterAttract(); } e.preventDefault(); return; }
   if(state==='attract' && CONSOLE){ toFront(); e.preventDefault(); return; }   // desktop console: the attract never starts a run itself
-  if(state==='attract' && !ARCADE){ try{reelVid.pause();}catch(e){} sfx('select',0.5); enterTitle(); e.preventDefault(); return; }   // CK BOOT STANDARD S3: the title beat (non-arcade)
+  if(state==='attract' && (!ARCADE || window.__suFrontDoor)){ try{reelVid.pause();}catch(e){} sfx('select',0.5); enterTitle(); e.preventDefault(); return; }   // CK BOOT STANDARD S3: the title beat (non-arcade; and the phone's TOUCH FRONT DOOR on every build)
   if((state==='attract'||state==='title') && !OG && (k==='f'||k==='x')){ defconArmed=!defconArmed; sfx(defconArmed?'snatch':'denied',0.7); e.preventDefault(); return; }   // WARBLE (X/F) arms DEFCON 1
   if((state==='attract'||state==='title') && !ARCADE && cheatsUnlocked() && k==='c'){ sfx('launch',0.6); enterCheats(); e.preventDefault(); return; }
   if(state==='attract'||state==='title'){ if(state==='title' && (e.repeat||titleT<0.35)){ e.preventDefault(); return; }
@@ -2754,6 +2784,7 @@ function fitFont(txt, weight, px, fam, maxW){
 function drawTitleCard(){ ctx.fillStyle='#04080e'; ctx.fillRect(0,0,W,H); ctx.textAlign='center';   // CK BOOT STANDARD S3
   if(ok('title')){ drawImg('title', W/2, H*0.5, W, 0, 1); drawTitleBeam(1); }
   else { ctx.fillStyle='#39ff14'; ctx.font='900 '+clamp(W*0.09,40,120)+'px system-ui'; ctx.fillText('SUCK UP',W/2,H*0.42); }
+  if(window.__suFrontDoor){ if(!window.__suFrontMenu){ ctx.globalAlpha=0.45+0.55*Math.abs(Math.sin(t*3)); ctx.fillStyle='#ffd23f'; ctx.font='900 '+clamp(W*0.045,24,44)+'px system-ui'; ctx.fillText('TAP TO START', W/2, H*0.92); ctx.globalAlpha=1; } return; }   // TOUCH FRONT DOOR: the big words; its menu (DEFCON 1 / VAULT) is the page's own buttons
   ctx.globalAlpha=0.4+0.6*Math.abs(Math.sin(t*4)); ctx.fillStyle='#ffd23f'; ctx.font='800 '+clamp(W*0.03,18,26)+'px system-ui';
   ctx.fillText('PRESS BEAM', W/2, H*0.93); ctx.globalAlpha=1;
   if(!OG){ ctx.globalAlpha=0.75; ctx.fillStyle='#9c89c4'; ctx.font='700 12px ui-monospace';
@@ -3876,7 +3907,7 @@ requestAnimationFrame(frame);
    DORMANT since 2026-10-14: only with ?panel=band (or =alt / =1up). */
 (function(){
   var Q=new URLSearchParams(location.search), pan=document.getElementById('tpanel'); if(!pan||!document.body||!document.body.classList) return;
-  var TOUCHDEV=Q.has('touch')||((('ontouchstart' in window)||navigator.maxTouchPoints>0)&&matchMedia('(pointer:coarse)').matches);
+  var TOUCHDEV=Q.get('touch')==='0'?false:(Q.has('touch')||((('ontouchstart' in window)||navigator.maxTouchPoints>0)&&matchMedia('(pointer:coarse)').matches));   // ?touch=0 = off, ?touch / ?touch=1 = on (X7)
   if(!TOUCHDEV||window.top!==window) return;   // desktop + the DECK wrapper keep their own panel
   if(['band','alt','1up'].indexOf(Q.get('panel'))<0) return;   // RETIRED 2026-10-14 (Joe: looks good, too small to control) -- the PHONE PAD below is the phone build; ?panel=band brings this back
   var art=pan.querySelector('.art'), img=document.getElementById('tpimg'), fx=document.getElementById('tpfx'), g=fx.getContext('2d'), cv=document.getElementById('c');
@@ -3961,18 +3992,24 @@ requestAnimationFrame(frame);
             where it already is, so the thumb never covers the ship. Drives the engine's own fly-to-cursor (the
             capped lead + glide spring), via a synthesized mousemove.
      Menus / initials / vault (not in play): TAP the game = Space (coin / confirm), SWIPE = an arrow key.
-   HAND: the ⇄ chip (hidden in play) or ?hand=right flops the column to the right for left-handers (session-only; ?hand=right to bookmark). */
+   HAND: the ⇄ chip (hidden in play) or ?hand=right flops the column to the right for left-handers (session-only; ?hand=right to bookmark).
+   THE TOUCH FRONT DOOR (X7 1119; the console boot flow, for a thumb): CK ident → cab → attract → TAP → the title (TAP TO START)
+   → TAP → a big-button menu: PLAY · DEFCON 1 · THE VAULT (once earned, home builds) · THE SUCK UP FILES, ‹ BACK = the attract.
+   The pad column steps aside on the front screens (boot / attract / title) so the art is full-bleed; it is back before a run
+   starts (the menu re-lays the page FIRST, so the stage is built at its real size). ?console keeps its own title.html. */
 (function(){
   var Q=new URLSearchParams(location.search), pad=document.getElementById('spad'); if(!pad||!document.body||!document.body.classList) return;
-  var TOUCHDEV=Q.has('touch')||((('ontouchstart' in window)||navigator.maxTouchPoints>0)&&matchMedia('(pointer:coarse)').matches);
+  var TOUCHDEV=Q.get('touch')==='0'?false:(Q.has('touch')||((('ontouchstart' in window)||navigator.maxTouchPoints>0)&&matchMedia('(pointer:coarse)').matches));   // ?touch=0 = off, ?touch / ?touch=1 = on (X7)
   if(!TOUCHDEV||window.top!==window) return;
   window.__suTouch=true;   // (1117) the game's hints speak the pad's words (BEAM / WARBLE buttons, drag to fly)
   if(['band','alt','1up'].indexOf(Q.get('panel'))>=0) return;   // the old cab band owns the phone
+  var FD=window.__suFront||null, DOOR=!!FD && !FD.console; window.__suFrontDoor=DOOR;   // the TOUCH FRONT DOOR (not on ?console: title.html is that build's door)
   var cv=document.getElementById('c'), cL=document.getElementById('scolL'), cR=document.getElementById('scolR'),
       bB=document.getElementById('sbBeam'), bW=document.getElementById('sbWarble'), chip=document.getElementById('shand'), pz=document.getElementById('spause');
   var HAND='L';   // SESSION-ONLY like the rest of SUCK UP (Joe: zero storage writes) -- ?hand=right is the bookmarkable lefty link
   var hq=(Q.get('hand')||'').toLowerCase(); if(hq==='right'||hq==='r') HAND='R'; else if(hq==='left'||hq==='l') HAND='L';
-  var TMODE=false, colW=0, GAIN=1.35;
+  var TMODE=false, colW=0, GAIN=1.35, FRONT=false, NOFRONT=false;
+  function frontNow(){ if(!DOOR||NOFRONT) return false; var s=FD.state(); return s==='boot'||s==='cabboot'||s==='attract'||s==='title'; }
   function peek(){ try{ return window.__suPeek?window.__suPeek():{}; }catch(_){ return {}; } }
   function key(type,k){ window.dispatchEvent(new KeyboardEvent(type,{key:k,bubbles:true,cancelable:true})); }
   function buzz(ms){ try{ navigator.vibrate&&navigator.vibrate(ms||10); }catch(_){} }
@@ -3980,11 +4017,11 @@ requestAnimationFrame(frame);
   function safeInset(side){ var d=document.createElement('div'); d.style.cssText='position:fixed;visibility:hidden;pointer-events:none;padding-left:env(safe-area-inset-'+side+')';
     document.body.appendChild(d); var v=parseFloat(getComputedStyle(d).paddingLeft)||0; d.remove(); return v; }
   function layout(){
-    TMODE=innerWidth>=innerHeight;
-    document.body.classList.toggle('smode',TMODE); document.body.classList.toggle('trot',!TMODE);
-    var btn=Math.round(Math.min((innerHeight-56)/2.75,128)); colW=TMODE?Math.round(Math.max(btn*1.3,118)+safeInset(HAND==='R'?'right':'left')):0;   // + the notch: the column pads by it (border-box), so the buttons keep their full lane and the divider clears the rings
+    TMODE=innerWidth>=innerHeight; FRONT=frontNow();
+    document.body.classList.toggle('smode',TMODE); document.body.classList.toggle('sfront',TMODE&&FRONT); document.body.classList.toggle('trot',!TMODE);
+    var btn=Math.round(Math.min((innerHeight-56)/2.75,128)); colW=(TMODE&&!FRONT)?Math.round(Math.max(btn*1.3,118)+safeInset(HAND==='R'?'right':'left')):0;   // the front door: no column, full-bleed art   // + the notch: the column pads by it (border-box), so the buttons keep their full lane and the divider clears the rings
     var r=document.documentElement.style; r.setProperty('--btn',btn+'px'); r.setProperty('--col',colW+'px');
-    var home=HAND==='R'?cR:cL; cL.classList.toggle('on',TMODE&&home===cL); cR.classList.toggle('on',TMODE&&home===cR);
+    var home=HAND==='R'?cR:cL; cL.classList.toggle('on',TMODE&&!FRONT&&home===cL); cR.classList.toggle('on',TMODE&&!FRONT&&home===cR);
     home.appendChild(bW); home.appendChild(bB);   // top->bottom WARBLE · BEAM (BEAM = the resting thumb)
     chip.style.left=HAND==='R'?'calc(env(safe-area-inset-left) + 10px)':''; chip.style.right=HAND==='R'?'':'calc(env(safe-area-inset-right) + 10px)';   // chip on the free side's top corner
     chip.textContent=HAND==='R'?'⇄ RIGHTY':'⇄ LEFTY';
@@ -4028,14 +4065,31 @@ requestAnimationFrame(frame);
   function up(e){ if(e.pointerId!==sid) return; sid=null; var t=o; o=null;
     if(t&&!t.play&&!t.sw){ var pk2=peek();
       if(pk2.paused){ var r=cv.getBoundingClientRect(); if(window.__suPause) window.__suPause.at((e.clientX-r.left)*(cv.width/(r.width||1)),(e.clientY-r.top)*(cv.height/(r.height||1))); buzz(10); return; }   // PAUSED: a tap picks the row under it (BEAM picks the lit one)
+      if(DOOR && pk2.state==='title'){ if(!menuOn()) openMenu(); buzz(10); return; }   // TOUCH FRONT DOOR: TAP TO START opens the menu
+      if(DOOR && pk2.state==='attract'){ FD.title(); buzz(10); return; }   // the attract: a tap = the title (every build, the arcade one too)
       key('keydown',' '); key('keyup',' '); buzz(10); } }   // a TAP = coin / confirm
   cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
   addEventListener('blur',function(){ if(bB.classList.contains('down')){ bB.classList.remove('down'); key('keyup',' '); } });
   // ---- live state: WARBLE cooldown ring, chip only off-play ----
-  (function tick(){ requestAnimationFrame(tick); if(!TMODE) return; var pk=peek();
+  (function tick(){ requestAnimationFrame(tick); if(DOOR){ if(frontNow()!==FRONT) relay(); if(menuOn() && (!TMODE||FD.state()!=='title')) closeMenu(); }
+    if(!TMODE) return; var pk=peek();
     var cd=pk.wcd||0; bW.classList.toggle('cd',cd>0); bW.style.setProperty('--p',1-Math.min(1,cd/2.0));
-    chip.style.display=pk.state==='play'?'none':''; if(pz) pz.style.display=(pk.canPause&&!pk.paused)?'block':'none'; })();
-  if(Q.has('qa')) window.__suPhone={ peek:peek, hand:function(){ return HAND; }, colW:function(){ return colW; } };
+    chip.style.display=(pk.state==='play'||(DOOR&&FRONT))?'none':''; if(pz) pz.style.display=(pk.canPause&&!pk.paused)?'block':'none'; })();
+  // ---- THE TOUCH FRONT DOOR's menu: big targets, safe-area padded, on the title only ----
+  var fm=document.getElementById('sfm'), fback=document.getElementById('sfback');
+  function menuOn(){ return !!fm && fm.classList.contains('on'); }
+  function closeMenu(){ if(!fm) return; fm.classList.remove('on'); window.__suFrontMenu=false; }
+  function openMenu(){ if(!fm||!DOOR) return;
+    var vb=document.getElementById('sfVault'), db=document.getElementById('sfDefcon'), pb=document.getElementById('sfPlay');
+    vb.style.display=FD.vaultOpen()?'':'none'; db.style.display=FD.og?'none':''; pb.querySelector('b').textContent=FD.arcade?'PLAY — INSERT COIN':'PLAY';
+    fm.classList.add('on'); window.__suFrontMenu=true; }
+  function launch(fn){ return function(e){ e.preventDefault(); e.stopPropagation(); buzz(12); closeMenu();
+    if(fn==='play'||fn==='defcon'){ NOFRONT=true; relay(); NOFRONT=false; }   // the column back + the stage at its real size BEFORE the run builds its world
+    FD[fn](); relay(); }; }
+  if(fm && DOOR){ [['sfPlay','play'],['sfDefcon','defcon'],['sfVault','vault'],['sfFiles','files']].forEach(function(b){ var el=document.getElementById(b[0]); el.addEventListener('pointerdown',launch(b[1])); el.addEventListener('contextmenu',function(e){ e.preventDefault(); }); });
+    fback.addEventListener('pointerdown',function(e){ e.preventDefault(); e.stopPropagation(); buzz(); closeMenu(); });   // ‹ BACK: the menu folds back to TAP TO START (idle on the title = the attract, as ever)
+    fm.addEventListener('pointerdown',function(e){ if(e.target===fm){ e.preventDefault(); } }); }
+  if(Q.has('qa')) window.__suPhone={ peek:peek, hand:function(){ return HAND; }, colW:function(){ return colW; }, front:function(){ return {door:DOOR, front:FRONT, menu:menuOn()}; } };
 })();
 </script>
 </body>
