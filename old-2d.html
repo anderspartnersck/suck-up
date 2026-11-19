@@ -328,38 +328,46 @@ function scrollScenery(dx){
 // PROPS are depth-authored per zone ({s,d,sc} = sprite, depth 0.35 far..1 near, scale) so each stage
 // reads as a layered PLACE — distant silhouettes recede, street-level stuff sits up front — not a flat row.
 var SHOULDER_SOLID=0.33;   // ground_shoulder.png: weed tips fill the top third, gravel from there down (measured)
+// COWS ARE COUNTRY ONLY (Joe 1118: "no cows in levels with water like claw and order, or really the streets levels or anything
+// away from the country levels"). Each zone carries cows:true|false (docs/ZONES-COWS.md). A no-cow zone re-allots the cow share
+// to people (the same Math.random draws, so a seed deals the same stream, only the kind differs). &cowsall=1 = the old behaviour
+// (cows in every zone that had them before 1118: DOWNTOWN + THE BELTWAY were already cowless as URBAN zones).
+var COWSALL=/[?&]cowsall=1\b/.test(location.search);
+function zoneCows(){ if(mode==='base'||mode==='gunpowder') return COWSALL;   // the base gauntlet: a respawn could deal a cow onto the flightline
+  if(mode!=='campaign') return true;                                             // bonus stages carry their own loot (the champion pasture herd is country)
+  var L=LEVELS[level]; return !L || L.cows!==false || (COWSALL && !L.urban); }
 var RURAL_HZ=['horizon_hills','horizon_farm',null,'horizon_town_lights',null,'horizon_town_lights'];   // per campaign zone: Dairy, Corn, (Downtown), County, (Beltway), Outskirts -- the last two sit nearest town
 var LEVELS=[
-  { zone:'DAIRY FLATS',         clock:78, personBias:-0.10, scrollStart:48, daveChance:0.0,  meter0:0,  col:'#9affc0', mo:true,
+  { zone:'DAIRY FLATS',         cows:true,  clock:78, personBias:-0.10, scrollStart:48, daveChance:0.0,  meter0:0,  col:'#9affc0', mo:true,
     props:[ {s:'silo',d:0.4}, {s:'barn',d:0.48,sc:0.82}, {s:'windmill',d:0.54}, {s:'water_tower',d:0.6},
             {s:'tree',d:0.7}, {s:'barn',d:0.96}, {s:'tree',d:0.9}, {s:'haybale',d:1.0}, {s:'haybale',d:0.84} ],
     pool: [ {s:'silo',d:0.42}, {s:'silo',d:0.66}, {s:'barn',d:0.5,sc:0.82}, {s:'barn',d:0.95}, {s:'windmill',d:0.52}, {s:'water_tower',d:0.58,w:0.5},
             {s:'it_corn_5',d:0.58}, {s:'tree',d:0.85}, {s:'tree',d:1.0}, {s:'haybale',d:1.0}, {s:'haybale',d:0.86} ] },   // the ONE level a water tower is home (+ rural stretches) · Mo's pasture: far farm silhouette → near barn + trees + hay
-  { zone:'CORN COUNTRY',        clock:70, personBias: 0.00, scrollStart:38, daveChance:0.12, meter0:10, rush:true, col:'#bdf2cf',
+  { zone:'CORN COUNTRY',        cows:true,  clock:70, personBias: 0.00, scrollStart:38, daveChance:0.12, meter0:10, rush:true, col:'#bdf2cf',
     props:[ {s:'it_corn_1',d:0.42,sc:1.1}, {s:'silo',d:0.46}, {s:'it_corn_2',d:0.6}, {s:'windmill',d:0.52},
             {s:'it_corn_stalk',d:0.95}, {s:'it_corn_machine',d:1.0}, {s:'it_corn_stalk',d:0.9},
             {s:'it_corn_4',d:0.66}, {s:'it_corn_stalk',d:1.0}, {s:'barn',d:0.58,sc:0.85} ],
     pool: [ {s:'it_corn_1',d:0.42,sc:1.1}, {s:'it_corn_2',d:0.6}, {s:'it_corn_3',d:0.5}, {s:'it_corn_4',d:0.66}, {s:'it_corn_5',d:0.6},
             {s:'silo',d:0.46}, {s:'windmill',d:0.52}, {s:'barn',d:0.58,sc:0.85}, {s:'haybale',d:1.0}, {s:'it_corn_machine',d:1.0,w:0.4},
             {s:'it_corn_stalk',d:0.95,w:2}, {s:'it_corn_stalk',d:0.9,w:2} ] },   // 0710 IT: deep fenced field-plots (barn/truck) behind painterly stalks + the red combine up front
-  { zone:'DOWNTOWN TOWSON',     clock:72, personBias: 0.50, scrollStart:32, daveChance:0.20, meter0:16, rush:true, red:true, urban:true, band:'beltway_traffic_row', col:'#7fe9ff',
+  { zone:'DOWNTOWN TOWSON',     cows:false, clock:72, personBias: 0.50, scrollStart:32, daveChance:0.20, meter0:16, rush:true, red:true, urban:true, band:'beltway_traffic_row', col:'#7fe9ff',
     props:[ {s:'it_morale_corp',d:0.4,sc:0.92}, {s:'it_highrise',d:0.46}, {s:'it_office',d:0.6,sc:0.92},
             {s:'it_brick',d:0.8}, {s:'it_shops',d:0.92}, {s:'it_bldg6',d:1.0}, {s:'tree',d:0.9} ],
     pool: [ {s:'it_morale_corp',d:0.4,sc:0.92,w:0.5}, {s:'it_highrise',d:0.46}, {s:'it_highrise',d:0.52,sc:0.82}, {s:'it_office',d:0.6,sc:0.92},
             {s:'it_office',d:0.5,sc:0.8}, {s:'it_brick',d:0.8}, {s:'it_shops',d:0.92}, {s:'it_bldg6',d:1.0}, {s:'tree',d:0.9,w:0.7} ] },   // Towson core: MORALE CORP + glass towers DEEP, HYSCORE BURGERS/strip NEAR, over the parallax skyline band + bumper-to-bumper traffic · URBAN RED
-  { zone:'COUNTY ROAD 9',       clock:62, personBias: 0.12, scrollStart:30, daveChance:0.30, meter0:24, truck:true, red:true, band:'county_police_row', col:'#ffd27a',
+  { zone:'COUNTY ROAD 9',       cows:true,  clock:62, personBias: 0.12, scrollStart:30, daveChance:0.30, meter0:24, truck:true, red:true, band:'county_police_row', col:'#ffd27a',
     props:[ {s:'it_corn_1',d:0.4,sc:1.05}, {s:'silo',d:0.44}, {s:'windmill',d:0.52}, {s:'it_house_5',d:0.6,sc:0.82},
             {s:'it_bldg6',d:0.82,sc:0.95}, {s:'it_house_8',d:1.0}, {s:'tree',d:0.92}, {s:'haybale',d:1.0} ],
     pool: [ {s:'it_corn_1',d:0.4,sc:1.05}, {s:'it_corn_3',d:0.48}, {s:'silo',d:0.44}, {s:'windmill',d:0.5},
             {s:'barn',d:0.7,sc:0.85}, {s:'it_house_5',d:0.6,sc:0.82}, {s:'it_house_6',d:0.95}, {s:'it_house_1',d:1.0}, {s:'it_house_8',d:1.0},
             {s:'it_bldg6',d:0.82,sc:0.95,w:0.5}, {s:'tree',d:0.92}, {s:'haybale',d:1.0} ] },   // rural highway: farm + farmhouses, one roadside burger joint (no strip mall / rowhouse — didn't belong)
-  { zone:'THE BELTWAY',         clock:90, personBias: 0.45, scrollStart:26, daveChance:0.55, meter0:30, aa:true, truck:true, urban:true, band:'beltway_traffic_row', col:'#ff9d3a',
+  { zone:'THE BELTWAY',         cows:false, clock:90, personBias: 0.45, scrollStart:26, daveChance:0.55, meter0:30, aa:true, truck:true, urban:true, band:'beltway_traffic_row', col:'#ff9d3a',
     props:[ {s:'it_highrise',d:0.46}, {s:'it_office',d:0.6,sc:0.92}, {s:'it_shops',d:0.92}, {s:'it_bldg6',d:1.0,sc:0.95},
             {s:'tree',d:0.88}, {s:'it_penalty_box',d:0.86}, {s:'it_brick',d:0.62,sc:0.8} ],
     pool: [ {s:'it_highrise',d:0.46}, {s:'it_highrise',d:0.5,sc:0.78}, {s:'it_office',d:0.6,sc:0.92}, {s:'it_office',d:0.52,sc:0.8},
             {s:'it_morale_corp',d:0.42,sc:0.82,w:0.4}, {s:'it_brick',d:0.62,sc:0.8}, {s:'it_shops',d:0.92}, {s:'it_bldg6',d:1.0,sc:0.95},
             {s:'it_penalty_box',d:0.86}, {s:'tree',d:0.88,w:0.7} ] },   // I-695: glass towers DEEP, HYSCORE BURGERS near, then a TREE GAP so the PENALTY BOX (NACHOS) landmark sign reads clear — a low brick block trails it (was a 2nd glass tower = a clone)
-  { zone:'OUTSKIRTS OF TOWSON', clock:84, personBias: 0.32, scrollStart:22, daveChance:1.0,  meter0:45, aa:true, truck:true, rush:true, band:'outskirts_row', col:'#ff5d6c',
+  { zone:'OUTSKIRTS OF TOWSON', cows:false, clock:84, personBias: 0.32, scrollStart:22, daveChance:1.0,  meter0:45, aa:true, truck:true, rush:true, band:'outskirts_row', col:'#ff5d6c',
     props:[ {s:'it_house_12',d:0.5,sc:0.82}, {s:'it_house_3',d:0.56,sc:0.8}, {s:'it_house_8',d:1.0}, {s:'res_mailbox',d:1.0}, {s:'tree',d:0.9},
             {s:'barn',d:0.92}, {s:'it_house_10',d:1.0}, {s:'res_mailbox_2',d:1.0}, {s:'it_house_7',d:0.62,sc:0.85}, {s:'tree',d:1.0} ],
     pool: [ {s:'it_house_7',d:0.62,sc:0.85}, {s:'it_house_8',d:1.0}, {s:'it_house_10',d:1.0}, {s:'it_house_11',d:0.95}, {s:'it_house_12',d:0.5,sc:0.82},
@@ -701,6 +709,7 @@ function pickKind(pb){
 function pickSpawnKind(){ var L=LEVELS[level], urban=(mode==='campaign'&&L&&L.urban);
   var k=pickKind(curBias()); if(k==='tank' && (countKind('tank')>=2 || !onslaughtMap())) k=urban?'person':'cow';   // vehicles cap at 2, ONLY on onslaught maps
   if(urban){ if(k==='cow') k='person'; else if(k==='farmer') k='soldier'; }   // URBAN: no cows in the city — civilians + soldiers
+  if(k==='cow' && !zoneCows()) k='person';                                    // (1118) cows are COUNTRY ONLY: the residential outskirts get its people
   return k; }
 function spawnTarget(kind){
   if(targets.length>8) return;
@@ -934,7 +943,7 @@ function startLevel(idx){
   for(var k=0;k<5;k++) spawnTarget();
   if(L.aa) for(var k=0;k<2;k++) spawnTarget('tank');   // BELTWAY / OUTSKIRTS: AA batteries entrenched from t=0 (hot maps)
   state='play'; flash('ZONE '+(idx+1)+'  —  '+L.zone+(L.rush?'   · RUSH':''), L.col, 2.0);
-  sayLater(level===0?pick(DR_L_DAIRY):pick(ROUND_START_BARKS), level===0?'#bdf2cf':'#ffd23f', 2.6);   // Dairy Flats = Dr. L's calm intro; later zones = Dave hollering
+  sayLater(level===0?pick(DR_L_DAIRY):pick(zoneCows()?ROUND_START_BARKS:ROUND_START_BARKS.filter(function(b){ return !/COW/.test(b); })), level===0?'#bdf2cf':'#ffd23f', 2.6);   // Dairy Flats = Dr. L's calm intro; later zones = Dave hollering
   if(twoP) sayLater(pick(TWOP_BARKS),'#3cc8ff', 3.6);   // 2-PLAYER: the crew spots the OTHER saucer
 }
 function startBase(fresh){

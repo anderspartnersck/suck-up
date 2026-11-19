@@ -392,38 +392,46 @@ function scrollScenery(dx){
 // PROPS are depth-authored per zone ({s,d,sc} = sprite, depth 0.35 far..1 near, scale) so each stage
 // reads as a layered PLACE — distant silhouettes recede, street-level stuff sits up front — not a flat row.
 var SHOULDER_SOLID=0.33;   // ground_shoulder.png: weed tips fill the top third, gravel from there down (measured)
+// COWS ARE COUNTRY ONLY (Joe 1118: "no cows in levels with water like claw and order, or really the streets levels or anything
+// away from the country levels"). Each zone carries cows:true|false (docs/ZONES-COWS.md). A no-cow zone re-allots the cow share
+// to people (the same Math.random draws, so a seed deals the same stream, only the kind differs). &cowsall=1 = the old behaviour
+// (cows in every zone that had them before 1118: DOWNTOWN + THE BELTWAY were already cowless as URBAN zones).
+var COWSALL=/[?&]cowsall=1\b/.test(location.search);
+function zoneCows(){ if(mode==='base'||mode==='gunpowder') return COWSALL;   // the base gauntlet: a respawn could deal a cow onto the flightline
+  if(mode!=='campaign') return true;                                             // bonus stages carry their own loot (the champion pasture herd is country)
+  var L=LEVELS[level]; return !L || L.cows!==false || (COWSALL && !L.urban); }
 var RURAL_HZ=['horizon_hills','horizon_farm',null,'horizon_town_lights',null,'horizon_town_lights'];   // per campaign zone: Dairy, Corn, (Downtown), County, (Beltway), Outskirts -- the last two sit nearest town
 var LEVELS=[
-  { zone:'DAIRY FLATS',         clock:78, personBias:-0.10, scrollStart:48, daveChance:0.0,  meter0:0,  col:'#9affc0', mo:true,
+  { zone:'DAIRY FLATS',         cows:true,  clock:78, personBias:-0.10, scrollStart:48, daveChance:0.0,  meter0:0,  col:'#9affc0', mo:true,
     props:[ {s:'silo',d:0.4}, {s:'farm_barn_red',d:0.48,sc:0.9}, {s:'windmill',d:0.54}, {s:'water_tower',d:0.6},
             {s:'tree',d:0.7}, {s:'barn',d:0.96}, {s:'tree',d:0.9}, {s:'haybale',d:1.0}, {s:'haybale',d:0.84} ],
     pool: [ {s:'silo',d:0.42}, {s:'silo',d:0.66}, {s:'barn',d:0.5,sc:0.82}, {s:'barn',d:0.95}, {s:'windmill',d:0.52}, {s:'water_tower',d:0.58,w:0.5},
             {s:'it_corn_5',d:0.58}, {s:'farm_barn_red',d:0.5,sc:0.9,w:0.6}, {s:'farm_barn_grey',d:0.62,w:0.6}, {s:'farm_shed',d:0.74,w:0.5}, {s:'tree',d:0.85}, {s:'tree',d:1.0}, {s:'haybale',d:1.0}, {s:'haybale',d:0.86} ] },   // the ONE level a water tower is home (+ rural stretches) · Mo's pasture: far farm silhouette → near barn + trees + hay
-  { zone:'CORN COUNTRY',        clock:70, personBias: 0.00, scrollStart:38, daveChance:0.12, meter0:10, rush:true, col:'#bdf2cf',
+  { zone:'CORN COUNTRY',        cows:true,  clock:70, personBias: 0.00, scrollStart:38, daveChance:0.12, meter0:10, rush:true, col:'#bdf2cf',
     props:[ {s:'it_corn_1',d:0.42,sc:1.1}, {s:'silo',d:0.46}, {s:'it_corn_2',d:0.6}, {s:'windmill',d:0.52},
             {s:'it_corn_stalk',d:0.95}, {s:'it_corn_machine',d:1.0}, {s:'it_corn_stalk',d:0.9},
             {s:'it_corn_4',d:0.66}, {s:'it_corn_stalk',d:1.0}, {s:'farm_barn_grey',d:0.58,sc:0.9} ],
     pool: [ {s:'it_corn_1',d:0.42,sc:1.1}, {s:'it_corn_2',d:0.6}, {s:'it_corn_3',d:0.5}, {s:'it_corn_4',d:0.66}, {s:'it_corn_5',d:0.6},
             {s:'silo',d:0.46}, {s:'windmill',d:0.52}, {s:'barn',d:0.58,sc:0.85}, {s:'haybale',d:1.0}, {s:'it_corn_machine',d:1.0,w:0.4}, {s:'farm_barn_grey',d:0.56,sc:0.9,w:0.6}, {s:'farm_barn_red',d:0.5,sc:0.85,w:0.4}, {s:'farm_shed',d:0.72,w:0.6}, {s:'farm_crib',d:0.74,w:0.6},
             {s:'it_corn_stalk',d:0.95,w:2}, {s:'it_corn_stalk',d:0.9,w:2} ] },   // 0710 IT: deep fenced field-plots (barn/truck) behind painterly stalks + the red combine up front
-  { zone:'DOWNTOWN TOWSON',     clock:72, personBias: 0.50, scrollStart:32, daveChance:0.20, meter0:16, rush:true, red:true, urban:true, band:'beltway_traffic_row', col:'#7fe9ff',
+  { zone:'DOWNTOWN TOWSON',     cows:false, clock:72, personBias: 0.50, scrollStart:32, daveChance:0.20, meter0:16, rush:true, red:true, urban:true, band:'beltway_traffic_row', col:'#7fe9ff',
     props:[ {s:'it_morale_corp',d:0.4,sc:0.92}, {s:'it_highrise',d:0.46}, {s:'it_office',d:0.6,sc:0.92},
             {s:'it_brick',d:0.8}, {s:'it_shops',d:0.92}, {s:'it_bldg6',d:1.0}, {s:'tree',d:0.9} ],
     pool: [ {s:'it_morale_corp',d:0.4,sc:0.92,w:0.5}, {s:'it_highrise',d:0.46}, {s:'it_highrise',d:0.52,sc:0.82}, {s:'it_office',d:0.6,sc:0.92},
             {s:'it_office',d:0.5,sc:0.8}, {s:'it_brick',d:0.8}, {s:'it_shops',d:0.92}, {s:'it_bldg6',d:1.0}, {s:'tree',d:0.9,w:0.7} ] },   // Towson core: MORALE CORP + glass towers DEEP, HYSCORE BURGERS/strip NEAR, over the parallax skyline band + bumper-to-bumper traffic · URBAN RED
-  { zone:'COUNTY ROAD 9',       clock:62, personBias: 0.12, scrollStart:30, daveChance:0.30, meter0:24, truck:true, red:true, band:'county_police_row', col:'#ffd27a',
+  { zone:'COUNTY ROAD 9',       cows:true,  clock:62, personBias: 0.12, scrollStart:30, daveChance:0.30, meter0:24, truck:true, red:true, band:'county_police_row', col:'#ffd27a',
     props:[ {s:'it_bldg6',d:0.82,sc:0.9}, {s:'tree',d:0.92}, {s:'it_house_5',d:0.6,sc:0.82}, {s:'it_house_8',d:1.0},
             {s:'haybale',d:1.0}, {s:'windmill',d:0.44}, {s:'it_corn_1',d:0.4,sc:1.05}, {s:'silo',d:0.44} ],   // Joe 1026: town -> farm. The burger joint, a tree, the farmhouses, THEN the farm (hay, windmill, corn, silo) — no hay or windmill by the burger joint (NB_RC)
     pool: [ {s:'it_corn_1',d:0.4,sc:1.05}, {s:'it_corn_3',d:0.48}, {s:'silo',d:0.44}, {s:'windmill',d:0.44},
             {s:'barn',d:0.44,sc:0.85}, {s:'farm_barn_red',d:0.44,sc:0.85,w:0.5}, {s:'it_house_5',d:0.6,sc:0.82}, {s:'it_house_6',d:0.95}, {s:'it_house_1',d:1.0}, {s:'it_house_8',d:1.0},
             {s:'it_bldg6',d:0.82,sc:0.95,w:0.5}, {s:'tree',d:0.92}, {s:'haybale',d:1.0} ] },   // rural highway: farm + farmhouses, one roadside burger joint (no strip mall / rowhouse — didn't belong)
-  { zone:'THE BELTWAY',         clock:90, personBias: 0.45, scrollStart:26, daveChance:0.55, meter0:30, aa:true, truck:true, urban:true, band:'beltway_traffic_row', col:'#ff9d3a',
+  { zone:'THE BELTWAY',         cows:false, clock:90, personBias: 0.45, scrollStart:26, daveChance:0.55, meter0:30, aa:true, truck:true, urban:true, band:'beltway_traffic_row', col:'#ff9d3a',
     props:[ {s:'it_highrise',d:0.46}, {s:'it_office',d:0.6,sc:0.92}, {s:'it_shops',d:0.92}, {s:'it_bldg6',d:1.0,sc:0.95},
             {s:'tree',d:0.88}, {s:'it_penalty_box',d:0.86}, {s:'it_brick',d:0.62,sc:0.8} ],
     pool: [ {s:'it_highrise',d:0.46}, {s:'it_highrise',d:0.5,sc:0.78}, {s:'it_office',d:0.6,sc:0.92}, {s:'it_office',d:0.52,sc:0.8},
             {s:'it_morale_corp',d:0.42,sc:0.82,w:0.4}, {s:'it_brick',d:0.62,sc:0.8}, {s:'it_shops',d:0.92}, {s:'it_bldg6',d:1.0,sc:0.95},
             {s:'it_penalty_box',d:0.86}, {s:'tree',d:0.88,w:0.7} ] },   // I-695: glass towers DEEP, HYSCORE BURGERS near, then a TREE GAP so the PENALTY BOX (NACHOS) landmark sign reads clear — a low brick block trails it (was a 2nd glass tower = a clone)
-  { zone:'OUTSKIRTS OF TOWSON', clock:84, personBias: 0.32, scrollStart:22, daveChance:1.0,  meter0:45, aa:true, truck:true, rush:true, band:'outskirts_row', col:'#ff5d6c',
+  { zone:'OUTSKIRTS OF TOWSON', cows:false, clock:84, personBias: 0.32, scrollStart:22, daveChance:1.0,  meter0:45, aa:true, truck:true, rush:true, band:'outskirts_row', col:'#ff5d6c',
     props:[ {s:'it_house_12',d:0.5,sc:0.82}, {s:'it_house_2',d:0.58,sc:0.8}, {s:'it_house_8',d:1.0}, {s:'res_mailbox',d:1.0}, {s:'tree',d:0.9},
             {s:'barn',d:0.35}, {s:'it_house_10',d:1.0}, {s:'res_mailbox_2',d:1.0}, {s:'it_house_7',d:0.62,sc:0.85}, {s:'tree',d:1.0} ],
     pool: [ {s:'it_house_7',d:0.62,sc:0.85}, {s:'it_house_8',d:1.0}, {s:'it_house_10',d:1.0}, {s:'it_house_11',d:0.95}, {s:'it_house_12',d:0.5,sc:0.82},
@@ -765,6 +773,7 @@ function pickKind(pb){
 function pickSpawnKind(){ var L=LEVELS[level], urban=(mode==='campaign'&&L&&L.urban);
   var k=pickKind(curBias()); if(k==='tank' && (countKind('tank')>=2 || !onslaughtMap())) k=urban?'person':'cow';   // vehicles cap at 2, ONLY on onslaught maps
   if(urban){ if(k==='cow') k='person'; else if(k==='farmer') k='soldier'; }   // URBAN: no cows in the city — civilians + soldiers
+  if(k==='cow' && !zoneCows()) k='person';                                    // (1118) cows are COUNTRY ONLY: the residential outskirts get its people
   return k; }
 function spawnTarget(kind){
   if(targets.length>8) return;
@@ -998,7 +1007,7 @@ function startLevel(idx){
   for(var k=0;k<5;k++) spawnTarget();
   if(L.aa) for(var k=0;k<2;k++) spawnTarget('tank');   // BELTWAY / OUTSKIRTS: AA batteries entrenched from t=0 (hot maps)
   state='play'; flash('ZONE '+(idx+1)+'  —  '+L.zone+(L.rush?'   · RUSH':''), L.col, 2.0);
-  sayLater(level===0?pick(DR_L_DAIRY):pick(ROUND_START_BARKS), level===0?'#bdf2cf':'#ffd23f', 2.6);   // Dairy Flats = Dr. L's calm intro; later zones = Dave hollering
+  sayLater(level===0?pick(DR_L_DAIRY):pick(zoneCows()?ROUND_START_BARKS:ROUND_START_BARKS.filter(function(b){ return !/COW/.test(b); })), level===0?'#bdf2cf':'#ffd23f', 2.6);   // Dairy Flats = Dr. L's calm intro; later zones = Dave hollering
   if(twoP) sayLater(pick(TWOP_BARKS),'#3cc8ff', 3.6);   // 2-PLAYER: the crew spots the OTHER saucer
 }
 function startBase(fresh){
@@ -3759,7 +3768,12 @@ var L3 = (function(){
     im.src = ROOT + file; }
   ['green','blue','super'].forEach(function(c){ sheet('shaft_'+c, M.shaft[c].file); sheet('pool_'+c, M.pool[c].file); });
   if(M.beam2) ['green','blue','super'].forEach(function(c){ sheet('beam2_'+c, M.beam2[c].file); sheet('contact_'+c, M.beam2['c_'+c].file); });
-  if(M.props) for(var pk2 in M.props) M.props[pk2].files.forEach(function(f,i){ sheet('prop_'+pk2+'_'+i, f); });
+  // Joe 1118 (painterly audit #8): "preserve our painterly sprites, 2D + 3D sweetening" -> the PAINTED tree / water tower / hay bale /
+  // windmill / radar are the default again (they keep the lab's cast shadows + haze). Their 3D builds (su_props.py + the BlenderKit
+  // restyles) are opt-in: &l3props3d=1. The painted farm set (it_corn_*, farm_*) is unaffected.
+  var PROPS3D = /[?&]l3props3d=1\b/.test(Q), PAINTED_PROPS = { tree:1, water_tower:1, haybale:1, windmill:1, radar:1 };
+  function p3ok(n){ return PROPS3D || !PAINTED_PROPS[n]; }
+  if(M.props) for(var pk2 in M.props) if(p3ok(pk2)) M.props[pk2].files.forEach(function(f,i){ sheet('prop_'+pk2+'_'+i, f); });
   sheet('clash', M.clash.file); sheet('jet_roll', M.jet_roll.file); sheet('jet_tumble', M.jet_tumble.file); sheet('tank', M.tank.file);
   for(var pk in M.plates) sheet('plate_'+pk, M.plates[pk].file);
   // the lit road tiles (blender/su_scenery.py). The Blender SOUND WALL is an option now (1027: the painted wall has more
@@ -3768,7 +3782,11 @@ var L3 = (function(){
   if(M.scenery) for(var sk in M.scenery) if(WALL3 || !/^sound_wall/.test(sk)) sheet('scn_'+sk, M.scenery[sk].file);
   // the gnome-war lit reliefs (renders/gnome3d, tools/bake_gnome3d.py): pixel-for-pixel drop-ins, swapped by name in sub()
   var G3 = M.gnome3d || {}; for(var gk in G3) sheet('g3_'+gk, G3[gk].file);
-  var U3 = M.units || {}; for(var uk in U3) sheet('u_'+uk, U3[uk].file);   // R8: unit stubs rebuilt in 3D (brisket)
+  // Joe 1118 (painterly audit #7): the PAINTED brisket is the default again (moon rim + contact shadow only); the 3D brisket
+  // (R8 unit + the 1117 loot re-shade) is opt-in: &l3brisket3d=1. The other pickups had only 8-bit glyph stubs, so their 3D stays.
+  var BRISKET3D = /[?&]l3brisket3d=1\b/.test(Q);
+  var U3 = {}; for(var uk0 in (M.units || {})) if(uk0 !== 'brisket' || BRISKET3D) U3[uk0] = M.units[uk0];
+  for(var uk in U3) sheet('u_'+uk, U3[uk].file);   // R8: unit stubs rebuilt in 3D (brisket)
   // THE 3D CAST (1117, Joe: "recreate the farmer and cow painterly sprites as 3d blender ones using blendkit" + "make completely
   // our own worlds based on existing sprites"): each painted sprite NAME gets one 3D sheet (ROUND 2, 1117b: blender/su_cast1117b.py, the
   // painting's cartoon shapes + palette, cel shading, ink at the 1x weight; tools/bake_art1117b.py), swapped by name in sub() exactly like the units above:
@@ -3782,13 +3800,13 @@ var L3 = (function(){
   for(var chk in (M.chars || {})) if(!CHOFF[chk === 'farmer' ? 'farmer3d' : (M.chars[chk].grp || 'farmer')]){ CH[chk] = M.chars[chk]; sheet('ch_' + chk, CH[chk].file); }
   // THE PICKUPS RE-SHADED (1117): brisket (pepper bark, the glossy subsurface fat cap, the smoke ring + juicy cut faces), repair
   // (clear-coat case, chrome latches, a glowing cross), corn + the backyard loot under the rim-lit rig. &l3loot=0 = the 1110/1116 units.
-  var L7 = /[?&]l3loot=0\b/.test(Q) ? {} : (M.loot1117 || {});
+  var L7 = {}; if(!/[?&]l3loot=0\b/.test(Q)) for(var lk0 in (M.loot1117 || {})) if(lk0 !== 'brisket' || BRISKET3D) L7[lk0] = M.loot1117[lk0];
   for(var lk in L7) L7[lk].files.forEach(function(f, i){ sheet('l7_' + lk + '_' + i, f); });
   // BLENDKIT (1110, Joe: the FINAL 3D pass): BlenderKit trees / water tower / hay bale restyled to the props' palette, and the
   // suburb + rural plates rebuilt from BlenderKit house / barn / silo / tree silhouettes. Drawn in place of the code-built sheets;
   // &l3bk=0 = the previous lab art (and none of these sheets load).
   var MB = (!/[?&]l3bk=0\b/.test(Q) && M.bk) ? M.bk : {props:{}, plates:{}};   // SHIPPED 1112 (Joe: "ship blender passes"): lab AND the 3D EDITION; the cop car below stays lab-only
-  for(var bk in MB.props) MB.props[bk].files.forEach(function(f,i){ sheet('bkp_'+bk+'_'+i, f); });
+  for(var bk in MB.props) if(p3ok(bk)) MB.props[bk].files.forEach(function(f,i){ sheet('bkp_'+bk+'_'+i, f); });
   for(var bf in MB.plates) sheet('bkpl_'+bf, MB.plates[bf].file);
   // BLENDKIT COP CAR (1110 Q371): the BlenderKit low-poly police car, decals stripped + repainted in the cruisers' own livery,
   // fitted into veh_cop_cruiser's exact frame. LAB ONLY and OFF by default (&l3cop=1). Only the IMAGE drawn into the game's own
@@ -4089,7 +4107,7 @@ var L3 = (function(){
       var u = hash(k * 1.93 + zs) * tot, e = L[0]; for(i = 0; i < L.length; i++){ u -= L[i][2]; if(u <= 0){ e = L[i]; break; } }
       var n = e[0], fl = hash(k * 6.07 + zs) < 0.5;
       if(n === 'car'){ n = DCARS[Math.floor(hash(k * 8.3 + zs) * DCARS.length)]; }
-      else if(n === 'tree'){ var tb = MB.props.tree, tj = Math.floor(hash(k * 4.4 + zs) * 3); n = (tb && has('bkp_tree_' + (tj % tb.files.length))) ? 'l3b_tree_' + (tj % tb.files.length) : 'tree'; }
+      else if(n === 'tree'){ var tb = PROPS3D ? MB.props.tree : null, tj = Math.floor(hash(k * 4.4 + zs) * 3); n = (tb && has('bkp_tree_' + (tj % tb.files.length))) ? 'l3b_tree_' + (tj % tb.files.length) : 'tree'; }
       if(!ok(n)) continue;
       var dep = 0.40 + 0.28 * hash(k * 2.29 + zs), b = Math.max(1, Math.round((1 - dep) * 8));
       var h = H * e[1] * (0.82 + 0.30 * hash(k * 9.1 + zs)) * (0.30 + 0.70 * Math.pow(dep, 1.35)) / 0.62, im = dressImg(n, h, b); if(!im) continue;
@@ -4118,7 +4136,7 @@ var L3 = (function(){
   // ZONE AUDIT (refs/zone_audit.json): the water tower still out-towered the near barn at depth 0.6 (Joe), the windmill
   // nearly — their SCN_H (0.31 / 0.30) were set when they were tiny stubs. Lab trims them to read as distant landmarks.
   // (audit 1026) the 3D hay bale (blender/su_props.py) is a near-front round bale and drew as big as the barn wall: trimmed.
-  var LAB_SCN={ water_tower:0.78, windmill:0.86, haybale:0.70 };
+  var LAB_SCN={ water_tower:0.78, windmill:0.86, haybale:0.70 };   // (1118) kept for the painted bale too: at 1.0 it out-sizes the farmer
   // (1027) Joe's painted farm set: the ~10:1 corn strips draw at their own height (su3d.json props[n].scn, tools/bake_scenery.py)
   if(M.props) for(var sn in M.props) if(M.props[sn].scn) LAB_SCN[sn] = M.props[sn].scn;
   function propH(h0, dep, im, name){
@@ -4189,7 +4207,7 @@ var L3 = (function(){
   // the prop's draw alpha: the original's see-through fade, or (3D) nearly solid for a hazed building
   function propA(name, dep){ return (live() && bld(name)) ? 0.86 + 0.14 * dep : 0.5 + 0.45 * dep; }
   function propSub(n, p){ var r = propSub0(n, p); return (live() && p && bld(n) && !/^smoker_/.test(n)) ? hazed(r, p.d == null ? 1 : p.d) : r; }
-  function propSub0(n, p){ if(!live()) return n;
+  function propSub0(n, p){ if(!live() || !p3ok(n)) return n;
     var mb=MB.props[n]; if(mb){ var j=(mb.files.length>1) ? ((p?(p.__l3v||(p.__l3v=++propN)):0) % mb.files.length) : 0; if(has('bkp_'+n+'_'+j)) return 'l3b_'+n+'_'+j; }   // BLENDKIT first
     if(!M.props || !M.props[n]) return (PB[n] && has('pb_'+n)) ? 'l3pb_'+n : n; var m=M.props[n], i=0;
     if(n==='windmill') i=(Math.floor(t*7 + (p?(p.__l3v||(p.__l3v=++propN)):0)*3) % m.files.length);
@@ -4310,7 +4328,7 @@ var L3 = (function(){
   // 2D + 3D sweetening"). The painting is drawn untouched; this adds ONLY a thin cool moon-rim on its upper / moon-side edges (the
   // sprite's own alpha minus itself nudged down-left), screened on at low strength that follows the moon. No geometry, no repaint.
   // Pure draw: reads IMG + MOON, writes nothing, no random calls.
-  var RIM_SET = { cow:1, cow_b:1, cow_c:1, cow_lift:1 }, RIMC = {};
+  var RIM_SET = { cow:1, cow_b:1, cow_c:1, cow_lift:1, brisket:1 }, RIMC = {};
   function rimCanvas(name, flip){ var key = name + (flip ? '|f' : ''), c = RIMC[key]; if(c !== undefined) return c;
     var im = IMG[name]; if(!im || !im.ok) return null;
     var hh = Math.min(160, im.naturalHeight), ww = Math.max(2, Math.round(hh * im.naturalWidth / im.naturalHeight)), d = Math.max(1.5, hh / 52);
