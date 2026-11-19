@@ -3183,6 +3183,7 @@ function drawTargets(skipLift){
       ctx.globalAlpha=al; ctx.fillStyle='#2b2f3a'; ctx.fillRect(c.x-w*0.28, cy-h*0.30, w*0.56, h*0.80);   // body
       ctx.fillStyle='#c0392b'; ctx.beginPath(); ctx.moveTo(c.x, cy-h*0.62);                               // pointy hat
       ctx.lineTo(c.x+w*0.26, cy-h*0.26); ctx.lineTo(c.x-w*0.26, cy-h*0.26); ctx.fill(); ctx.globalAlpha=1; }
+    L3.rim(sp, c.x, cy, w, rot, al, c.flipX!=null ? c.flipX : (c.dir<0 && c.kind!=='cow' && !noflip));   // LAB3D
     if(c.kind==='defender' && !c.noPips && c.maxHp>1 && c.hp>0 && c.vanish<=0){        // hardware HP pips
       var pw=6, pg=3, tot=c.maxHp*pw+(c.maxHp-1)*pg, px0=c.x-tot/2, py=cy-h/2-8;
       for(var pi=0;pi<c.maxHp;pi++){ ctx.fillStyle=pi<c.hp?'#39ff14':'#5a1c1c'; ctx.fillRect(px0+pi*(pw+pg),py,pw,4); } }
@@ -3771,9 +3772,13 @@ var L3 = (function(){
   // THE 3D CAST (1117, Joe: "recreate the farmer and cow painterly sprites as 3d blender ones using blendkit" + "make completely
   // our own worlds based on existing sprites"): each painted sprite NAME gets one 3D sheet (ROUND 2, 1117b: blender/su_cast1117b.py, the
   // painting's cartoon shapes + palette, cel shading, ink at the 1x weight; tools/bake_art1117b.py), swapped by name in sub() exactly like the units above:
-  // same frame count, same facing/flip, same height-keyed size. Flag groups: &l3farmer=0 (the 3D cows off); PEOPLE are opt-in pilots:
+  // same frame count, same facing/flip, same height-keyed size. Flag groups: (cows: see COW3D below, painted by default since 1118); PEOPLE are opt-in pilots:
   // &l3farmer3d=1 (the farmer), &l3gnome=1, &l3town=1. Joe 1118 (X2): every human, gnomes + townspeople included, is a painted 2D cutout.
-  var CHOFF = { farmer:/[?&]l3farmer=0\b/.test(Q), farmer3d:/[?&]l3farmer=0\b/.test(Q) || !/[?&]l3farmer3d=1\b/.test(Q), gnome:!/[?&]l3gnome=1\b/.test(Q), town:!/[?&]l3town=1\b/.test(Q) }, CH = {};
+  // Joe 1118 (X3): "the bug eyed cows are not an improvement. nor are the photorealistic sort of ones." -> JOE'S PAINTED COWS are the
+  // default everywhere (lab AND edition). The toon 3D cow sheets are a LAB-ONLY opt-in (&l3cow3d=1) for reference; the edition never
+  // loads them. Cow sweetening = only the contact shadow + cast shadow (unitShadow/groundShadow) and a subtle moon rim (rim() below).
+  var COW3D = LAB && /[?&]l3cow3d=1\b/.test(Q) && !/[?&]l3farmer=0\b/.test(Q);
+  var CHOFF = { farmer:!COW3D, farmer3d:/[?&]l3farmer=0\b/.test(Q) || !/[?&]l3farmer3d=1\b/.test(Q), gnome:!/[?&]l3gnome=1\b/.test(Q), town:!/[?&]l3town=1\b/.test(Q) }, CH = {};
   for(var chk in (M.chars || {})) if(!CHOFF[chk === 'farmer' ? 'farmer3d' : (M.chars[chk].grp || 'farmer')]){ CH[chk] = M.chars[chk]; sheet('ch_' + chk, CH[chk].file); }
   // THE PICKUPS RE-SHADED (1117): brisket (pepper bark, the glossy subsurface fat cap, the smoke ring + juicy cut faces), repair
   // (clear-coat case, chrome latches, a glowing cross), corn + the backyard loot under the rim-lit rig. &l3loot=0 = the 1110/1116 units.
@@ -4301,6 +4306,23 @@ var L3 = (function(){
     ctx.restore(); PQ.length = 0; }
   function unitShadow(name, x, by, w, h, flip, a){ if(!live()) return;
     cast(name, x, by, w, h, flip, 0.38, Math.min(0.6, a * 2.0 * shadowStrength())); }
+  // ---------------------------------------------------------------- PAINTED-SPRITE RIM (Joe 1118: "preserve our painterly sprites,
+  // 2D + 3D sweetening"). The painting is drawn untouched; this adds ONLY a thin cool moon-rim on its upper / moon-side edges (the
+  // sprite's own alpha minus itself nudged down-left), screened on at low strength that follows the moon. No geometry, no repaint.
+  // Pure draw: reads IMG + MOON, writes nothing, no random calls.
+  var RIM_SET = { cow:1, cow_b:1, cow_c:1, cow_lift:1 }, RIMC = {};
+  function rimCanvas(name, flip){ var key = name + (flip ? '|f' : ''), c = RIMC[key]; if(c !== undefined) return c;
+    var im = IMG[name]; if(!im || !im.ok) return null;
+    var hh = Math.min(160, im.naturalHeight), ww = Math.max(2, Math.round(hh * im.naturalWidth / im.naturalHeight)), d = Math.max(1.5, hh / 52);
+    c = document.createElement('canvas'); c.width = ww; c.height = hh; var g = c.getContext('2d');
+    function put(dx, dy){ g.save(); if(flip){ g.translate(ww, 0); g.scale(-1, 1); } g.drawImage(im, flip ? -dx : dx, dy, ww, hh); g.restore(); }   // the nudge is in SCREEN space (the moon doesn't flip)
+    put(0, 0); g.globalCompositeOperation = 'destination-out'; put(-d * 0.7, d); put(-d * 0.35, d * 0.5);
+    g.globalCompositeOperation = 'source-in'; g.fillStyle = '#dbe8ff'; g.fillRect(0, 0, ww, hh);
+    RIMC[key] = c; return c; }
+  function rim(name, x, cy, w, rot, al, flip){ if(!live() || !RIM_SET[name]) return;
+    var c = rimCanvas(name, !!flip); if(!c) return; var h = w * c.height / c.width;
+    ctx.save(); ctx.globalCompositeOperation = 'screen'; ctx.globalAlpha = (al == null ? 1 : al) * 0.42 * shadowStrength();
+    ctx.translate(x, cy); if(rot) ctx.rotate(rot); ctx.drawImage(c, -w / 2, -h / 2, w, h); ctx.restore(); }
   // ---------------------------------------------------------------- THE EMITTER (Joe 1026: the UFO energizing sprites,
   // SPRITES/IMAGE TRACE WORK Jun 4 05_55 / 06_32 / 06_37): the belly lens ENERGIZES as the beam is held — 1 the core lens
   // glows + a short wisp, 2 a hot core with crackle arcs under the belly, 3 the full skirt: lightning fanning out from the
@@ -4451,7 +4473,7 @@ var L3 = (function(){
   Object.keys(G3).forEach(function(gk){ Object.defineProperty(IMG, 'l3g_'+gk, { get:function(){ return S['g3_'+gk]; }, enumerable:false }); });
   return { on:live, ON:true, beam:function(o,pre,beamOn){ drawBeamAt(o, beamOn, false); }, demoBeam:function(d,sp){ drawBeamAt(d, true, sp); },
            ground:ground, spill:spill, liftGlow:liftGlow, cover:cover, truckY:truckY, truckH:truckH, truckShadow:truckShadow, clash:clashFx, strain:strain, sub:sub, jets:drawJetsL3, farJets:function(){ if(live()) farJets(); },
-           plates:function(gy){ if(live()){ plates(gy); dress(gy); } }, bgScroll:bgScroll, propH:propH, propSmooth:propSmooth, propSub:propSub, veh:veh, propShadowQ:propShadowQ, propShadows:propShadows, unitShadow:unitShadow, emitter:emitter, post:post, badge:badge, toggle:toggle,
+           plates:function(gy){ if(live()){ plates(gy); dress(gy); } }, bgScroll:bgScroll, propH:propH, propSmooth:propSmooth, propSub:propSub, veh:veh, propShadowQ:propShadowQ, propShadows:propShadows, unitShadow:unitShadow, rim:rim, emitter:emitter, post:post, badge:badge, toggle:toggle,
            demoEmitter:function(d, blue){ if(d) emitter(d, !!(d.cow && !d.cow.gone), blue ? '90,190,255' : '90,255,80'); },
            moon:moon3, title:title3, still:still3, propA:propA, menuBG:menuBG, foot:foot, truckQ:queueTruck, shot:shot, fxDy:fxDy, propLift:propLift, road:road, wall:wall,
            state:function(){ return { on:on, ready:ready, have:have, fail:fail, need:need, lab:LAB, chrome:CHROME, caption:CAPTION }; } };
