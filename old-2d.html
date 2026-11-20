@@ -108,17 +108,25 @@
   /* Bottom-RIGHT, deliberately: the ships fly in band() (20%..70% of H) and ground targets anchor
      at 84%, so a right-edge panel at mid-height would sit in the flight path. Down here it's over
      dead ground plane, clear of the centred MILITARY RESPONSE meter. Slim row, not a stack. */
-  #mix{position:fixed;right:0;bottom:30px;z-index:5;display:flex;align-items:center;gap:12px;
-    padding:6px 12px;background:rgba(4,12,10,0.82);border:1px solid #28543a;border-right:0;border-radius:6px 0 0 6px;
-    cursor:auto;opacity:0.14;transition:opacity .28s;backdrop-filter:blur(2px)}
+  /* (1120, Joe 1119 "arcade cab menu style for all selectables") the faders wear the P1 control deck, like the phone pad
+     column: distressed panel metal + the green frame line, stencil caps, a lit slot for each fader, the MUTE a stencil plate. */
+  #mix{position:fixed;right:0;bottom:30px;z-index:5;display:flex;align-items:center;gap:14px;
+    padding:8px 14px 8px 16px;border-right:0;
+    background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,.38) 45%,rgba(0,0,0,.62)),url(assets/cab/phone/metal.jpg) center/260px auto repeat #07090a;
+    box-shadow:inset 0 0 0 1.5px rgba(124,201,40,.55),inset 0 0 0 3px #000,0 2px 8px rgba(0,0,0,.7);
+    cursor:auto;opacity:0.14;transition:opacity .28s}
   #mix.wake{opacity:1}
-  #mix .row{display:flex;align-items:center;gap:7px;font-size:10px;letter-spacing:.09em;color:#bdf2cf}
-  #mix .row b{font-weight:700;color:#9affc0}
-  #mix .row i{width:24px;font-style:normal;text-align:right;color:#7fe9ff}
-  #mix input[type=range]{width:78px;accent-color:#39ff14;cursor:pointer}
-  #mix button{font:inherit;font-size:10px;letter-spacing:.09em;padding:3px 8px;cursor:pointer;
-    background:#13301f;border:1px solid #28543a;border-radius:4px;color:#bdf2cf}
-  #mix button.off{background:#3a1414;border-color:#7a2a2a;color:#ff9d9d}
+  #mix .row{display:flex;align-items:center;gap:7px;font:800 11px/1 "Avenir Next Condensed","Helvetica Neue",Arial;letter-spacing:.16em;color:#d9d2bd;text-shadow:0 1px 0 #000}
+  #mix .row b{font-weight:900;color:#d9d2bd}
+  #mix .row i{width:26px;font:700 11px/1 ui-monospace,Menlo,Consolas,monospace;font-style:normal;text-align:right;color:#9affc0}
+  #mix input[type=range]{-webkit-appearance:none;appearance:none;width:84px;height:16px;background:transparent;cursor:pointer;margin:0}
+  #mix input[type=range]::-webkit-slider-runnable-track{height:6px;background:#08120a;box-shadow:inset 0 1px 2px #000,0 0 0 1px rgba(124,201,40,.6)}
+  #mix input[type=range]::-moz-range-track{height:6px;background:#08120a;box-shadow:inset 0 1px 2px #000,0 0 0 1px rgba(124,201,40,.6)}
+  #mix input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:16px;margin-top:-5px;background:linear-gradient(180deg,#c8ff7a,#39ff14 55%,#1d7a10);box-shadow:0 0 0 1px #000,0 0 8px rgba(57,255,20,.6)}
+  #mix input[type=range]::-moz-range-thumb{width:10px;height:16px;border:0;border-radius:0;background:linear-gradient(180deg,#c8ff7a,#39ff14 55%,#1d7a10);box-shadow:0 0 0 1px #000}
+  #mix button{font:900 11px/1 "Avenir Next Condensed","Helvetica Neue",Arial;letter-spacing:.16em;padding:5px 9px;cursor:pointer;border:0;border-radius:0;
+    background:linear-gradient(180deg,#e9e4d2,#b9b29c);color:#141414;box-shadow:0 0 0 1px #000,0 2px 3px rgba(0,0,0,.7)}
+  #mix button.off{background:linear-gradient(180deg,#ff6b78,#b8323f);color:#140405}
 </style>
 <script>window.__SUCKUP_BUILD='mouse';window.__SUCKUP_MODE='arcade';</script><!-- tools/build_editions.py replaces this marker with `<script>window.__SUCKUP_BUILD='mouse'|'stick'</script>` to BAKE a distributable edition (no URL param needed). Left as an inert comment in the master/dev build. -->
 </head>
@@ -870,7 +878,7 @@ function drawHow(){ howTick(); if(state!=='play'||PAUSED) return; var w=howWords
   if(!HOW.beamed && HOW.playT>6 && mode!=='base'){ txt=w.beam; a=0.5+0.3*Math.abs(Math.sin(t*2.5)); }
   else if(HOW.warbleT>0){ txt=w.warble; a=Math.min(1,HOW.warbleT)*0.8; }
   if(!txt) return; ctx.save(); ctx.textAlign='center'; ctx.globalAlpha=a; ctx.fillStyle='#bdf2cf'; ctx.shadowColor='#000'; ctx.shadowBlur=6;
-  fitFont(txt,'800',clamp(W*0.015,12,17),'ui-monospace',W*0.7); ctx.fillText(txt, W/2, (runActive?96:78)+(superT>0?26:0)); ctx.restore(); }   // (HUD 1117) steps under the SUPER BEAM row when it is up
+  fitFont(txt,'800',clamp(W*0.015,12,17),'ui-monospace,Menlo,Consolas,monospace',W*0.7); ctx.fillText(txt, W/2, (runActive?96:78)+(superT>0?26:0)); ctx.restore(); }   // (HUD 1117) steps under the SUPER BEAM row when it is up
    // the PHONE PAD's ❚❚ button and its row taps (script at the end)
 // LOCK-IN with no answer (Joe 1113, Q245 -- the never-auto-start rule): back to the attract (the console's front door) after
 // LOCKIN_WAIT s. Only the coin-op cab (?arcade link, a paid credit) still starts solo after 7 s.
@@ -927,12 +935,12 @@ function drawDemoCut(){
   drawFx();
   ctx.globalAlpha=0.06; ctx.fillStyle='#000'; for(var y=0;y<H;y+=3) ctx.fillRect(0,y,W,1); ctx.globalAlpha=1;   // scanlines
   ctx.textAlign='left'; ctx.globalAlpha=0.5+0.5*Math.sin(t*5); ctx.fillStyle='#ff3b3b'; ctx.beginPath(); ctx.arc(24,24,6,0,6.28); ctx.fill();
-  ctx.globalAlpha=1; ctx.fillStyle='#fff'; ctx.font='800 12px ui-monospace'; ctx.fillText('REC',36,28);
-  if(!drawImg('tjbug', W-52, 30, 60,0,0.85)){ ctx.textAlign='right'; ctx.fillStyle='#9c89c4'; ctx.font='800 14px ui-monospace'; ctx.fillText('TJ·TV', W-20, 30); }
+  ctx.globalAlpha=1; ctx.fillStyle='#fff'; ctx.font='800 12px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText('REC',36,28);
+  if(!drawImg('tjbug', W-52, 30, 60,0,0.85)){ ctx.textAlign='right'; ctx.fillStyle='#9c89c4'; ctx.font='800 14px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText('TJ·TV', W-20, 30); }
   var Z=DEMO_ZONES[demoZ]; ctx.textAlign='center';                                              // the mission this beat is touring
-  ctx.globalAlpha=0.6+0.4*Math.abs(Math.sin(t*4)); ctx.fillStyle=Z.col; ctx.font='800 '+clamp(W*0.036,18,28)+'px ui-monospace';
+  ctx.globalAlpha=0.6+0.4*Math.abs(Math.sin(t*4)); ctx.fillStyle=Z.col; ctx.font='800 '+clamp(W*0.036,18,28)+'px ui-monospace,Menlo,Consolas,monospace';
   ctx.fillText(Z.label, W/2, H*0.11);
-  ctx.globalAlpha=0.9; ctx.fillStyle='#bdf2cf'; ctx.font='700 '+clamp(W*0.018,11,15)+'px ui-monospace';
+  ctx.globalAlpha=0.9; ctx.fillStyle='#bdf2cf'; ctx.font='700 '+clamp(W*0.018,11,15)+'px ui-monospace,Menlo,Consolas,monospace';
   ctx.fillText(Z.sub+'   ·   ▸ DEMO PLAY ◂', W/2, H*0.11+clamp(W*0.032,18,26)); ctx.globalAlpha=1;
   if(demoClk<0.5 && ok('tjglitch')){ var g=IMG['tjglitch'], gh=g.naturalHeight*W/g.naturalWidth, ga=1-demoClk/0.5;   // glitch INTO the demo
     ctx.save(); ctx.globalAlpha=0.6*ga; for(var k=0;k<3;k++){ var yo=((t*1500+k*gh)%(H+gh))-gh; ctx.drawImage(g,0,yo,W,gh); } ctx.restore(); }
@@ -1771,8 +1779,8 @@ function wakeGate(e){ if(!e.isTrusted) return;                               // 
 ['keydown','mousedown','pointerdown','pointerup','touchend','click'].forEach(function(ev){ addEventListener(ev,wakeGate,{capture:true,passive:false}); });
 var WAKE_TOUCH=false; try{ WAKE_TOUCH=matchMedia('(pointer:coarse)').matches; }catch(e){}
 function drawWakeHint(){ if(!audioBlocked || wakeSwallowUntil>=0) return;   // only until the wake gesture lands
-  ctx.save(); ctx.textAlign='center'; ctx.globalAlpha=0.55+0.45*Math.abs(Math.sin(t*3)); ctx.fillStyle='#ffd23f'; ctx.font='800 '+clamp(W*0.018,12,18)+'px ui-monospace';
-  ctx.textAlign='right'; ctx.globalAlpha=0.55; ctx.font='700 16px ui-monospace'; ctx.fillText('\u266A\u2715', W-18, 26); ctx.restore(); }   // CK BOOT STANDARD S5: a quiet glyph, not a banner
+  ctx.save(); ctx.textAlign='center'; ctx.globalAlpha=0.55+0.45*Math.abs(Math.sin(t*3)); ctx.fillStyle='#ffd23f'; ctx.font='800 '+clamp(W*0.018,12,18)+'px ui-monospace,Menlo,Consolas,monospace';
+  ctx.textAlign='right'; ctx.globalAlpha=0.55; ctx.font='700 16px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText('\u266A\u2715', W-18, 26); ctx.restore(); }   // CK BOOT STANDARD S5: a quiet glyph, not a banner
 function updateAudio(dt){ var tv=AUDIO_ON?mTargetVol*MIX.mus*(PAUSED?0.35:1):0, r=Math.min(1,dt*2.4);   // MIX.mus applied HERE (not at playMusic) so a slider move takes effect on the bed already playing
   mCur.volume=clamp(mCur.volume+(tv-mCur.volume)*r,0,1);
   if(mOther!==mCur){ mOther.volume=clamp(mOther.volume+(0-mOther.volume)*r,0,1); if(mOther.volume<0.02 && !mOther.paused){ try{mOther.pause();}catch(e){} } } }
@@ -2704,9 +2712,9 @@ function drawBoot(){
   ctx.textAlign='left';
   for(var z=0;z<3;z++){ var zt=(bootT*0.7+z*0.55)%1.6; ctx.globalAlpha=clamp(1-zt/1.6,0,0.8)*sa; ctx.fillStyle='#bdf2cf'; ctx.font='800 '+(13+z*6)+'px system-ui'; ctx.fillText('z', sx+sw*0.28+z*9, sy-sw*0.25-zt*44); }
   ctx.globalAlpha=1; ctx.textAlign='center';
-  ctx.textAlign='center'; ctx.globalAlpha=0.4+0.3*pulse; ctx.fillStyle='#9c89c4'; ctx.font='700 13px ui-monospace';
+  ctx.textAlign='center'; ctx.globalAlpha=0.4+0.3*pulse; ctx.fillStyle='#9c89c4'; ctx.font='700 13px ui-monospace,Menlo,Consolas,monospace';
   ctx.fillText('RESPEK LOGIC ART UREA  ·  25¢ PER PLAY', cx, H*0.80);
-  ctx.globalAlpha=clamp((bootT-1.2)*1.5,0,0.7); ctx.fillStyle='#5f8a70'; ctx.font='700 12px ui-monospace';
+  ctx.globalAlpha=clamp((bootT-1.2)*1.5,0,0.7); ctx.fillStyle='#5f8a70'; ctx.font='700 12px ui-monospace,Menlo,Consolas,monospace';
   ctx.globalAlpha=1;
 }
 function fitH(n,h){ var im=IMG[n]; var ar=(im&&im.ok)?im.naturalWidth/im.naturalHeight:0.55; return h*ar; }   // width for a target HEIGHT
@@ -2730,12 +2738,12 @@ function drawCabBoot(){
   ctx.textAlign='center';
   ctx.globalAlpha=clamp((bootT-0.6)*1.2,0,1); ctx.fillStyle=CAB_ACCENT; ctx.font='900 '+clamp(W*0.028,20,34)+'px system-ui';
   ctx.shadowColor=ARCADE?'#1f8a14':'#ff2b3a'; ctx.shadowBlur=20; ctx.fillText(ARCADE?'▌ HYSCORE FOREST':OG?"▌ COLEMAN'S ORIGINAL":'▌ BLACKSITE', cx, H*0.90); ctx.shadowBlur=0;
-  ctx.globalAlpha=clamp((bootT-1.4)*1.3,0,0.7); ctx.fillStyle=ARCADE?'#8fd6a6':'#9c89c4'; ctx.font='700 12px ui-monospace';
+  ctx.globalAlpha=clamp((bootT-1.4)*1.3,0,0.7); ctx.fillStyle=ARCADE?'#8fd6a6':'#9c89c4'; ctx.font='700 12px ui-monospace,Menlo,Consolas,monospace';
   ctx.fillText(ARCADE?'25¢ PER PLAY':OG?'your cabinet · everything unlocked':'', cx, H*0.95); ctx.globalAlpha=1;
 }
 // cab bezel over the live screen — green/gold HYSCORE FOREST in arcade, red BLACKSITE in the jailbreak cut
 function drawBezel(){ ctx.save(); ctx.globalAlpha=0.5; ctx.strokeStyle=CAB_ACCENT; ctx.lineWidth=5; roundRect(8,8,W-16,H-16,16); ctx.stroke();
-  ctx.globalAlpha=0.7; ctx.textAlign='right'; ctx.fillStyle=CAB_ACCENT; ctx.font='800 10px ui-monospace'; ctx.fillText('▌ '+CAB_NAME, W-18, H-12); ctx.restore(); }
+  ctx.globalAlpha=0.7; ctx.textAlign='right'; ctx.fillStyle=CAB_ACCENT; ctx.font='800 10px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText('▌ '+CAB_NAME, W-18, H-12); ctx.restore(); }
 // RUN-COMPLETE — a single CREDIT PAGE. Stands on its own; no ad.
 function drawEnding(){
   ctx.fillStyle='#04070d'; ctx.fillRect(0,0,W,H); ctx.textAlign='center';
@@ -2743,21 +2751,21 @@ function drawEnding(){
   ctx.globalAlpha=clamp(Math.min(endT*0.6,(9-endT)*0.7),0,1);                  // fade in -> hold -> fade
   ctx.fillStyle='#39ff14'; ctx.font='900 '+clamp(W*0.07,40,84)+'px system-ui'; ctx.fillText('SUCK UP', W/2, H*0.30);
   var lines=[
-    ['created by','#9fb8d0','600 '+clamp(W*0.017,11,16)+'px ui-monospace'],
+    ['created by','#9fb8d0','600 '+clamp(W*0.017,11,16)+'px ui-monospace,Menlo,Consolas,monospace'],
     ['JOSEPH COLEMAN   ·   CLAUDE   ·   CHAT GPT','#dff7e4','700 '+clamp(W*0.024,15,24)+'px system-ui'],
-    ['for','#9fb8d0','600 '+clamp(W*0.015,10,14)+'px ui-monospace'],
+    ['for','#9fb8d0','600 '+clamp(W*0.015,10,14)+'px ui-monospace,Menlo,Consolas,monospace'],
     ['CASTLE KILLSCREEN','#ffd23f','800 '+clamp(W*0.022,14,22)+'px system-ui'],
     ['ANDERS & PARTNERS LLC','#ffd23f','800 '+clamp(W*0.022,14,22)+'px system-ui'],
-    ['All rights reserved.','#5f8a70','600 '+clamp(W*0.014,10,14)+'px ui-monospace']];
+    ['All rights reserved.','#5f8a70','600 '+clamp(W*0.014,10,14)+'px ui-monospace,Menlo,Consolas,monospace']];
   var y=H*0.44, gap=clamp(W*0.042,26,50);
   for(var i=0;i<lines.length;i++){ ctx.fillStyle=lines[i][1]; ctx.font=lines[i][2]; ctx.fillText(lines[i][0], W/2, y); y += (i===1)?gap*1.25:(i===2?gap*1.1:gap); }
   ctx.globalAlpha=1;
   if(unlockMsg){ ctx.textAlign='center'; ctx.globalAlpha=clamp(Math.sin(t*4)*0.4+0.6,0,1)*clamp(endT*0.6,0,1);
     ctx.fillStyle='#ffd23f'; ctx.font='900 '+clamp(W*0.03,18,30)+'px system-ui';
     ctx.fillText('★  '+unlockMsg+'  ★', W/2, H*0.88);
-    ctx.globalAlpha*=0.8; ctx.fillStyle='#9affc0'; ctx.font='700 12px ui-monospace';
+    ctx.globalAlpha*=0.8; ctx.fillStyle='#9affc0'; ctx.font='700 12px ui-monospace,Menlo,Consolas,monospace';
     ctx.fillText('press  C  at the attract screen to enter the vault', W/2, H*0.915); ctx.globalAlpha=1; }
-  ctx.globalAlpha=0.5; ctx.textAlign='right'; ctx.fillStyle='#5f8a70'; ctx.font='700 11px ui-monospace'; ctx.fillText('press any key', W-16, H-12); ctx.globalAlpha=1; ctx.textAlign='left';
+  ctx.globalAlpha=0.5; ctx.textAlign='right'; ctx.fillStyle='#5f8a70'; ctx.font='700 11px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText('press any key', W-16, H-12); ctx.globalAlpha=1; ctx.textAlign='left';
 }
 // STAGE SELECT — the jailbreak level select (pick any zone / base / bonus / the full run / the reel)
 // INITIALS — arcade high-score entry
@@ -2765,25 +2773,25 @@ function drawInitials(){
   drawBG(); ctx.fillStyle='rgba(2,6,12,.86)'; ctx.fillRect(0,0,W,H); ctx.textAlign='center';
   ctx.fillStyle=iniCur.col; ctx.font='800 '+clamp(W*0.022,16,26)+'px system-ui'; ctx.fillText(iniCur.who+'  —  NEW HIGH SCORE', W/2, H*0.24);
   ctx.fillStyle='#ffd23f'; ctx.font='900 '+clamp(W*0.05,30,62)+'px system-ui'; ctx.fillText(iniCur.s.toLocaleString(), W/2, H*0.38);
-  ctx.fillStyle='#dff7e4'; ctx.font='700 13px ui-monospace'; ctx.fillText('ENTER YOUR INITIALS', W/2, H*0.50);
+  ctx.fillStyle='#dff7e4'; ctx.font='700 13px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText('ENTER YOUR INITIALS', W/2, H*0.50);
   var cw=clamp(W*0.09,64,120), x0=W/2-cw, cy=H*0.64;
   for(var i=0;i<3;i++){ var sx=x0+i*cw, on=i===iniPos, ch=iniChars[i]===' '?'_':iniChars[i];
     if(on){ ctx.fillStyle='rgba(255,210,63,.18)'; roundRect(sx-cw*0.42, cy-cw*0.55, cw*0.84, cw*0.95, 8); ctx.fill(); }
-    ctx.fillStyle=on?(Math.floor(t*3)%2?'#ffd23f':'#fff'):'#9affc0'; ctx.font='900 '+clamp(W*0.06,44,84)+'px ui-monospace'; ctx.fillText(ch, sx, cy+cw*0.22); }
-  ctx.fillStyle='#5f8a70'; ctx.font='700 12px ui-monospace'; ctx.fillText('↑ ↓  letter    ·    BEAM  next    ·    WARBLE  back    ·    ENTER  done', W/2, H*0.86);
+    ctx.fillStyle=on?(Math.floor(t*3)%2?'#ffd23f':'#fff'):'#9affc0'; ctx.font='900 '+clamp(W*0.06,44,84)+'px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText(ch, sx, cy+cw*0.22); }
+  ctx.fillStyle='#5f8a70'; ctx.font='700 12px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText('↑ ↓  letter    ·    BEAM  next    ·    WARBLE  back    ·    ENTER  done', W/2, H*0.86);
 }
 // HIGH SCORES board
 function drawBoard(){
   drawBG(); ctx.fillStyle='rgba(2,6,12,.86)'; ctx.fillRect(0,0,W,H); ctx.textAlign='center';
   ctx.fillStyle='#ffd23f'; ctx.font='900 '+clamp(W*0.045,28,56)+'px system-ui'; ctx.fillText('HIGH SCORES', W/2, H*0.15);
   var top=H*0.27, gap=Math.min(46,(H*0.60)/10), fs=clamp(W*0.022,16,26);
-  if(!SAVE.scores.length){ ctx.fillStyle='#6f9a80'; ctx.font='700 16px ui-monospace'; ctx.fillText('— no scores yet —', W/2, H*0.45); }
+  if(!SAVE.scores.length){ ctx.fillStyle='#6f9a80'; ctx.font='700 16px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText('— no scores yet —', W/2, H*0.45); }
   for(var i=0;i<SAVE.scores.length;i++){ var e=SAVE.scores[i], y=top+i*gap, hot=i===boardHi;
-    ctx.font=(hot?'900 ':'700 ')+fs+'px ui-monospace'; ctx.fillStyle=hot?(Math.floor(t*3)%2?'#fff':'#ffd23f'):'#9affc0';
+    ctx.font=(hot?'900 ':'700 ')+fs+'px ui-monospace,Menlo,Consolas,monospace'; ctx.fillStyle=hot?(Math.floor(t*3)%2?'#fff':'#ffd23f'):'#9affc0';
     ctx.textAlign='right'; ctx.fillText((i+1)+'.', W*0.40, y);
     ctx.textAlign='left';  ctx.fillText('  '+e.n, W*0.43, y);
     ctx.textAlign='right'; ctx.fillText(e.s.toLocaleString(), W*0.66, y); }
-  ctx.textAlign='center'; ctx.fillStyle='#5f8a70'; ctx.font='700 12px ui-monospace'; ctx.fillText('press any key', W/2, H*0.94);
+  ctx.textAlign='center'; ctx.fillStyle='#5f8a70'; ctx.font='700 12px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText('press any key', W/2, H*0.94);
 }
 // LOCK-IN — "DO YOU THINK YOU ARE ALONE?" — P2's chance to jump in
 // FIT-TO-WIDTH. Every headline here sizes off W with a clamp FLOOR, and the floor is what breaks a
@@ -2803,18 +2811,18 @@ function drawTitleCard(){ ctx.fillStyle='#04080e'; ctx.fillRect(0,0,W,H); ctx.te
   if(window.__suFrontDoor){ if(!window.__suFrontMenu){ ctx.globalAlpha=0.45+0.55*Math.abs(Math.sin(t*3)); ctx.fillStyle='#ffd23f'; ctx.font='900 '+clamp(W*0.045,24,44)+'px system-ui'; ctx.fillText('TAP TO START', W/2, H*0.92); ctx.globalAlpha=1; } return; }   // TOUCH FRONT DOOR: the big words; its menu (DEFCON 1 / VAULT) is the page's own buttons
   ctx.globalAlpha=0.4+0.6*Math.abs(Math.sin(t*4)); ctx.fillStyle='#ffd23f'; ctx.font='800 '+clamp(W*0.03,18,26)+'px system-ui';
   ctx.fillText('PRESS BEAM', W/2, H*0.93); ctx.globalAlpha=1;
-  if(!OG){ ctx.globalAlpha=0.75; ctx.fillStyle='#9c89c4'; ctx.font='700 12px ui-monospace';
+  if(!OG){ ctx.globalAlpha=0.75; ctx.fillStyle='#9c89c4'; ctx.font='700 12px ui-monospace,Menlo,Consolas,monospace';
     ctx.fillText(((STICK||window.__suTouch)?'WARBLE':'WARBLE (RIGHT-CLICK)')+' = DEFCON 1'+(defconArmed?' · ARMED':'')+(cheatsUnlocked()?'   ·   C = CHEATS VAULT':''), W/2, H*0.965); ctx.globalAlpha=1; } }
 function drawLockin(){
   drawBG(); ctx.fillStyle='rgba(2,6,12,.82)'; ctx.fillRect(0,0,W,H); ctx.textAlign='center';
   ctx.fillStyle='#39ff14'; fitFont('PLAYER 1  IS IN','800',clamp(W*0.02,15,24),'system-ui',W*0.92); ctx.fillText('PLAYER 1  IS IN', W/2, H*0.28);
   ctx.fillStyle='#ffd23f'; fitFont('DO YOU THINK YOU ARE ALONE?','900',clamp(W*0.048,28,60),'system-ui',W*0.92); ctx.fillText('DO YOU THINK YOU ARE ALONE?', W/2, H*0.44);
   if(Math.floor(t*2)%2===0){ ctx.fillStyle='#3cc8ff'; fitFont('PLAYER 2 —  BEAM ( ; )  TO JOIN','800',clamp(W*0.028,18,32),'system-ui',W*0.92); ctx.fillText('PLAYER 2 —  BEAM ( ; )  TO JOIN', W/2, H*0.60); }
-  ctx.fillStyle='#dff7e4'; fitFont('P1 BEAM / ENTER = PLAY SOLO        ·        WARBLE = STAND DOWN','700',clamp(W*0.016,12,16),'ui-monospace',W*0.94);
+  ctx.fillStyle='#dff7e4'; fitFont('P1 BEAM / ENTER = PLAY SOLO        ·        WARBLE = STAND DOWN','700',clamp(W*0.016,12,16),'ui-monospace,Menlo,Consolas,monospace',W*0.94);
   ctx.fillText('P1 BEAM / ENTER = PLAY SOLO        ·        WARBLE = STAND DOWN', W/2, H*0.70);
-  ctx.fillStyle='#5f8a70'; fitFont("P2:  I J K L  move   ·   ;  beam   ·   '  warble   (or a 2nd gamepad)",'700',12,'ui-monospace',W*0.94);
+  ctx.fillStyle='#5f8a70'; fitFont("P2:  I J K L  move   ·   ;  beam   ·   '  warble   (or a 2nd gamepad)",'700',12,'ui-monospace,Menlo,Consolas,monospace',W*0.94);
   ctx.fillText("P2:  I J K L  move   ·   ;  beam   ·   '  warble   (or a 2nd gamepad)", W/2, H*0.78);
-  var left=Math.max(0,Math.ceil(LOCKIN_WAIT()-lockinT)); ctx.fillStyle='#9c89c4'; ctx.font='800 13px ui-monospace'; ctx.fillText((CABOP?'starting solo in ':'standing down in ')+left+'…', W/2, H*0.86);
+  var left=Math.max(0,Math.ceil(LOCKIN_WAIT()-lockinT)); ctx.fillStyle='#9c89c4'; ctx.font='800 13px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText((CABOP?'starting solo in ':'standing down in ')+left+'…', W/2, H*0.86);
   if(msgT>0){ ctx.globalAlpha=clamp(msgT,0,1); ctx.fillStyle=msgColor; fitFont(msg,'800',24,'system-ui',W*0.94); ctx.fillText(msg,W/2,H*0.28); ctx.globalAlpha=1; }
 }
 function drawSelect(){
@@ -2822,7 +2830,7 @@ function drawSelect(){
   ctx.textAlign='center';
   if(ok('suck_logo')) drawImg('suck_logo',W/2,H*0.15,Math.min(W*0.40,420),0,1);
   else { ctx.fillStyle='#39ff14'; ctx.font='900 '+clamp(W*0.06,40,80)+'px system-ui'; ctx.fillText('SUCK UP',W/2,H*0.15); }
-  ctx.fillStyle='#ff5d6c'; ctx.font='800 13px ui-monospace';
+  ctx.fillStyle='#ff5d6c'; ctx.font='800 13px ui-monospace,Menlo,Consolas,monospace';
   ctx.fillText(OG?"▌ COLEMAN'S ORIGINAL SUCK-UP · BLACKSITE — EVERYTHING UNLOCKED":'▌ CHEATS VAULT · BLACKSITE — LEVEL SELECT', W/2, H*0.26);
   var n=MENU.length, gap=Math.min(34,(H*0.58)/n), top=H*0.32, fs=clamp(W*0.015,14,20), bw=Math.min(W*0.46,500);
   for(var i=0;i<n;i++){ var m=MENU[i], y=top+i*gap, on=i===sel, lock=m.kind==='locked', hdr=m.kind==='header';
@@ -2835,7 +2843,7 @@ function drawSelect(){
     if(on && !hdr){ ctx.fillStyle='rgba(255,93,108,.14)'; roundRect(W/2-bw/2, y-fs*0.95, bw, fs*1.6, 8); ctx.fill(); }
     ctx.textAlign='center'; ctx.font=(on||hdr?'800 ':'700 ')+(hdr?fs*0.72:fs)+'px system-ui'; ctx.fillStyle=col;
     ctx.fillText((on&&!hdr?'▸  ':'')+(lock?'🔒 ':'')+lbl+(on&&!hdr?'  ◂':''), W/2, y+fs*0.34); }
-  ctx.fillStyle='#5f8a70'; ctx.font='700 12px ui-monospace';
+  ctx.fillStyle='#5f8a70'; ctx.font='700 12px ui-monospace,Menlo,Consolas,monospace';
   ctx.fillText('↑ ↓ / W S  choose      ·      SPACE  launch      ·      ESC  attract', W/2, H*0.95);
 }
 // a demo saucer's tractor beam (attract THE GAME beat)
@@ -2880,7 +2888,7 @@ function drawAttract(){
       : storyMaxZone()>0 ? 'CONTINUE: '+LEVELS[storyMaxZone()].zone+' — PRESS ANY KEY'
       : 'PRESS ANY KEY — BEGIN';
     ctx.fillText(coinTxt, W/2, H*0.93); ctx.globalAlpha=1;
-    if(!OG){ ctx.globalAlpha=fade*0.75; ctx.fillStyle='#9c89c4'; ctx.font='700 12px ui-monospace';
+    if(!OG){ ctx.globalAlpha=fade*0.75; ctx.fillStyle='#9c89c4'; ctx.font='700 12px ui-monospace,Menlo,Consolas,monospace';
       ctx.fillText(((STICK||window.__suTouch)?'WARBLE':'WARBLE (RIGHT-CLICK)')+' = DEFCON 1'+(cheatsUnlocked()?'   ·   C = CHEATS VAULT':'  (clear it to unlock CHEATS)'), W/2, H*0.965); ctx.globalAlpha=1; }
     return;
   }
@@ -2902,13 +2910,13 @@ function drawAttract(){
     ctx.fillText(pod.l1, lx, by-48); if(pod.l2) ctx.fillText(pod.l2, lx, by-48+28); ctx.shadowBlur=0;
     ctx.fillStyle=pod.col; ctx.fillRect(lx, by-18, 5, 36);
     ctx.font='900 '+clamp(W*0.034,20,32)+'px system-ui'; ctx.fillText(pod.who, lx+15, by+4);
-    ctx.fillStyle='#dfe9e0'; ctx.font='800 '+clamp(W*0.016,11,15)+'px ui-monospace'; ctx.fillText(pod.title||'', lx+15, by+25);
+    ctx.fillStyle='#dfe9e0'; ctx.font='800 '+clamp(W*0.016,11,15)+'px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText(pod.title||'', lx+15, by+25);
     ctx.textAlign='center';
   } else if(pod.l1){                                                 // plain narration, centered
     ctx.textAlign='center'; var y=H*0.82; ctx.fillStyle='#eaf5ec'; ctx.font='800 '+clamp(W*0.027,17,23)+'px system-ui'; ctx.shadowColor='#000'; ctx.shadowBlur=10;
     ctx.fillText(pod.l1, W/2, y); if(pod.l2) ctx.fillText(pod.l2, W/2, y+30); ctx.shadowBlur=0;
   }
-  if(pod.tag){ ctx.textAlign='right'; ctx.globalAlpha=fade*0.8; ctx.fillStyle='#d7d7e0'; ctx.font='800 '+clamp(W*0.014,10,13)+'px ui-monospace'; ctx.fillText(pod.tag, W-W*0.05, H-W*0.045); }
+  if(pod.tag){ ctx.textAlign='right'; ctx.globalAlpha=fade*0.8; ctx.fillStyle='#d7d7e0'; ctx.font='800 '+clamp(W*0.014,10,13)+'px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText(pod.tag, W-W*0.05, H-W*0.045); }
   ctx.globalAlpha=1;
 }
 // the TJTV broadcast chrome over the reel (scanlines · REC · channel bug) — no redundant subtitle line
@@ -2917,8 +2925,8 @@ function drawReelChrome(){
     ctx.save(); ctx.globalAlpha=0.6*ga; for(var k=0;k<3;k++){ var yo=((t*1500+k*gh)%(H+gh))-gh; ctx.drawImage(g,0,yo,W,gh); } ctx.restore(); }
   ctx.globalAlpha=0.06; ctx.fillStyle='#000'; for(var y=0;y<H;y+=3) ctx.fillRect(0,y,W,1); ctx.globalAlpha=1;
   ctx.textAlign='left'; ctx.globalAlpha=0.5+0.5*Math.sin(t*5); ctx.fillStyle='#ff3b3b'; ctx.beginPath(); ctx.arc(24,24,6,0,6.28); ctx.fill();
-  ctx.globalAlpha=1; ctx.fillStyle='#fff'; ctx.font='800 12px ui-monospace'; ctx.fillText('REC', 36, 28);
-  if(!drawImg('tjbug', W-52, 30, 60,0,0.85)){ ctx.textAlign='right'; ctx.fillStyle='#9c89c4'; ctx.font='800 14px ui-monospace'; ctx.fillText('TJ·TV', W-20, 30); }
+  ctx.globalAlpha=1; ctx.fillStyle='#fff'; ctx.font='800 12px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText('REC', 36, 28);
+  if(!drawImg('tjbug', W-52, 30, 60,0,0.85)){ ctx.textAlign='right'; ctx.fillStyle='#9c89c4'; ctx.font='800 14px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText('TJ·TV', W-20, 30); }
 }
 // THE MOON (1007) — it was the same full moon in the same spot on every stage. Now each stage rolls a PHASE,
 // a spot + size, and sometimes a zone-flavoured tint (a low amber harvest moon over the farms, a hazy one over the
@@ -3382,7 +3390,7 @@ function drawFx(){
       if(e.wall){ ctx.globalAlpha=0.18+0.25*on; ctx.strokeStyle='#ffd2d8'; ctx.lineWidth=1.5; ctx.setLineDash([3,6]); ctx.beginPath(); ctx.moveTo(e.x,e.y); ctx.lineTo(e.x,band().top); ctx.stroke(); ctx.setLineDash([]); }
       ctx.restore(); continue; }
     if(e.kind==='aatel'){ ctx.globalAlpha=0.4+0.6*Math.abs(Math.sin(e.t*30)); ctx.strokeStyle=e.col; ctx.lineWidth=2; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(e.x,e.y); var lx=e.tgt?e.tgt.x:e.x, ly=e.tgt?e.tgt.y:band().top; ctx.lineTo(lx,ly); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha=1; continue; }   // telegraph tracks the aim line from the tank to the targeted ship
-    if(e.kind==='boom'){ var br=8+p*52; ctx.save(); ctx.globalAlpha=a; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font='800 '+Math.round(13+p*12)+'px ui-monospace,monospace'; ctx.fillStyle=e.col||'#ff7a3a'; var ch=['*','+','x','✦','*','+','x','✦']; for(var k=0;k<8;k++){ var an=k*0.7854+p*1.1; ctx.fillText(ch[k], e.x+Math.cos(an)*br, e.y+Math.sin(an)*br); } ctx.fillStyle='#ffd27a'; ctx.fillText(p<0.35?'✸':'*', e.x, e.y); ctx.restore(); ctx.globalAlpha=1; }   // ASCII burst, no bloom
+    if(e.kind==='boom'){ var br=8+p*52; ctx.save(); ctx.globalAlpha=a; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font='800 '+Math.round(13+p*12)+'px ui-monospace,Menlo,Consolas,monospace'; ctx.fillStyle=e.col||'#ff7a3a'; var ch=['*','+','x','✦','*','+','x','✦']; for(var k=0;k<8;k++){ var an=k*0.7854+p*1.1; ctx.fillText(ch[k], e.x+Math.cos(an)*br, e.y+Math.sin(an)*br); } ctx.fillStyle='#ffd27a'; ctx.fillText(p<0.35?'✸':'*', e.x, e.y); ctx.restore(); ctx.globalAlpha=1; }   // ASCII burst, no bloom
     else if(e.kind==='emp'){ var efr=Math.min(5,(p*6)|0); ctx.globalCompositeOperation='lighter';   // real 6-frame EMP shockwave
       if(!drawImg('emp'+efr, e.x, e.y, e.sz||W*0.13, 0, clamp(1.15-p*0.3,0,1))){ ctx.globalCompositeOperation='source-over'; glow(e.x,e.y,8+p*30,e.col); }
       ctx.globalCompositeOperation='source-over'; continue; }
@@ -3393,7 +3401,7 @@ function drawFx(){
       ctx.restore(); glow(e.x,e.y,4+a*7,e.col); continue; }
     else if(e.kind==='snatch'){ var r=8+p*44; ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.globalAlpha=a*0.9; ctx.strokeStyle=e.col; ctx.lineWidth=3;
       ctx.beginPath(); ctx.arc(e.x,e.y,r,0,6.28); ctx.stroke(); ctx.beginPath(); ctx.arc(e.x,e.y,r*0.58,0,6.28); ctx.stroke(); ctx.restore(); glow(e.x,e.y,6+a*8,e.col); }
-    else if(e.kind==='pts'){ ctx.save(); ctx.globalAlpha=Math.min(1,a*1.4); ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font='800 '+(15+(e.big?7:0))+'px ui-monospace,monospace'; ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,0.55)'; ctx.strokeText('+'+e.val,e.x,e.y-18-p*30); ctx.fillStyle=e.col; ctx.fillText('+'+e.val,e.x,e.y-18-p*30); ctx.restore(); ctx.globalAlpha=1; continue; }   // rising, fading score popup
+    else if(e.kind==='pts'){ ctx.save(); ctx.globalAlpha=Math.min(1,a*1.4); ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font='800 '+(15+(e.big?7:0))+'px ui-monospace,Menlo,Consolas,monospace'; ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,0.55)'; ctx.strokeText('+'+e.val,e.x,e.y-18-p*30); ctx.fillStyle=e.col; ctx.fillText('+'+e.val,e.x,e.y-18-p*30); ctx.restore(); ctx.globalAlpha=1; continue; }   // rising, fading score popup
     else if(e.kind==='spark'){ glow(e.x,e.y,4+p*14,e.col); }
     else if(e.kind==='smoke'){ ctx.globalAlpha=a*0.5; ctx.fillStyle='#b9c2cc'; ctx.beginPath(); ctx.arc(e.x,e.y,3+p*10,0,6.28); ctx.fill(); ctx.globalAlpha=1; }
     else if(e.kind==='bubble'){ var by=e.y-e.t*42, bx=e.x+(e.dx||0)*e.t, rr=(e.r||3)*(0.7+p*0.7);   // propulsion energy — soft coloured bubble, rises + fades (NO white glow)
@@ -3407,13 +3415,15 @@ function drawPause(){ ctx.save(); ctx.fillStyle='rgba(2,6,12,.74)'; ctx.fillRect
   PAUSE_ROWS=[]; var fs=clamp(W*0.026,18,30), gap=fs*2.1, y0=H*0.45;
   for(var i=0;i<PAUSE_ITEMS.length;i++){ var y=y0+i*gap, on=i===pauseSel, lab=PAUSE_ITEMS[i];
     ctx.font='800 '+fs+'px system-ui'; var w=Math.max(ctx.measureText('QUIT TO TITLE').width, ctx.measureText(lab).width)+fs*3.2, r={x:W/2-w/2,y:y-fs*1.1,w:w,h:fs*1.6};
-    ctx.fillStyle=on?'rgba(57,255,20,.16)':'rgba(255,255,255,.04)'; roundRect(r.x,r.y,r.w,r.h,8); ctx.fill();
-    if(on){ ctx.strokeStyle='#39ff14'; ctx.lineWidth=2; ctx.stroke(); }
-    ctx.fillStyle=on?'#39ff14':'#bdf2cf'; ctx.fillText(lab,W/2,y); PAUSE_ROWS.push(r); }
-  ctx.fillStyle='#9c89c4'; fitFont('BEAM = SELECT   ·   WARBLE / ESC / START = RESUME','700',clamp(W*0.014,11,15),'ui-monospace',W*0.92);
+    // (1120, Joe 1119 "arcade cab menu style for all selectables") the vault-select vocabulary: no outlined box --
+    // the ▸ cursor ◂ + the faint red select band on the row you're on, idle rows in the vault's dim green.
+    // r is still the click/tap target (PAUSE_ROWS), it just isn't drawn as a box.
+    if(on){ ctx.fillStyle='rgba(255,93,108,.14)'; roundRect(r.x,r.y,r.w,r.h,8); ctx.fill(); }
+    ctx.fillStyle=on?'#39ff14':'#6f9a80'; ctx.fillText((on?'▸  ':'')+lab+(on?'  ◂':''),W/2,y); PAUSE_ROWS.push(r); }
+  ctx.fillStyle='#9c89c4'; fitFont('BEAM = SELECT   ·   WARBLE / ESC / START = RESUME','700',clamp(W*0.014,11,15),'ui-monospace,Menlo,Consolas,monospace',W*0.92);
   ctx.fillText('BEAM = SELECT   ·   WARBLE / ESC / START = RESUME',W/2,y0+PAUSE_ITEMS.length*gap+fs*0.4);
-  var hl=howWords().line; ctx.globalAlpha=0.7; ctx.fillStyle='#6f9a80'; fitFont(hl,'700',clamp(W*0.012,10,13),'ui-monospace',W*0.92); ctx.fillText(hl,W/2,H*0.90);   // (1117) PAUSE HELP: this build's controls
-  if(twoP){ var p2l="P2:  I J K L = FLY   ·   M = SUCK UP   ·   , = WARBLE   (or a 2nd gamepad)"; fitFont(p2l,'700',clamp(W*0.012,10,13),'ui-monospace',W*0.92); ctx.fillText(p2l,W/2,H*0.935); }
+  var hl=howWords().line; ctx.globalAlpha=0.7; ctx.fillStyle='#6f9a80'; fitFont(hl,'700',clamp(W*0.012,10,13),'ui-monospace,Menlo,Consolas,monospace',W*0.92); ctx.fillText(hl,W/2,H*0.90);   // (1117) PAUSE HELP: this build's controls
+  if(twoP){ var p2l="P2:  I J K L = FLY   ·   M = SUCK UP   ·   , = WARBLE   (or a 2nd gamepad)"; fitFont(p2l,'700',clamp(W*0.012,10,13),'ui-monospace,Menlo,Consolas,monospace',W*0.92); ctx.fillText(p2l,W/2,H*0.935); }
   ctx.restore(); }
 function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
 /* ---------- THE GUNPOWDER HORROR — render (presentation only: reads the mission, never writes it) ---------- */
@@ -3468,16 +3478,16 @@ function gpDrawFront(){
   for(i=0;i<targets.length;i++){ c=targets[i]; if(c.gone) continue;
     if(c.kind==='gnome' && c.shieldT>0 && !c.dieT){ var r=H*c.drawH*0.75; ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.globalAlpha=0.25+0.15*Math.sin(t*12+c.ph)*(c.shieldT<1?Math.sin(t*30):1);
       ctx.strokeStyle='#8fd8ff'; ctx.lineWidth=2; ctx.beginPath(); ctx.ellipse(c.x,gpBodyY(c,0.5),r*0.8,r,0,0,6.28); ctx.stroke(); ctx.globalAlpha*=0.4; ctx.fillStyle='#8fd8ff'; ctx.fill(); ctx.restore(); }
-    if(c.kind==='gnome' && c.climbT>0){ ctx.fillStyle='#ffd23f'; ctx.font='800 10px ui-monospace'; ctx.textAlign='center'; ctx.fillText('OVER THE WIRE', c.x, gpBodyY(c,1.25)); }
+    if(c.kind==='gnome' && c.climbT>0){ ctx.fillStyle='#ffd23f'; ctx.font='800 10px ui-monospace,Menlo,Consolas,monospace'; ctx.textAlign='center'; ctx.fillText('OVER THE WIRE', c.x, gpBodyY(c,1.25)); }
   }
   // the gate's integrity (phase I) + damaged cover
   if(gpGate && gpGate.hp>0 && gpPhase===0){ var gw=W*0.07; gpBar(gpGate.x, gpBodyY(gpGate,1.18), gw, gpGate.hp/gpGate.maxHp, gpGate.hp/gpGate.maxHp>0.5?'#9affc0':gpGate.hp/gpGate.maxHp>0.25?'#ffd23f':'#ff5d6c');
-    ctx.fillStyle='#dff7e4'; ctx.font='800 10px ui-monospace'; ctx.textAlign='center'; ctx.fillText('THE GATE', gpGate.x, gpBodyY(gpGate,1.18)-4); }
+    ctx.fillStyle='#dff7e4'; ctx.font='800 10px ui-monospace,Menlo,Consolas,monospace'; ctx.textAlign='center'; ctx.fillText('THE GATE', gpGate.x, gpBodyY(gpGate,1.18)-4); }
   for(i=0;i<targets.length;i++){ c=targets[i]; if(c.gone||c.dkind!=='cover'||c.hp<=0||c.captured||c.hp>=c.maxHp) continue;
     gpBar(c.x, gpBodyY(c,1.15), Math.min(gpHalfW(c)*1.4,W*0.05), c.hp/c.maxHp, '#ffd27a'); }
   // people: hurt pips + the wounded / aid markers
   for(i=0;i<targets.length;i++){ c=targets[i]; if(c.gone||c.vanish>0||!gpIsPerson(c)) continue; var top=gpBodyY(c,1.08);
-    if(c.st==='wounded'){ ctx.fillStyle=(Math.floor(t*4)%2)?'#ff9d3a':'#ffd23f'; ctx.font='800 10px ui-monospace'; ctx.textAlign='center'; ctx.fillText('✚ WOUNDED', c.x, top-2); }
+    if(c.st==='wounded'){ ctx.fillStyle=(Math.floor(t*4)%2)?'#ff9d3a':'#ffd23f'; ctx.font='800 10px ui-monospace,Menlo,Consolas,monospace'; ctx.textAlign='center'; ctx.fillText('✚ WOUNDED', c.x, top-2); }
     else if(c.hp<c.maxHp){ gpBar(c.x, top, 22, c.hp/c.maxHp, c.hp/c.maxHp>0.5?'#9affc0':'#ff5d6c'); } }
   // projectiles
   for(i=0;i<gpShots.length;i++){ var s=gpShots[i];
@@ -3514,7 +3524,7 @@ function gpDrawBanner(){
   ctx.save(); ctx.globalAlpha=a*0.6; ctx.fillStyle='rgba(2,6,12,0.85)'; ctx.fillRect(0,y-38,W,74);
   ctx.globalAlpha=a; ctx.fillStyle=gpBan.col; ctx.fillRect(0,y-38,W,2); ctx.fillRect(0,y+34,W,2);
   ctx.textAlign='center'; ctx.font='900 '+clamp(W*0.03,24,40)+'px system-ui'; ctx.shadowColor=gpBan.col; ctx.shadowBlur=16; ctx.fillText(gpBan.title, W/2, y+2); ctx.shadowBlur=0;
-  ctx.fillStyle='#dff7e4'; ctx.font='800 '+clamp(W*0.011,11,15)+'px ui-monospace'; ctx.fillText(gpBan.sub, W/2, y+24); ctx.restore();
+  ctx.fillStyle='#dff7e4'; ctx.font='800 '+clamp(W*0.011,11,15)+'px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText(gpBan.sub, W/2, y+24); ctx.restore();
 }
 function gpDrawHUD(){
   var o=gpCounts(), my=H-34, warn=o.alive<=GP_MUST_SAVE, close=o.alive===GP_MUST_SAVE+1;
@@ -3527,13 +3537,13 @@ function gpDrawHUD(){
   ctx.textAlign='center'; ctx.font='800 14px system-ui';
   ctx.fillStyle=warn?((Math.floor(t*5)%2)?'#ff5d6c':'#ffd23f'):close?'#ffd23f':'#9affc0';
   ctx.fillText('SOLDIERS '+o.s+'/'+o.sT+'  ·  CIVILIANS '+o.c+'/'+o.cT+'  ·  MUST SAVE '+GP_MUST_SAVE, W/2, my);
-  if(warn){ ctx.font='800 11px ui-monospace'; ctx.fillText('ONE MORE LOSS AND FORT GUNPOWDER FALLS', W/2, my+15); }
+  if(warn){ ctx.font='800 11px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText('ONE MORE LOSS AND FORT GUNPOWDER FALLS', W/2, my+15); }
   // phase track (top centre, under the clock)
   var segW=clamp(W*0.07,64,110), sx=W/2-segW*2-6, sy=62;
   for(var p=0;p<4;p++){ var x=sx+p*(segW+4), on=p===gpPhase, done=p<gpPhase;
     ctx.fillStyle=done?'rgba(154,255,192,0.5)':on?GP_PHASES[p].col:'rgba(255,255,255,0.12)'; ctx.fillRect(x,sy,segW,5);
     if(on){ var f=clamp((gpEl()-GP_PHASE_AT[p])/((p<3?GP_PHASE_AT[p+1]:GP_LEN)-GP_PHASE_AT[p]),0,1); ctx.fillStyle='rgba(255,255,255,0.75)'; ctx.fillRect(x,sy+6,segW*f,2); } }
-  ctx.fillStyle=GP_PHASES[gpPhase].col; ctx.font='800 12px ui-monospace'; ctx.fillText(GP_PHASES[gpPhase].name, W/2, sy+22);
+  ctx.fillStyle=GP_PHASES[gpPhase].col; ctx.font='800 12px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText(GP_PHASES[gpPhase].name, W/2, sy+22);
   ctx.textAlign='right'; ctx.fillStyle='#ffd23f'; ctx.font='800 15px system-ui'; ctx.fillText('GNOMES BEAMED  '+(gpStats?gpStats.beamed:0), W-22, 36);
   ctx.fillStyle='#9c89c4'; ctx.font='700 11px system-ui'; ctx.fillText('the line\'s kills pay nothing', W-22, 52);
 }
@@ -3542,8 +3552,8 @@ function gpDrawFail(){
   ctx.textAlign='center'; ctx.fillStyle='#ff5d6c'; ctx.font='900 '+clamp(W*0.058,40,88)+'px system-ui'; ctx.shadowColor='#ff5d6c'; ctx.shadowBlur=26;
   ctx.fillText('MISSION FAILED', W/2, H*0.30); ctx.shadowBlur=0;
   ctx.fillStyle='#ffd23f'; ctx.font='800 '+clamp(W*0.016,14,22)+'px system-ui'; ctx.fillText('THE GNOMES TOOK FORT GUNPOWDER', W/2, H*0.30+46);
-  ctx.fillStyle='#dff7e4'; ctx.font='700 '+clamp(W*0.013,12,17)+'px ui-monospace'; ctx.fillText(gpFailWhy, W/2, H*0.30+80);
-  var y=H*0.52, row=function(l,v,col){ ctx.textAlign='left'; ctx.fillStyle='#9fb8d0'; ctx.font='700 '+clamp(W*0.012,12,16)+'px ui-monospace'; ctx.fillText(l, W*0.36, y);
+  ctx.fillStyle='#dff7e4'; ctx.font='700 '+clamp(W*0.013,12,17)+'px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText(gpFailWhy, W/2, H*0.30+80);
+  var y=H*0.52, row=function(l,v,col){ ctx.textAlign='left'; ctx.fillStyle='#9fb8d0'; ctx.font='700 '+clamp(W*0.012,12,16)+'px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText(l, W*0.36, y);
     ctx.textAlign='right'; ctx.fillStyle=col||'#dff7e4'; ctx.font='800 '+clamp(W*0.016,14,20)+'px system-ui'; ctx.fillText(v, W*0.64, y); y+=clamp(W*0.022,22,32); };
   var o=gpCounts();
   row('FELL IN', GP_PHASES[gpPhase].name, GP_PHASES[gpPhase].col);
@@ -3552,7 +3562,7 @@ function gpDrawFail(){
   row('GNOMES YOU BEAMED', ''+gpStats.beamed, '#ffd23f');
   ctx.textAlign='center'; ctx.globalAlpha=a*(gpFailT>0.9?(0.6+0.4*Math.abs(Math.sin(t*4))):0.3);
   ctx.fillStyle='#39ff14'; ctx.font='900 '+clamp(W*0.018,16,24)+'px system-ui'; ctx.fillText('BEAM — RETRY THE MISSION', W/2, H*0.83);
-  ctx.fillStyle='#9c89c4'; ctx.font='700 '+clamp(W*0.012,11,15)+'px ui-monospace';
+  ctx.fillStyle='#9c89c4'; ctx.font='700 '+clamp(W*0.012,11,15)+'px ui-monospace,Menlo,Consolas,monospace';
   ctx.fillText('WARBLE / ESC — '+(soloStage?'BACK TO THE VAULT':'TAKE THE LOSS AND MOVE ON'), W/2, H*0.83+28);
   ctx.restore();
 }
@@ -3561,9 +3571,9 @@ function gpDrawTally(){
   ctx.fillStyle='rgba(2,6,12,.80)'; ctx.fillRect(0,0,W,H); ctx.textAlign='center';
   ctx.save(); ctx.fillStyle=col; ctx.font='900 '+clamp(W*0.05,34,74)+'px system-ui'; ctx.shadowColor=col; ctx.shadowBlur=24;
   ctx.fillText(T.perfect?'PERFECT DEFENSE':'FORT GUNPOWDER HELD', W/2, H*0.22); ctx.restore();
-  ctx.fillStyle='#bdf2cf'; ctx.font='700 '+clamp(W*0.013,12,17)+'px ui-monospace'; ctx.fillText(T.perfect?'every soldier and every civilian made the convoy':'the convoy got out — the gnomes have the golf course', W/2, H*0.22+36);
+  ctx.fillStyle='#bdf2cf'; ctx.font='700 '+clamp(W*0.013,12,17)+'px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText(T.perfect?'every soldier and every civilian made the convoy':'the convoy got out — the gnomes have the golf course', W/2, H*0.22+36);
   var y=H*0.38, gap=clamp(W*0.028,24,40);
-  function row(l,v,c2){ ctx.textAlign='left'; ctx.fillStyle='#9fb8d0'; ctx.font='700 '+clamp(W*0.014,12,18)+'px ui-monospace'; ctx.fillText(l, W*0.32, y);
+  function row(l,v,c2){ ctx.textAlign='left'; ctx.fillStyle='#9fb8d0'; ctx.font='700 '+clamp(W*0.014,12,18)+'px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText(l, W*0.32, y);
     ctx.textAlign='right'; ctx.fillStyle=c2||'#dff7e4'; ctx.font='800 '+clamp(W*0.02,15,24)+'px system-ui'; ctx.fillText(v, W*0.68, y); y+=gap; }
   row('SOLDIERS SAVED  '+T.s+'/'+T.sT, '+'+(T.s*GP_SAVE_SOLDIER), '#39ff14');
   row('CIVILIANS SAVED  '+T.c+'/'+T.cT, '+'+(T.c*GP_SAVE_CIV), '#7fe9ff');
@@ -3571,7 +3581,7 @@ function gpDrawTally(){
   row('GNOMES THE LINE DROPPED  '+T.line, '+0', '#9c89c4');
   row('PERFECT — ALL '+(T.sT+T.cT)+' HOME', T.perfect?'+'+BONUS_PERFECT:'—', T.perfect?'#ffd23f':'#5a6070');
   y+=gap*0.3; row('MISSION BONUS', '+'+T.bonus, col); row('SCORE', ''+score, '#dff7e4');
-  ctx.textAlign='center'; ctx.globalAlpha=0.55+0.45*Math.abs(Math.sin(t*4)); ctx.fillStyle='#bdf2cf'; ctx.font='800 '+clamp(W*0.014,12,17)+'px ui-monospace';
+  ctx.textAlign='center'; ctx.globalAlpha=0.55+0.45*Math.abs(Math.sin(t*4)); ctx.fillStyle='#bdf2cf'; ctx.font='800 '+clamp(W*0.014,12,17)+'px ui-monospace,Menlo,Consolas,monospace';
   ctx.fillText(ARCADE?'press any key':'BEAM — CONTINUE', W/2, H*0.88); ctx.globalAlpha=1;
 }
 /* ---------- CLAW & ORDER — render (presentation only: reads the bonus, never writes it) ----------
@@ -3600,9 +3610,9 @@ function clawDrawFront(){
   ctx.fillStyle=dg; ctx.beginPath(); ctx.arc(d.x,d.y,rr*1.5,0,6.28); ctx.fill();
   ctx.strokeStyle='rgba('+col+','+(on?0.85:0.35)+')'; ctx.lineWidth=on?3:2; ctx.setLineDash(on?[]:[6,6]); ctx.beginPath(); ctx.arc(d.x,d.y,rr,0,6.28); ctx.stroke(); ctx.setLineDash([]);
   ctx.restore();
-  ctx.textAlign='center'; ctx.font='800 '+clamp(W*0.009,10,13)+'px ui-monospace'; ctx.fillStyle=on?'#39ff14':'rgba(160,220,180,0.7)';
+  ctx.textAlign='center'; ctx.font='800 '+clamp(W*0.009,10,13)+'px ui-monospace,Menlo,Consolas,monospace'; ctx.fillStyle=on?'#39ff14':'rgba(160,220,180,0.7)';
   ctx.fillText(on?'BANK HERE':'THE DROP', d.x, d.y+4);
-  if(claw.bailT>0 || claw.dropT>0.5){ ctx.fillStyle='#ffd23f'; ctx.font='800 '+clamp(W*0.010,11,14)+'px ui-monospace';
+  if(claw.bailT>0 || claw.dropT>0.5){ ctx.fillStyle='#ffd23f'; ctx.font='800 '+clamp(W*0.010,11,14)+'px ui-monospace,Menlo,Consolas,monospace';
     ctx.fillText(claw.bailT>0?'BAILING IN '+Math.max(1,Math.ceil(3-claw.bailT))+'…':'STAY TO BAIL OUT', d.x, d.y+d.r+16); }
   if(on && P && !clawInDrop(P)){ var ax=P.x-d.x, ay=P.y-d.y, aL=Math.hypot(ax,ay)||1;           // a faint guide arrow from the ring toward you while you carry
     ctx.save(); ctx.globalAlpha=0.25+0.2*pulse; ctx.strokeStyle='#39ff14'; ctx.lineWidth=2; ctx.setLineDash([3,7]);
@@ -3622,7 +3632,7 @@ function clawDrawFront(){
     ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,0.6)'; ctx.strokeText(e.volley?'!!':'!', c.x, top); ctx.fillText(e.volley?'!!':'!', c.x, top); }
   // townie state marks: ducking (hat knocked off)
   for(i=0;i<targets.length;i++){ var tw=targets[i]; if(tw.kind!=='townie'||tw.gone||tw.duckT<=0) continue; var th=H*tw.drawH*zdS(tw);
-    ctx.textAlign='center'; ctx.font='800 11px ui-monospace'; ctx.fillStyle='#bfefff'; ctx.fillText('HEY!', tw.x, groundY()+6-th-4); }
+    ctx.textAlign='center'; ctx.font='800 11px ui-monospace,Menlo,Consolas,monospace'; ctx.fillStyle='#bfefff'; ctx.fillText('HEY!', tw.x, groundY()+6-th-4); }
   // spill / hat / steam bits
   for(i=0;i<claw.fx.length;i++){ var f=claw.fx[i], fp=f.t/f.life;
     if(f.kind==='spill'){ drawImg(f.sp, f.x, f.y, sz().cow*0.55, f.rot, clamp(1.2-fp,0,1)); if(f.y>groundY()-6 && fp>0.4) glow(f.x,groundY(),6,'rgba(150,200,255,0.6)'); }
@@ -3647,7 +3657,7 @@ function clawDrawHUD(){
   ctx.font='900 '+clamp(W*0.016,15,22)+'px system-ui'; ctx.fillStyle=claw.hold>0?'#ffd23f':'#5a6070';
   ctx.fillText('HOLD  '+claw.hold+(claw.chain>1?'   ×'+mult+' STREAK':''), W/2, hy);
   if(claw.chain>0){ var cf=clamp(1-(clawEl()-claw.lastGrab)/CLAW_CHAIN,0,1); ctx.fillStyle='rgba(255,255,255,0.15)'; ctx.fillRect(W/2-70,hy+5,140,3); ctx.fillStyle='#ffd23f'; ctx.fillRect(W/2-70,hy+5,140*cf,3); }
-  ctx.font='700 11px ui-monospace'; ctx.fillStyle=claw.hold>0?'#bdf2cf':'#6f7a8a';
+  ctx.font='700 11px ui-monospace,Menlo,Consolas,monospace'; ctx.fillStyle=claw.hold>0?'#bdf2cf':'#6f7a8a';
   ctx.fillText(claw.hold>0?'NOT YOURS UNTIL YOU BANK IT — FLY TO THE DROP (TOP LEFT)':'GRAB FAST TO STREAK ×'+CLAW_MULT_MAX+' · A HIT SPILLS A THIRD OF THE HOLD', W/2, hy+22);
   ctx.textAlign='right'; ctx.fillStyle='#39ff14'; ctx.font='800 13px system-ui'; ctx.fillText('BANKED  '+claw.banked, W-22, 64);
   if(claw.bull && !claw.bull.gone){ ctx.fillStyle='#ff9d3a'; ctx.font='700 11px system-ui'; ctx.fillText('THE BULL IS OUT — BANK IT CLEAN = PERFECT', W-22, 80); }
@@ -3659,7 +3669,7 @@ function clawDrawFail(){
   ctx.textAlign='center'; ctx.fillStyle='#ff5d6c'; ctx.font='900 '+clamp(W*0.056,38,84)+'px system-ui'; ctx.shadowColor='#ff5d6c'; ctx.shadowBlur=26;
   ctx.fillText('RUN OFF THE DOCK', W/2, H*0.28); ctx.shadowBlur=0;
   ctx.fillStyle='#ffd23f'; ctx.font='800 '+clamp(W*0.016,14,22)+'px system-ui'; ctx.fillText('THE CRAB HOUSE SHOT YOU OUT OF THE SKY — THE HOLD WENT IN THE BAY', W/2, H*0.28+46);
-  var y=H*0.46, row=function(l,v,col){ ctx.textAlign='left'; ctx.fillStyle='#9fb8d0'; ctx.font='700 '+clamp(W*0.012,12,16)+'px ui-monospace'; ctx.fillText(l, W*0.34, y);
+  var y=H*0.46, row=function(l,v,col){ ctx.textAlign='left'; ctx.fillStyle='#9fb8d0'; ctx.font='700 '+clamp(W*0.012,12,16)+'px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText(l, W*0.34, y);
     ctx.textAlign='right'; ctx.fillStyle=col||'#dff7e4'; ctx.font='800 '+clamp(W*0.016,14,20)+'px system-ui'; ctx.fillText(v, W*0.66, y); y+=clamp(W*0.022,22,32); };
   row('LASTED', clawFmtT(T.at)+' of '+clawFmtT(CLAW_LEN));
   row('HOLD LOST (IN THE BAY)', '−'+((T.lost||0)+(T.spilled||0)), '#ff5d6c');
@@ -3668,7 +3678,7 @@ function clawDrawFail(){
   ctx.textAlign='center'; ctx.globalAlpha=a*(clawFailT>0.9?(0.6+0.4*Math.abs(Math.sin(t*4))):0.3);
   ctx.fillStyle='#39ff14'; ctx.font='900 '+clamp(W*0.018,16,24)+'px system-ui';
   ctx.fillText(soloStage?'BEAM — RETRY THE FEAST':'BEAM — LIMP ON TO '+nextSegLabel(), W/2, H*0.80);
-  ctx.fillStyle='#9c89c4'; ctx.font='700 '+clamp(W*0.012,11,15)+'px ui-monospace';
+  ctx.fillStyle='#9c89c4'; ctx.font='700 '+clamp(W*0.012,11,15)+'px ui-monospace,Menlo,Consolas,monospace';
   ctx.fillText(soloStage?'WARBLE / ESC — BACK TO THE VAULT':'no retries in the run — the gamble was the point', W/2, H*0.80+28);
   ctx.restore();
 }
@@ -3678,10 +3688,10 @@ function clawDrawTally(inRun){
   ctx.fillStyle='rgba(2,6,12,.82)'; ctx.fillRect(0,0,W,H); ctx.textAlign='center';
   ctx.save(); ctx.fillStyle=col; ctx.font='900 '+clamp(W*0.048,32,70)+'px system-ui'; ctx.shadowColor=col; ctx.shadowBlur=24;
   ctx.fillText(T.perfect?'PERFECT HEIST':T.outcome==='bail'?'TOOK THE MONEY AND RAN':'CLAW & ORDER — LAST CALL', W/2, H*0.19); ctx.restore();
-  ctx.fillStyle='#bdf2cf'; ctx.font='700 '+clamp(W*0.013,12,17)+'px ui-monospace';
+  ctx.fillStyle='#bdf2cf'; ctx.font='700 '+clamp(W*0.013,12,17)+'px ui-monospace,Menlo,Consolas,monospace';
   ctx.fillText(T.perfect?'the Bull, banked, and not a scratch on the hull':T.outcome==='bail'?'out over the water before the dock could finish the job':'the crab house is closing — whatever you carried came home', W/2, H*0.19+34);
   var y=H*0.33, gap=clamp(W*0.026,22,36);
-  function row(l,v,c2){ ctx.textAlign='left'; ctx.fillStyle='#9fb8d0'; ctx.font='700 '+clamp(W*0.014,12,18)+'px ui-monospace'; ctx.fillText(l, W*0.31, y);
+  function row(l,v,c2){ ctx.textAlign='left'; ctx.fillStyle='#9fb8d0'; ctx.font='700 '+clamp(W*0.014,12,18)+'px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText(l, W*0.31, y);
     ctx.textAlign='right'; ctx.fillStyle=c2||'#dff7e4'; ctx.font='800 '+clamp(W*0.02,15,24)+'px system-ui'; ctx.fillText(v, W*0.69, y); y+=gap; }
   row('BANKED HAUL  ('+T.grabs+' GRABS)', '+'+T.banked, '#39ff14');
   row('BEST STREAK', '×'+T.best, T.best>=3?'#ffd23f':'#dff7e4');
@@ -3690,9 +3700,9 @@ function clawDrawTally(inRun){
   if(T.returns) row('RETURNED TO SENDER', '×'+T.returns+'  (+'+(T.returns*CLAW_RETURN)+')', '#bfefff');
   row('PERFECT — THE BULL, NO HITS', T.perfect?'+'+BONUS_PERFECT:'—', T.perfect?'#ffd23f':'#5a6070');
   y+=gap*0.2; row('SCORE', ''+score, '#dff7e4');
-  if(inRun){ ctx.textAlign='center'; ctx.fillStyle='#9c89c4'; ctx.font='700 '+clamp(W*0.013,11,15)+'px ui-monospace'; ctx.fillText('NEXT UP  ·  HULL '+Math.round(hp)+'%', W/2, H*0.78);
+  if(inRun){ ctx.textAlign='center'; ctx.fillStyle='#9c89c4'; ctx.font='700 '+clamp(W*0.013,11,15)+'px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText('NEXT UP  ·  HULL '+Math.round(hp)+'%', W/2, H*0.78);
     ctx.fillStyle='#ffd23f'; ctx.font='900 '+clamp(W*0.022,16,28)+'px system-ui'; ctx.fillText(nextSegLabel(), W/2, H*0.78+clamp(W*0.026,20,34)); }
-  ctx.textAlign='center'; ctx.globalAlpha=0.55+0.45*Math.abs(Math.sin(t*4)); ctx.fillStyle='#bdf2cf'; ctx.font='800 '+clamp(W*0.014,12,17)+'px ui-monospace';
+  ctx.textAlign='center'; ctx.globalAlpha=0.55+0.45*Math.abs(Math.sin(t*4)); ctx.fillStyle='#bdf2cf'; ctx.font='800 '+clamp(W*0.014,12,17)+'px ui-monospace,Menlo,Consolas,monospace';
   ctx.fillText(ARCADE?'press any key':'BEAM — CONTINUE', W/2, H*0.92); ctx.globalAlpha=1;
 }
 function drawHUD(){
@@ -3700,11 +3710,11 @@ function drawHUD(){
   if(R || mode==='bonus'){                                          // 2-UFO scoreboard — most sucked up wins
     ctx.fillStyle='#39ff14'; ctx.font='800 22px system-ui'; ctx.fillText((twoP?'P1':'YOU')+'  '+score, 22, 36);
     ctx.fillStyle='#3cc8ff'; ctx.font='800 15px system-ui'; ctx.fillText((twoP?'P2':'RIVAL')+'  '+rivalScore, 22, 56);
-    ctx.fillStyle = score>=rivalScore?'#39ff14':'#3cc8ff'; ctx.font='800 11px ui-monospace';
+    ctx.fillStyle = score>=rivalScore?'#39ff14':'#3cc8ff'; ctx.font='800 11px ui-monospace,Menlo,Consolas,monospace';
     ctx.fillText(score>=rivalScore?'▲ LEADING':'▼ BEHIND', 22, 72);
   } else { ctx.fillStyle='#dff7e4'; ctx.font='800 22px system-ui'; ctx.fillText('SCORE  '+score, 22, 36); }
   if(superT>0){ ctx.textAlign='center'; var spp=clamp(superT/SUPER_SECS,0,1), suy=runActive?96:74;   // SUPER BEAM badge + drain bar -- (HUD 1117) in the row UNDER the clock (was y 30/38: over the zone label and through the clock digits)
-    ctx.fillStyle=(Math.floor(t*8)%2)?'#ffd23f':'#fff'; ctx.font='800 14px ui-monospace'; ctx.fillText('★ SUPER BEAM ★', W/2, suy);
+    ctx.fillStyle=(Math.floor(t*8)%2)?'#ffd23f':'#fff'; ctx.font='800 14px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText('★ SUPER BEAM ★', W/2, suy);
     ctx.fillStyle='rgba(255,210,63,.85)'; ctx.fillRect(W/2-60, suy+6, 120*spp, 4); ctx.textAlign='left'; }
   // HULL life bar (replaces the hit-count) — not in THE GUNPOWDER HORROR (the saucer can't die there; the fort can)
   var hbw=clamp(W*0.18,170,300), hbx=W-22-hbw, hby=20;
@@ -3736,8 +3746,8 @@ function drawHUD(){
     ctx.textAlign='center'; ctx.fillStyle=STAGECOL[stg]; ctx.font='800 12px system-ui'; ctx.fillText('MILITARY RESPONSE — '+STAGENAME[stg], W/2, my-7);
   }
   if(DEV){                                                  // dev telemetry — hidden in the cab, on with ?dev
-    ctx.textAlign='left'; ctx.fillStyle=GLIDE?'#39ff14':'#ff9d3a'; ctx.font='700 12px ui-monospace'; ctx.fillText('GLIDE '+(GLIDE?'ON':'OFF')+'  accel '+accel+' / damp '+damp, 22, H-26);
-    ctx.textAlign='right'; ctx.fillStyle = fps<45?'#ff5d6c':fps<55?'#ffe23a':'#39ff14'; ctx.font='700 12px ui-monospace';
+    ctx.textAlign='left'; ctx.fillStyle=GLIDE?'#39ff14':'#ff9d3a'; ctx.font='700 12px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText('GLIDE '+(GLIDE?'ON':'OFF')+'  accel '+accel+' / damp '+damp, 22, H-26);
+    ctx.textAlign='right'; ctx.fillStyle = fps<45?'#ff5d6c':fps<55?'#ffe23a':'#39ff14'; ctx.font='700 12px ui-monospace,Menlo,Consolas,monospace';
     ctx.fillText('FPS '+Math.round(fps)+'  · jets '+jets.length+' · shots '+shots.length+' · fx '+fx.length+(stress?'  · BLITZ':''), W-22, H-26);
   }
   if(mode==='gunpowder' && state==='play') gpDrawBanner();
@@ -3766,18 +3776,18 @@ function drawResult(){
   if(resKind==='round' && showRival){ var rr=score>rivalScore?'▲ ROUND TO YOU':score<rivalScore?'▼ ROUND TO RIVAL':'— DEAD HEAT —';
     ctx.fillStyle=score>rivalScore?'#39ff14':score<rivalScore?'#3cc8ff':'#dff7e4'; ctx.font='800 '+clamp(W*0.02,14,22)+'px system-ui'; ctx.fillText(rr, W/2, H*0.24+clamp(W*0.032,22,36)); }
   var y=H*0.42, gap=clamp(W*0.04,26,48), lx=W*0.33, rx=W*0.67;
-  function row(label,val,col){ ctx.textAlign='left'; ctx.fillStyle='#9fb8d0'; ctx.font='700 '+clamp(W*0.017,12,18)+'px ui-monospace'; ctx.fillText(label, lx, y);
+  function row(label,val,col){ ctx.textAlign='left'; ctx.fillStyle='#9fb8d0'; ctx.font='700 '+clamp(W*0.017,12,18)+'px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText(label, lx, y);
     ctx.textAlign='right'; ctx.fillStyle=col||'#dff7e4'; ctx.font='800 '+clamp(W*0.024,16,26)+'px system-ui'; ctx.fillText(val, rx, y); y+=gap; ctx.textAlign='center'; }
   row('STAGE BONUS', '+'+resBonus, '#ffd23f');
   if(showRival){ row(twoP?'P1 SCORE':'YOUR SCORE', ''+score, '#39ff14'); row(twoP?'P2 SCORE':'RIVAL SCORE', ''+rivalScore, '#3cc8ff'); }
   else row('SCORE', ''+score, '#dff7e4');
   var shipStr = lives>6 ? ('◆ ×'+lives) : (function(){ var s=''; for(var h=0;h<Math.max(0,lives);h++) s+='◆ '; return s.trim()||'—'; })();
   row('SHIPS LEFT', shipStr, lives>1?'#39ff14':'#ff9d3a');
-  ctx.textAlign='center'; ctx.fillStyle='#9c89c4'; ctx.font='700 '+clamp(W*0.015,11,15)+'px ui-monospace'; ctx.fillText('NEXT UP', W/2, H*0.71);
+  ctx.textAlign='center'; ctx.fillStyle='#9c89c4'; ctx.font='700 '+clamp(W*0.015,11,15)+'px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText('NEXT UP', W/2, H*0.71);
   ctx.fillStyle='#ffd23f'; ctx.font='900 '+clamp(W*0.026,17,30)+'px system-ui'; ctx.fillText(nextSegLabel(), W/2, H*0.71+clamp(W*0.032,22,38));
   var p=clamp(resT/RESULT_HOLD,0,1), bw=clamp(W*0.28,220,420), bx=W/2-bw/2, byy=H*0.85;
   ctx.fillStyle='rgba(255,255,255,.14)'; ctx.fillRect(bx,byy,bw,4); ctx.fillStyle=accent; ctx.fillRect(bx,byy,bw*p,4);
-  ctx.globalAlpha=0.55+0.45*Math.abs(Math.sin(t*4)); ctx.fillStyle='#bdf2cf'; ctx.font='700 '+clamp(W*0.014,11,15)+'px ui-monospace';
+  ctx.globalAlpha=0.55+0.45*Math.abs(Math.sin(t*4)); ctx.fillStyle='#bdf2cf'; ctx.font='700 '+clamp(W*0.014,11,15)+'px ui-monospace,Menlo,Consolas,monospace';
   ctx.fillText('BEAM — CONTINUE', W/2, byy+22); ctx.globalAlpha=1;
 }
 
@@ -3790,11 +3800,11 @@ function frame(ts){
   if(DEV && SOAK>0 && !_devStageBooted){ _devStageBooted=true; devSoak(SOAK); }   // dev fuzz/soak across every mode
   if(DEV && /[?&]menu\b/.test(location.search) && state==='boot' && !_devStageBooted){ _devStageBooted=true; enterCheats(); }   // dev: jump to the CHEATS vault level-select
   if(state==='soakdone'){ ctx.fillStyle='#04080e'; ctx.fillRect(0,0,W,H); ctx.textAlign='left';
-    ctx.fillStyle=__soak.ok?'#39ff14':'#ff5d6c'; ctx.font='900 34px ui-monospace';
+    ctx.fillStyle=__soak.ok?'#39ff14':'#ff5d6c'; ctx.font='900 34px ui-monospace,Menlo,Consolas,monospace';
     ctx.fillText(__soak.ok?'SOAK PASS':'SOAK FAIL', 40, 60);
-    ctx.fillStyle='#bdf2cf'; ctx.font='700 18px ui-monospace';
+    ctx.fillStyle='#bdf2cf'; ctx.font='700 18px ui-monospace,Menlo,Consolas,monospace';
     ctx.fillText('ticks '+__soak.ticks+'  ·  breaches '+__soak.breaches.length+'  ·  errors '+__soak.errors.length, 40, 96);
-    var yy=140; ctx.fillStyle='#ffd23f'; ctx.font='600 14px ui-monospace';
+    var yy=140; ctx.fillStyle='#ffd23f'; ctx.font='600 14px ui-monospace,Menlo,Consolas,monospace';
     for(var _i=0;_i<Math.min(20,__soak.errors.length);_i++){ ctx.fillText('ERR '+__soak.errors[_i].slice(0,120), 40, yy); yy+=22; }
     ctx.fillStyle='#ff9d3a'; for(var _i=0;_i<Math.min(20,__soak.breaches.length);_i++){ ctx.fillText('BR  '+__soak.breaches[_i].slice(0,120), 40, yy); yy+=22; }
     requestAnimationFrame(frame); return; }
@@ -3846,13 +3856,13 @@ function frame(ts){
     } else if(reelVid && reelVid.readyState>=2){ try{ ctx.drawImage(reelVid, ox, oy, sd, sd); }catch(e){}
       if(attractClk<0.5 && ok('tjglitch')){ var g=IMG['tjglitch'], gh=g.naturalHeight*sd/g.naturalWidth, ga=1-attractClk/0.5;   // glitch back INTO the reel
         ctx.save(); ctx.globalAlpha=0.6*ga; for(var k=0;k<3;k++){ var yo=oy+((t*1500+k*gh)%(sd+gh))-gh; ctx.drawImage(g,ox,yo,sd,gh); } ctx.restore(); }
-    } else { ctx.textAlign='center'; ctx.fillStyle='#9affc0'; ctx.font='700 16px ui-monospace'; ctx.fillText('THE SUCK UP FILES …', W/2, H/2); }
+    } else { ctx.textAlign='center'; ctx.fillStyle='#9affc0'; ctx.font='700 16px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText('THE SUCK UP FILES …', W/2, H/2); }
     ctx.save(); ctx.globalAlpha=0.55; ctx.strokeStyle=CAB_ACCENT; ctx.lineWidth=6; roundRect(ox-3,oy-3,sd+6,sd+6,12); ctx.stroke(); ctx.restore();
     if(!OG && defconArmed){ ctx.save(); ctx.textAlign='center'; var by=oy+sd*0.86;       // DEFCON 1 armed by WARBLE at coin-up (ARCADE + STANDALONE both show it)
       ctx.fillStyle='rgba(0,0,0,0.62)'; ctx.fillRect(ox, by-26, sd, 46);
-      ctx.font='800 20px ui-monospace'; ctx.fillStyle=(Math.floor(t*3)%2)?'#ff5d6c':'#ffd23f';
+      ctx.font='800 20px ui-monospace,Menlo,Consolas,monospace'; ctx.fillStyle=(Math.floor(t*3)%2)?'#ff5d6c':'#ffd23f';
       ctx.fillText('★ DEFCON 1 ARMED — 1 CREDIT, NO CONTINUES ★', W/2, by);
-      ctx.font='600 12px ui-monospace'; ctx.fillStyle='#bdf2cf';
+      ctx.font='600 12px ui-monospace,Menlo,Consolas,monospace'; ctx.fillStyle='#bdf2cf';
       ctx.fillText('BEAM = START   ·   WARBLE = STAND DOWN', W/2, by+18); ctx.restore(); }
     drawWakeHint(); requestAnimationFrame(frame); return;
   }
