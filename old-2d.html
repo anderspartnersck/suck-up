@@ -3233,23 +3233,31 @@ function beamMid(o, beamOn, sp, op){
   var wk=late?0.62+0.06*Math.sin(t*23):1, oid=(o===R?311:o===P?0:57);
   function half(y){ return funnelHalf(o,y)*supK*wk; }
   var bh=bot-belly; if(bh<2 && !(drop>0)) return;
+  // 1121 SOFT FOOT (Joe: "a hard edge at the bottom of the beam"): while the foot is in the air (growing down / retracting)
+  // the last F px fade out in dithered strips, and an energy front leads the descent. On the ground the contact point covers it.
+  var airK=clamp((gy-bot)/(w*0.25),0,1), F=Math.max(0,Math.min(bh*0.55,w*0.55))*airK;
+  function ft(y){ return F>0.5 ? bmSS(0,1,(bot-y)/F) : 1; }
+  function feather(draw){ if(F<=0.5){ draw(1); return; } var yF=bot-F, x0=o.x-w*3, xw=w*6, K=8, sj=Math.floor(t*30);
+    ctx.save(); ctx.beginPath(); ctx.rect(x0,belly-w,xw,yF-belly+w); ctx.clip(); draw(1); ctx.restore();
+    for(var s=0;s<K;s++){ var y0=yF+F*s/K, m=clamp(bmSS(0,1,1-(s+0.5)/K)*(0.82+0.36*bmHash(s*7.7+sj+oid)),0,1);   // dithered: per-strip shimmer
+      ctx.save(); ctx.beginPath(); ctx.rect(x0,y0,xw,F/K+0.6); ctx.clip(); draw(m); ctx.restore(); } }
   ctx.save();
   // 1 UNDERLAY
-  if(bh>=2){ var und=false; if(op.under) und=op.under(o, belly, bot, Math.min(1,A*BM.under3*(sup?1.4:1)), wk, sup, full, kind);
-    if(!und && ok(sp)){ var bm=IMG[sp], bw=2*funnelHalf(o,gy)*supK*wk/(BEAM_FOOT[sp]||0.94); ctx.globalAlpha=Math.min(1,A*BM.under*(sup?1.5:1));
-      ctx.drawImage(bm, 0, 0, bm.naturalWidth, bm.naturalHeight*clamp(bh/full,0.01,1), o.x-bw/2, belly, bw, bh); } }
+  if(bh>=2){ var uA3=Math.min(1,A*BM.under3*(sup?1.4:1)), uA=Math.min(1,A*BM.under*(sup?1.5:1)), bm=ok(sp)?IMG[sp]:null, bw=bm?2*funnelHalf(o,gy)*supK*wk/(BEAM_FOOT[sp]||0.94):0;
+    feather(function(mul){ var und=false; if(op.under) und=op.under(o, belly, bot, uA3*mul, wk, sup, full, kind);
+      if(!und && bm){ ctx.globalAlpha=uA*mul; ctx.drawImage(bm, 0, 0, bm.naturalWidth, bm.naturalHeight*clamp(bh/full,0.01,1), o.x-bw/2, belly, bw, bh); } }); }
   ctx.globalCompositeOperation='lighter';
   // 2 CLEAN CORE — the soft cone, sliced onto the funnel; + the climbing pulse bands
-  if(bh>=2){ var tex=bmTex(rgb), N=clamp(Math.round(bh/(low?10:6)),10,low?20:BM.slices), ty=tex.height, hT=half(belly), hB=half(bot); ctx.globalAlpha=clamp(A*BM.core*fl*(sup?BM.supCore:1)*(1+0.25*lk),0,1);
+  if(bh>=2){ var tex=bmTex(rgb), N=clamp(Math.round(bh/(low?10:6)),10,low?20:BM.slices), ty=tex.height, hT=half(belly), hB=half(bot), cA0=clamp(A*BM.core*fl*(sup?BM.supCore:1)*(1+0.25*lk),0,1); ctx.globalAlpha=cA0;
     ctx.save(); ctx.beginPath(); ctx.moveTo(o.x-hT,belly); ctx.lineTo(o.x+hT,belly); ctx.lineTo(o.x+hB,bot); ctx.lineTo(o.x-hB,bot); ctx.closePath(); ctx.clip();   // the true cone edge
-    for(var i=0;i<N;i++){ var y0=Math.round(belly+bh*i/N), y1=Math.round(belly+bh*(i+1)/N); if(y1<=y0) continue; var hw=half((y0+y1)/2), v0=(y0-belly)/full, v1=(y1-belly)/full;
+    for(var i=0;i<N;i++){ var y0=Math.round(belly+bh*i/N), y1=Math.round(belly+bh*(i+1)/N); if(y1<=y0) continue; var hw=half((y0+y1)/2), v0=(y0-belly)/full, v1=(y1-belly)/full; ctx.globalAlpha=cA0*ft((y0+y1)/2);
       ctx.drawImage(tex, 0, clamp(v0,0,1)*ty, tex.width, Math.max(0.5,(v1-v0)*ty), o.x-hw, y0, 2*hw, y1-y0); }
     ctx.restore();
-    var rg=ctx.createLinearGradient(0,belly,0,bot); rg.addColorStop(0,'rgba('+rs+',0)'); rg.addColorStop(0.25,'rgba('+rs+','+(A*BM.rim).toFixed(3)+')'); rg.addColorStop(1,'rgba('+rs+','+(A*BM.rim*0.6).toFixed(3)+')');
+    var rg=ctx.createLinearGradient(0,belly,0,bot); rg.addColorStop(0,'rgba('+rs+',0)'); rg.addColorStop(0.25,'rgba('+rs+','+(A*BM.rim).toFixed(3)+')'); if(F>0.5) rg.addColorStop(clamp(1-F/bh,0.26,0.99),'rgba('+rs+','+(A*BM.rim*0.6).toFixed(3)+')'); rg.addColorStop(1,'rgba('+rs+','+(A*BM.rim*0.6*(1-airK)).toFixed(3)+')');
     ctx.strokeStyle=rg; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(o.x-hT*0.97,belly); ctx.lineTo(o.x-hB*0.97,bot); ctx.moveTo(o.x+hT*0.97,belly); ctx.lineTo(o.x+hB*0.97,bot); ctx.stroke();   // the clean cone's Fresnel edge
     ctx.globalAlpha=1; ctx.lineWidth=2;
     for(var k=0;k<BM.bands;k++){ var ph=((t*0.85*(1+0.6*lk)+k/BM.bands+bmHash(oid))%1), yb=belly+full*(1-ph); if(yb>bot||yb<belly+w*0.05) continue;
-      var hb=half(yb); ctx.strokeStyle='rgba('+rs+','+(A*0.20*Math.sin(Math.PI*ph)).toFixed(3)+')'; ctx.beginPath(); ctx.ellipse(o.x,yb,hb*0.96,hb*0.15,0,0,6.2832); ctx.stroke(); } }
+      var hb=half(yb); ctx.strokeStyle='rgba('+rs+','+(A*0.20*Math.sin(Math.PI*ph)*ft(yb)).toFixed(3)+')'; ctx.beginPath(); ctx.ellipse(o.x,yb,hb*0.96,hb*0.15,0,0,6.2832); ctx.stroke(); } }
   // 3 CRACKLE — filaments streaming UP (1 = the ground, 0 = the belly), edge arcs, motes
   if(bh>=2){ var vis=bh/full, nF=Math.round((sup?BM.filSup:BM.fil)+BM.filLock*lk); if(low) nF=Math.min(nF,4); if(late) nF=Math.max(2,Math.round(nF*0.6));
     var seedJ=Math.floor(t*BM.jitHz), spd=BM.filSpd*(1+0.9*lk)*(sup?1.35:1), fCow=(late&&cs.tg)?clamp((cs.tg.y-belly)/full,0.1,1):0;
@@ -3257,7 +3265,7 @@ function beamMid(o, beamOn, sp, op){
     for(var j=0;j<nF;j++){ var hs=j*7.13+oid, u=(bmHash(hs)-0.5)*1.5, s=spd*(0.7+0.6*bmHash(hs+1)), L=0.16+0.18*bmHash(hs+2);
       var head=1-((bmHash(hs+3)+t*s)%1), tail=Math.min(vis,head+L); if(head>=vis-0.01||tail<=head) continue;
       var fA=A*bmSS(0,0.10,head)*fl; if(late) fA*=bmSS(fCow-0.04,fCow+0.12,head);   // the late stream fizzles out below the cow
-      if(fA<0.02) continue; var K=5, yH=belly+full*head, yT=belly+full*tail;
+      fA*=ft(belly+full*tail); if(fA<0.02) continue; var K=5, yH=belly+full*head, yT=belly+full*tail;
       ctx.beginPath(); for(var q=0;q<=K;q++){ var f=tail+(head-tail)*q/K, yy=belly+full*f, jx=(q>0&&q<K)?(bmHash(hs*3+q+seedJ*1.7)-0.5)*w*BM.jit:0;
         if(q===0) ctx.moveTo(o.x+u*half(yy)+jx,yy); else ctx.lineTo(o.x+u*half(yy)+jx,yy); }
       if(!low){ ctx.strokeStyle='rgba('+rs+','+(0.36*fA).toFixed(3)+')'; ctx.lineWidth=sup?5.5:4.2; ctx.stroke(); }
@@ -3267,12 +3275,16 @@ function beamMid(o, beamOn, sp, op){
         ctx.beginPath(); ctx.moveTo(fx0,fy); ctx.lineTo(fx0+(bmHash(hs+seedJ+2)-0.5)*w*0.16, fy-full*0.04*(0.5+bmHash(hs+seedJ+3))); ctx.strokeStyle='rgba(235,255,240,'+(0.7*fA).toFixed(3)+')'; ctx.lineWidth=1.1; ctx.stroke(); }
       ctx.fillStyle='rgba(255,255,255,'+(0.9*fA).toFixed(3)+')'; ctx.beginPath(); ctx.arc(o.x+u*half(yH),yH,sup?2.6:2.1,0,6.2832); ctx.fill(); }
     if(!low && !late) for(var sd=-1;sd<=1;sd+=2){ var eh=bmHash(Math.floor(t*14)*3+sd+oid); if(eh<0.30) continue;   // edge arcs crawling the cone's silhouette
-      var f0=Math.min(vis,0.30+0.55*bmHash(eh*31+sd)), f1=Math.max(0.08,f0-0.30); ctx.beginPath();
+      var f0=Math.min(vis-(F>0.5?0.7*F/full:0),0.30+0.55*bmHash(eh*31+sd)), f1=Math.max(0.08,f0-0.30); if(f0<=f1) continue; ctx.beginPath();
       for(var q=0;q<=6;q++){ var f=f0+(f1-f0)*q/6, yy=belly+full*f, xx=o.x+sd*half(yy)*0.93+(bmHash(eh*97+q)-0.5)*w*0.04; if(q===0) ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy); }
       ctx.strokeStyle='rgba('+rs+','+(0.55*A).toFixed(3)+')'; ctx.lineWidth=2.4; ctx.stroke(); ctx.strokeStyle='rgba(255,255,255,'+(0.55*A).toFixed(3)+')'; ctx.lineWidth=0.8; ctx.stroke(); }
     var nM=low?4:BM.motes; for(var m=0;m<nM;m++){ var hm=m*3.7+oid+0.5, fm=1-((bmHash(hm+1)+t*(0.25+0.3*bmHash(hm))*(1+lk))%1); if(fm>=vis) continue;
-      var ym=belly+full*fm, xm=o.x+(bmHash(hm+2)-0.5)*1.7*half(ym)+Math.sin(t*3+m)*3, am=A*0.7*Math.sin(Math.PI*fm);
+      var ym=belly+full*fm, xm=o.x+(bmHash(hm+2)-0.5)*1.7*half(ym)+Math.sin(t*3+m)*3, am=A*0.7*Math.sin(Math.PI*fm)*ft(ym);
       ctx.fillStyle='rgba(235,255,235,'+am.toFixed(3)+')'; ctx.beginPath(); ctx.arc(xm,ym,1+1.2*bmHash(hm+3),0,6.2832); ctx.fill(); } }
+  // 3b THE FRONT: a soft glowing head leads the beam down while it's in the air (no hard foot)
+  if(bh>=2 && airK>0 && !over){ var fh=half(bot), fa=A*airK*(act?0.55:0.35)*fl; ctx.save(); ctx.translate(o.x,bot-F*0.35); ctx.scale(1,0.42);
+    var fg=ctx.createRadialGradient(0,0,0,0,0,fh*1.25); fg.addColorStop(0,'rgba(255,255,255,'+clamp(0.6*fa,0,1).toFixed(3)+')'); fg.addColorStop(0.35,'rgba('+rs+','+clamp(0.5*fa,0,1).toFixed(3)+')'); fg.addColorStop(1,'rgba('+rs+',0)');
+    ctx.fillStyle=fg; ctx.beginPath(); ctx.arc(0,0,fh*1.25,0,6.2832); ctx.fill(); ctx.restore(); }
   // 4 CONTACT POINT — only while the shaft is on the ground (grown, not overpowered), and the drop puff
   var cy=gy-w*0.05, AY=0.26, touch=(act && !over && len>=1), cA=A*(late?0.5:1);
   if(touch || drop>0){ var pk=drop>0?(1-drop):1, pulse=lk>0?0.5+0.5*Math.sin(t*(6+10*lk)):0.5;
