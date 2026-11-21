@@ -1836,7 +1836,8 @@ function tryWake(){ if(!audioBlocked) return; try{ var pr=mCur.play(); if(pr&&pr
 function wakeGate(e){ if(!e.isTrusted) return;                               // stick / phone-pad synthesized keys can't unlock audio -- let them through
   var now=performance.now();
   if(audioBlocked && wakeSwallowUntil<0 && (state==='boot'||state==='cabboot'||state==='attract'||state==='title'||state==='select')) wakeSwallowUntil=now+700;   // spend it once, menus only
-  tryWake();
+  tryWake(); if(typeof suaResume==='function') suaResume();   // GROUND-UP 1121: in the 3D edition the beds play THROUGH the no-pops
+                            // WebAudio graph (make_lab adds it), so the wake press must also resume it HERE -- the swallow below stops suaResume's own listener, and the bed played into a suspended context
   if(now<wakeSwallowUntil){ e.stopImmediatePropagation(); if(e.cancelable) e.preventDefault(); } }   // the whole wake tap (down/up/click) is eaten, nothing else
 ['keydown','mousedown','pointerdown','pointerup','touchend','click'].forEach(function(ev){ addEventListener(ev,wakeGate,{capture:true,passive:false}); });
 var WAKE_TOUCH=false; try{ WAKE_TOUCH=matchMedia('(pointer:coarse)').matches; }catch(e){}
@@ -2868,7 +2869,7 @@ function drawEnding(){
   ctx.fillStyle='#39ff14'; ctx.font='900 '+clamp(W*0.07,40,84)+'px system-ui'; ctx.fillText('SUCK UP', W/2, H*0.30);
   var lines=[
     ['created by','#9fb8d0','600 '+clamp(W*0.017,11,16)+'px ui-monospace,Menlo,Consolas,monospace'],
-    ['JOSEPH COLEMAN   ·   CLAUDE   ·   CHAT GPT','#dff7e4','700 '+clamp(W*0.024,15,24)+'px system-ui'],
+    ['JOSEPH COLEMAN   ·   CLAUDE   ·   CHATGPT   ·   BLENDER','#dff7e4','700 '+clamp(W*0.024,15,24)+'px system-ui'],
     ['for','#9fb8d0','600 '+clamp(W*0.015,10,14)+'px ui-monospace,Menlo,Consolas,monospace'],
     ['CASTLE KILLSCREEN','#ffd23f','800 '+clamp(W*0.022,14,22)+'px system-ui'],
     ['ANDERS & PARTNERS LLC','#ffd23f','800 '+clamp(W*0.022,14,22)+'px system-ui'],

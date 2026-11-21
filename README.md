@@ -142,8 +142,7 @@ This build is mouse, keyboard and touch, and it ignores gamepads.
 
 ## Credits
 
-Created by **Joseph Coleman**, with Claude, ChatGPT, and Blender.
-A Castle Killscreen game by Anders & Partners LLC.
+Created by **Joseph Coleman**, Claude, ChatGPT, and Blender. Castle Killscreen · Anders & Partners.
 
 Music & SFX by **Joseph Coleman**.
 
