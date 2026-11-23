@@ -681,7 +681,7 @@ var defconArmed=false, defcon=false, defconUnlimited=false, unlockMsg='';   // D
 var EXTRA_LIFE=15000, nextExtra=EXTRA_LIFE;                 // arcade reward (from the Python build): cross this score -> +1 ship (matters most in DEFCON 1, no continues)
 var superT=0, briskN=0, SUPER_SECS=8, SUPER_EVERY=2;       // SUPER BEAM (brisket payoff): every Nth brisket arms a wider+faster beam for SUPER_SECS
 var BEAM_GRAB=0.06, SUPER_GRAB=0.11;   // beam acquisition half-width (×W) — same for you and the rival; the SUPER BEAM's is wider. The drawn beams are sized FROM these (fairness, Joe 2026-10-24)
-var runActive=false, daveSpawned=false, moTele=false, moSpawned=false, moTarget=null, moEscapeAt=0;
+var rolling=false, daveSpawned=false, moTele=false, moSpawned=false, moTarget=null, moEscapeAt=0;
 // STAGE-CLEAR interstitial (campaign only): the "where you're at" beat between segments (the original build had it).
 var resT=0, resBonus=0, resKind='round', resPerfect=false, resLast=false, RESULT_HOLD=4.0;   // captured at each clear site, shown by drawResult, then proceedSegment()
 var jetTimer=2, aaTimer=2, truck=null, bandScroll=0, roadScroll=0, bandScroll2=0, roadCarH=0;   // bandScroll = the CARS (world push + their own 58px/s); roadScroll = the ROAD SURFACE (world push only).
@@ -912,7 +912,7 @@ function drawHow(){ howTick(); if(state!=='play'||PAUSED) return; var w=howWords
   if(!HOW.beamed && HOW.playT>6 && mode!=='base'){ txt=w.beam; a=0.5+0.3*Math.abs(Math.sin(t*2.5)); }
   else if(HOW.warbleT>0){ txt=w.warble; a=Math.min(1,HOW.warbleT)*0.8; }
   if(!txt) return; ctx.save(); ctx.textAlign='center'; ctx.globalAlpha=a; ctx.fillStyle='#bdf2cf'; ctx.shadowColor='#000'; ctx.shadowBlur=6;
-  fitFont(txt,'800',clamp(W*0.015,12,17),'ui-monospace,Menlo,Consolas,monospace',W*0.7); ctx.fillText(txt, W/2, (runActive?96:78)+(superT>0?26:0)); ctx.restore(); }   // (HUD 1117) steps under the SUPER BEAM row when it is up
+  fitFont(txt,'800',clamp(W*0.015,12,17),'ui-monospace,Menlo,Consolas,monospace',W*0.7); ctx.fillText(txt, W/2, 78+(superT>0?26:0)); ctx.restore(); }   // (HUD 1117) steps under the SUPER BEAM row when it is up
    // the PHONE PAD's ❚❚ button and its row taps (script at the end)
 // LOCK-IN with no answer (Joe 1113, Q245 -- the never-auto-start rule): back to the attract (the console's front door) after
 // LOCKIN_WAIT s. Only the coin-op cab (?arcade link, a paid credit) still starts solo after 7 s.
@@ -1100,7 +1100,7 @@ var FIRE_TABLE=[
   { name:'THE BELTWAY',               porch:[7,9],   pot:[5.5,7.5], potStg:0, jets:1, jetK:2.0, strafe:'single', aa:'red',  aaGap:[4.4,5.4], miss:false, ceil:100, m0:12,   trSpd:420, truckK:2.8, cops:null },
   { name:'OUTSKIRTS',                 porch:[7,9],   pot:[5.5,7.5], potStg:0, jets:2, jetK:3.0, strafe:'burst',  aa:'red',  aaGap:[4.2,5.0], miss:false, ceil:100, m0:null, trSpd:400, truckK:2.6, cops:null } ];
 var porchT=6, porchSide=0;
-function porchStep(dt){ var f=FT(); if(!f || !f.porch || state!=='play') return; porchT-=dt; if(porchT>0) return;
+function porchStep(dt){ var f=FT(); if(!f || !f.porch || state!=='play') return; porchT-=dt*seenK(); if(porchT>0) return;   // (1123 HEAT) the porch rifle answers a lit beam faster too
   porchT=rnd(f.porch[0],f.porch[1]); porchSide^=1; var px=porchSide?W*0.985:W*0.015, py=groundY()-H*0.07;
   fx.push({x:px,y:py,kind:'aatel',col:'#ffe2a0',t:0,life:0.6,fire:true,tgt:fireTarget(),porch:true}); }
 function scripted(){ return mode==='campaign' && !stress && !!STAGE_SCRIPTS[level]; }
@@ -1148,15 +1148,15 @@ function scriptMove(c){ if(c.lifting && c.lock>0){ c.wasLift=true; return; }
   if(c.wasLift){ c.wasLift=false; c.ax=c.x-o.dx; }                  // dropped back to the ground: the pattern carries on from where it landed
   c.x=c.ax+o.dx; c.dir=o.face; c.hidden=o.hid && !c.lifting;
   if(c.form){ if(c.x<-W*0.03){ c.gone=true; c.respawn=1e9; formGone++; if(formGone===1) flash('ONE GOT AWAY — NO FORMATION BONUS','#ff9d3a',1.0); } c.y=groundY(); return; }   // the line walks off: gone
-  if(!runActive){ if(c.x<W*0.04){ c.ax+=W*0.04-c.x; c.x=W*0.04; } if(c.x>W*0.96){ c.ax-=c.x-W*0.96; c.x=W*0.96; } }   // the field's edges hold them (THE RUN lets them ride off the left and come round)
+  if(!rolling){ if(c.x<W*0.04){ c.ax+=W*0.04-c.x; c.x=W*0.04; } if(c.x>W*0.96){ c.ax-=c.x-W*0.96; c.x=W*0.96; } }   // the field's edges hold them (THE RUN lets them ride off the left and come round)
   c.y=groundY(); }
 function startLevel(idx){
   porchT=6; porchSide=0;
   level=idx; mode='campaign'; var L=LEVELS[idx]; RK=rkFor(idx);
   P=newPlayer(); R=newRival(); targets=[]; jets=[]; shots=[]; fx=[]; shake=0;
   meter=L.meter0||0; stageClock=L.clock*RK; levelLen=L.clock*RK; jetTimer=L.aa?0.6:2; aaTimer=L.aa?0.8:1.8;
-  runActive=false; runAt=0; meterStg=-1; meterTop=-1; meterTag=''; daveSpawned=false; moTele=false; moSpawned=false; moTarget=null; moEscapeAt=0; bandScroll=0; bandScroll2=0; roadScroll=0; superT=0;   // fresh round: drop any active super (brisket charge carries the run)
-  truck = L.truck ? truckRespawn({gapCd:0}) : null;   // Dave's rocket truck this round (enters from a random side, faces its travel direction)
+  rolling=false; worldV=0; darkT=0; meterStg=-1; meterTop=-1; meterTag=''; daveSpawned=false; moTele=false; moSpawned=false; moTarget=null; moEscapeAt=0; bandScroll=0; bandScroll2=0; roadScroll=0; superT=0;   // fresh round: drop any active super (brisket charge carries the run)
+  truck = L.truck ? (FIRE_TABLE[idx] && !stress ? {on:false,gapCd:0} : truckRespawn({gapCd:0})) : null;   // (1123 HEAT) in a fire-table zone the truck waits for ORANGE · Dave's rocket truck this round (enters from a random side, faces its travel direction)
   buildScenery(L.props, 0.03, L.props.length>7?0.128:0.135, L.pool);
   if(scripted()){ scriptReset(); daveSpawned=true; moSpawned=true; if(FT().m0!=null) meter=FT().m0; scriptStep(); }   // (1123) the zone's authored script (Mo + Dave are entries in it)
   else { for(var k=0;k<5;k++) spawnTarget();
@@ -1168,7 +1168,7 @@ function startLevel(idx){
 function startBase(fresh){
   mode='base'; isoKind=null; isoX=null; clock=0; if(fresh){ score=0; hp=maxHP; }            // fresh = standalone (B key); woven-in keeps score+hull
   P=newPlayer(); R=null; targets=[]; jets=[]; shots=[]; fx=[]; shake=0; bonusKind=null;   // base = solo dodge, no rival
-  meter=100; stageClock=30*BK; levelLen=30*BK; jetTimer=1.0; aaTimer=1.2; runActive=false; daveSpawned=true; moSpawned=true; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0; superT=0;
+  meter=100; stageClock=30*BK; levelLen=30*BK; jetTimer=1.0; aaTimer=1.2; rolling=false; daveSpawned=true; moSpawned=true; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0; superT=0;
   buildScenery(BASE_PROPS, 0.02, 0.112, BASE_POOL);   // MILITARY BASE — see BASE_PROPS (barracks, fence line, gate, tower, hangar; ONE commissary)
   for(var k=0;k<2;k++) spawnTarget('farmer');
   for(var k=0;k<3;k++) spawnTarget('tank');            // AA BATTERIES — the base's ground fire launches from these (no ordnance from nowhere)
@@ -1291,7 +1291,7 @@ function gpAssignPosts(ph){ var posts=gpPosts(ph), sol=[];
 function startGunpowder(fresh){
   mode='gunpowder'; clock=0; if(fresh!==false){ score=0; hp=maxHP; }
   P=newPlayer(); R=null; targets=[]; jets=[]; shots=[]; fx=[]; shake=0; bonusKind=null;
-  meter=0; stageClock=GP_LEN; levelLen=GP_LEN; runActive=false; daveSpawned=true; moSpawned=true; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0; superT=0;
+  meter=0; stageClock=GP_LEN; levelLen=GP_LEN; rolling=false; daveSpawned=true; moSpawned=true; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0; superT=0;
   gpPhase=0; gpWaveT=0; gpFell=false; gpWon=false; gpShots=[]; gpFx=[]; gpAmb=[]; gpEvents={}; gpBan=null; gpBanT=0; gpFailT=0; gpFailWhy='';
   gpScoreSet=false; gpEvac=null; gpFenceCut=false; gpWarnT=0; gpTally=null; gpCoT=9;
   gpStats={ spawned:0, beamed:0, beamPts:0, lineKills:0, soldierShots:0, soldierHits:0, atk:{}, dmg:{}, lostAt:[], lostS:0, lostC:0, wounded:0, patched:0, phaseT:[0], failAt:0 };
@@ -1667,7 +1667,7 @@ function startBonus(bi){
   var crab=(bi%2===1); if(crab){ startClaw(false,0); return; }   // CLAW & ORDER is its own hostile mission now (startClaw) — the hull carries in
   claw=null; mode='bonus'; bonusKind=crab?'crab':'backyard'; clock=0;
   P=newPlayer(); R=newRival(); targets=[]; jets=[]; shots=[]; fx=[]; shake=0; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0;
-  meter=0; stageClock=BONUS_SECONDS*BK; levelLen=BONUS_SECONDS*BK; runActive=false; daveSpawned=true; moSpawned=true; superT=0;
+  meter=0; stageClock=BONUS_SECONDS*BK; levelLen=BONUS_SECONDS*BK; rolling=false; daveSpawned=true; moSpawned=true; superT=0;
   // DAVE'S BACKYARD — still the 20s sweep-for-PERFECT (CLAW & ORDER branched off above). The yard: BACKYARD_SCENE.
   buildScenery([],0,0,[]);                                      // rolls the yard moon + resets the pools; the yard itself is COMPOSED, not dealt
   scenery=BACKYARD_SCENE.map(function(p){ return { x:W*p.x, s:p.s, sc:p.sc||1, d:p.d, fl:!!p.fl }; }); scenery.sort(function(a,b){return a.d-b.d;});
@@ -1680,7 +1680,7 @@ function startBonus(bi){
 // #1 CHAMPION LAP — the calm victory pasture: a sparse peaceful field, no army, high-value herd + Dave hands over the crown.
 function startChampionLap(){ claw=null; mode='bonus'; bonusKind='champ'; clock=0;   // 'champ' -> HUD reads CHAMPION LAP; music falls through to the calm backyard bed
   P=newPlayer(); R=newRival(); targets=[]; jets=[]; shots=[]; fx=[]; shake=0; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0;
-  meter=0; stageClock=BONUS_SECONDS*BK; levelLen=BONUS_SECONDS*BK; runActive=false; daveSpawned=true; moSpawned=true; superT=0;
+  meter=0; stageClock=BONUS_SECONDS*BK; levelLen=BONUS_SECONDS*BK; rolling=false; daveSpawned=true; moSpawned=true; superT=0;
   // #1 CHAMPION LAP — calm victory pasture, layered homesteads (deep house → near house + barn + trees)
   buildScenery([ {s:'it_house_2',d:0.5,sc:0.82}, {s:'tree',d:0.62}, {s:'it_house_10',d:1.0}, {s:'barn',d:0.92}, {s:'tree',d:1.0} ], 0.06, 0.205);
   for(var i=0;i<6;i++) targets.push(lootTarget('cow',300,0.95, W*(0.1+0.8*(i+0.5)/6), false));
@@ -1771,7 +1771,7 @@ function startClaw(fresh,seq){
   clawSeq=clamp(seq|0,0,CLAW_SEQ.length-1); var SQ=CS();
   mode='bonus'; bonusKind='crab'; clock=0; if(fresh===true){ hp=maxHP; }
   P=newPlayer(); R=newRival(); targets=[]; jets=[]; shots=[]; fx=[]; shake=0; truck=null; bandScroll=0; bandScroll2=0; roadScroll=0;
-  meter=0; stageClock=CLAW_LEN; levelLen=CLAW_LEN; runActive=false; daveSpawned=true; moSpawned=true; superT=0;
+  meter=0; stageClock=CLAW_LEN; levelLen=CLAW_LEN; rolling=false; daveSpawned=true; moSpawned=true; superT=0;
   clawScore0=score; clawHp0=hp; clawFailT=0; clawTally=null;
   claw={ hold:0, holdN:0, banked:0, bankN:0, grabs:0, chain:0, lastGrab:-99, best:1, anger:0, lv:0, hits:0, spilled:0, lost:0,
          tel:[], pend:[], fx:[], restockT:0, volleyT:CLAW_VOLLEY_EVERY*0.6, dropT:0, bailT:0, outcome:null,
@@ -2435,7 +2435,7 @@ function abduct(tg,who){
   var _claw=clawOn() && tg.kind==='loot';                          // CLAW & ORDER: your grabs go into the HOLD (clawGrab), not the score
   if(isR){ rivalScore+=tg.def.val; if(_claw) clawRivalGrab(tg); } else if(_claw) clawGrab(tg); else score+=tg.def.val;
   if(tg.def.val>0 && !(_claw && !isR)){ if(fx.length>=MAX_FX)fx.shift(); fx.push({x:sh.x,y:sh.y+SAUCER_W()*0.1,kind:'pts',col:isR?'#7fb0ff':'#ffe23a',t:0,life:0.95,val:tg.def.val,big:tg.def.val>=1000}); }   // floating +POINTS so each grab's value READS (cow 100 / person 300 / farmer 250 / Dave 2000 / Mo 3000)
-  meter=clamp(meter+tg.def.meter*(mode==='campaign'&&tg.def.meter>0?METER_GRAB_K:1)/(mode==='campaign'?RK:1),0,(mode==='campaign')?Math.max(meterCap(),Math.min(meter,100)):100); if(tg.def.meter>0 && !isR){ meterTag='ABDUCTION'; meterTagT=clock; } addFx(sh.x,sh.y,'snatch', isR?'#7fb0ff':'#7fe9ff',0.5);
+  meter=clamp(meter+tg.def.meter*(mode==='campaign'&&tg.def.meter>0?METER_GRAB_K*(isR?0.5:1):1)/(mode==='campaign'?RK:1),0,(mode==='campaign')?(isR?Math.max(meter,passiveTop()):meterCap()):100);   // (1123 HEAT) your catch can cross RED; the rival's is passive heat (half, stops under RED) if(tg.def.meter>0 && !isR){ meterTag='ABDUCTION'; meterTagT=clock; } addFx(sh.x,sh.y,'snatch', isR?'#7fb0ff':'#7fe9ff',0.5);
   smearFx(liftSprite(tg), tg.x, tg.y, sh.x, sh.y+SAUCER_W()*0.12, (tg.kind==='loot'?sz().cow*(tg.lootH||1):tg.kind==='cow'?sz().cow:sz().people)*1.2);   // (1123) the catch whips up into the saucer: a 2-frame smear
   sfx(tg.def.meter<0?'brisket':(tg.kind==='cow'||tg.isMo)?'cow':'pickup', isR?0.4:0.7);
   if(tg.isMo){ flash(isR?'RIVAL SNATCHED MO!':MO_CAUGHT_BARK, isR?'#7fb0ff':'#ffd23f',1.6); sayLater(pick(DAVE_MO_BARKS),'#ffd23f',1.5); }   // Dave's one Dairy Flats beat: he reacts to Mo
@@ -2456,22 +2456,37 @@ function abduct(tg,who){
 
 /* ---------- update ---------- */
 function stageOf(){ return meter<35?0 : meter<65?1 : meter<90?2 : 3; }
-var METER_AT=[0,35,65,90], METER_BEAM=0.8, METER_COOL=0.35, METER_WARBLE=1.5, METER_HIT=2, METER_GRAB_K=1.25;   // (1123) /s while seen · /s cooling · per warble · per hit · x each catch's own meter
-var meterStg=-1, meterTop=-1, runAt=0, meterTag='', meterTagT=-9, RUN_WORLD=44, RUN_EASE=4.0;
+// (1123 HEAT DRIVES, docs/HEAT-DRIVES-1123.md) THE HEAT METER IS THE ONLY RATCHET. There is no THE RUN any more (no banner, no timer,
+// no phase): what it carried (the jets, Dave's truck, the AA, the world rolling under you) is the meter's top bands, and each zone's
+// FIRE_TABLE ceiling is the CAP its meter can reach. Real seconds (the meter is stepped once per update, not on the doubled clock):
+//   +METER_BEAM /s while your beam is SEEN · +catch meter x METER_GRAB_K per catch (yours; the rival's count half) · +METER_HIT per hit
+//   -METER_COOL /s with your beam off, x METER_DARK_K once it has been off METER_DARK_T s (lying dark) · -METER_WARBLE per warble kick
+//   the rival's beam adds METER_RIVAL /s. Only YOUR beam/catches can carry the meter across the RED line (METER_AT[3]); passive heat
+//   (the rival, hits, the late floor) stops just under it. BACKSTOP: past METER_LATE of the zone clock the floor rises toward that line.
+// The SEARCHLIGHT: while your beam is seen the ground and the air fire at you first and their cooldowns run x SEEN_FIRE_K.
+var METER_AT=[0,35,65,90], METER_BEAM=2.0, METER_COOL=0.6, METER_DARK_T=1.5, METER_DARK_K=2.0, METER_WARBLE=2.5, METER_HIT=2, METER_GRAB_K=2.0, METER_RIVAL=0.4, METER_LATE=0.85;
+var SEEN_FIRE_K=2.4, SEEN_AIM=0.9, DARK_AIM_R=0.75;
+var meterStg=-1, meterTop=-1, meterTag='', meterTagT=-9, darkT=0, RUN_WORLD=44, RUN_EASE=4.0, worldV=0;
+function passiveTop(){ return Math.min(meterCap(), METER_AT[3]-0.01); }   // heat you did not make never crosses into RED
+// fire cadence by heat: x1.5 slower at 0, x0.7 (faster) at 100 -- "how much metal is in the air" follows the meter
+function heatK(){ return mode==='campaign' ? 1.5-0.8*clamp(meter/100,0,1) : 1; }
+function pSeen(){ return planting && P && P.stun<=0 && mode!=='base'; }
+function seenK(){ return (mode==='campaign' && pSeen()) ? SEEN_FIRE_K : 1; }
 // each stage-up is a NAMED event the player can learn: what it says, and what it switches on (read by the fire code via stageOf())
 var METER_EVENTS=[null,
   { name:'RECON FLIGHT',  line:'YELLOW — RECON FLIGHT: JETS ON THE HORIZON',         rural:'YELLOW — RECON FLIGHT: THEY\'RE WATCHING' },
   { name:'STRAFING RUNS', line:'ORANGE — STRAFING RUNS: THEY FIRE IN 3-ROUND BURSTS', rural:'ORANGE — STRAFING RUNS' },
-  { name:'AA + THE RUN',  line:'RED — AA BATTERIES · THE RUN IS ON',                 rural:'RED' } ];
+  { name:'AA BATTERIES',  line:'RED — FULL RESPONSE: AA BATTERIES OPEN',             rural:'RED' } ];
 function meterEvent(stg,ons){ var ev=METER_EVENTS[stg]; if(!ev) return; flash(ons?ev.line:ev.rural, STAGECOL[stg], 2.0); sfxT(stg>=3?'run':'transition',0.45,0.6); shake=Math.max(shake,3+stg*2); meterTag=''; }
-function meterBump(v,why){ if(mode!=='campaign'||!(v>0)) return; meter=clamp(meter+v/RK,0,meterCap()); if(why){ meterTag=why; meterTagT=clock; } }
+function meterBump(v,why){ if(mode!=='campaign'||!(v>0)) return; meter=clamp(meter+v/RK,0,Math.max(meter,passiveTop())); if(why){ meterTag=why; meterTagT=clock; } }   // (1123 HEAT) a hit is passive heat: it never tips you into RED
 // (1123) damage per round: the light, plentiful stuff (tracers, potshots) chips; the telegraphed heavy stuff (AA, missiles, rockets) hits full
 var SHOT_DMG={ tracer:20, potshot:20, copshot:25, aa:34, missile:34, rocket:34, flare:34 };   // original curve: YELLOW 35 / ORANGE 65 / RED ~90
 // HEIGHTENED RESPONSE — only urban/beltway/military maps get the RED onslaught (jet swarm + sourced ground AA).
 // Rural maps (Dairy Flats / Corn Country) build the meter for TENSION but never unleash the lethal climax.
 function onslaughtMap(){ var L=LEVELS[level]; return mode==='base' || (mode==='campaign' && !!(L&&(L.red||L.aa))); }
 // ORDNANCE targets EITHER invader (not just the player) — the collision path already damages both ships.
-function fireTarget(){ return (R && !(R.down>0) && chance(0.5)) ? R : P; }
+function fireTarget(){ if(!(R && !(R.down>0))) return P; var ps=pSeen(), rs=!!R.beamOn;   // (1123 HEAT) the SEARCHLIGHT: a live beam draws the fire
+  return chance(ps&&!rs ? 1-SEEN_AIM : rs&&!ps ? SEEN_AIM : (!ps && darkT>=METER_DARK_T) ? DARK_AIM_R : 0.5) ? R : P; }   // lying dark, they lose you: most rounds go to the other saucer
 var STAGECOL=['#39ff14','#ffe23a','#ff9d3a','#ff5d6c'], STAGENAME=['GREEN','YELLOW','ORANGE','RED'];
 
 function update(dt){
@@ -2510,34 +2525,32 @@ function update(dt){
   P._pl=planting;
   P.bank += (clamp(P.vx/190,-1,1)-P.bank)*Math.min(1,7*dt);
 
-  // meter climb (campaign only — base stays pinned RED, bonus has no military response)
-  // RURAL maps build the meter for tension but CAP below RED (never the onslaught); urban/beltway/military fill to RED.
-  // (1123) THE MILITARY RESPONSE MEANS SOMETHING. It used to fill on a timer (0.5-1.35/s whatever you did), so it read as noise
-  // and THE RUN came on the clock anyway. Now it fills only from what YOU (and the rival) do: being SEEN (a live beam is a
-  // searchlight), every abduction (abduct), fire you take (hitPlayer) and the noise of a WARBLE; lie low (no beam up) and it
-  // cools back toward the zone's baseline. Each stage-up is a named EVENT with its own fire pattern (METER_EVENTS); RED brings
-  // on THE RUN; if the clock reaches the zone's scroll point first, the brass find you anyway (RED + THE RUN, red maps only).
-  if(mode==='campaign'){ var heat=0, seen=(planting && P.stun<=0), rseen=!!(R && R.beamOn && !(R.down>0));
-    if(seen) heat+=METER_BEAM; if(rseen) heat+=METER_BEAM*0.5; if(!seen && !rseen) heat-=METER_COOL;
-    var mfloor=Math.min(meter, (FT()&&FT().m0!=null)?FT().m0:(L.meter0||0)), mcap=meterCap();
-    meter = clamp(meter + dt*heat/RK, mfloor, mcap);
-    if(warbling() && !P._wb){ meterBump(METER_WARBLE,'WARBLE NOISE'); smearFx('p1',P.x-SAUCER_W()*0.25,P.y,P.x,P.y,SAUCER_W()); }   // the warble kick: noise + a smear
+  // (1123 HEAT DRIVES) THE METER IS THE ONLY RATCHET. It fills from what YOU do (a seen beam, your catches; the rival's beam and
+  // catches and the fire you take add passive heat that stops under RED) and COOLS when you hold back: beam off, longer off = lying
+  // dark (x METER_DARK_K), and every WARBLE kick (you phase out of their sights). The zone's FIRE_TABLE ceiling caps it; the clock is
+  // only a late BACKSTOP (past METER_LATE of the zone the floor climbs toward the RED line, never across it). Each band switches on
+  // what used to be THE RUN's: YELLOW jets, ORANGE strafing bursts + Dave's truck + the world starting to roll, RED the AA batteries,
+  // missiles and the full roll. Bonus stages have no military response; the base stays pinned.
+  if(mode==='campaign'){ var seen=pSeen(), rseen=!!(R && R.beamOn && !(R.down>0)), m0=meter, ptop=passiveTop(), mcap=meterCap();
+    darkT = seen ? 0 : darkT+dt;
+    var heat = seen ? METER_BEAM : -METER_COOL*(darkT>=METER_DARK_T?METER_DARK_K:1);
+    var base0=(FT()&&FT().m0!=null)?FT().m0:(L.meter0||0), u=clamp((elapsed/Math.max(1,levelLen)-METER_LATE)/(1-METER_LATE),0,1);
+    var mfloor=Math.min(base0+(ptop-base0)*u, ptop);                                   // the late backstop
+    var m1 = meter + dt*(heat + (rseen?METER_RIVAL:0))/RK;                             // (the rival's searchlight = passive heat)
+    m1 = Math.min(m1, seen ? mcap : Math.max(Math.min(m0,mcap), ptop));                 // without your beam it never crosses into RED
+    meter = clamp(Math.max(m1, mfloor), 0, mcap);
+    if(warbling() && !P._wb){ meter=Math.max(mfloor, meter-METER_WARBLE/RK); meterTag='WARBLE: LOST YOU'; meterTagT=clock; smearFx('p1',P.x-SAUCER_W()*0.25,P.y,P.x,P.y,SAUCER_W()); }   // the warble kick: you phase out of their sights + a smear
     var nstg=stageOf(); if(meterStg<0){ meterStg=nstg; meterTop=nstg; } if(nstg>meterTop){ meterEvent(nstg, ons); meterTop=nstg; } meterStg=nstg; }   // each event fires once per zone (the first time the line is crossed)
   P._wb=warbling();
 
-  // THE RUN — once past the zone's scroll_start the world drags you back; beaming anchors you
-  var worldSpeed = 0;   // HOLD the area — work one spot for the calm part of the clock; it only moves on THE RUN
-  if(mode==='campaign' && !runActive && (elapsed>=L.scrollStart*RK || (ons && stageOf()>=3))){   // (1123) RED brings THE RUN on; the clock forces it at the zone's scroll point
-    runActive=true; runAt=elapsed;
-    if(stageOf()>=3) flash('>>> RED — THE RUN <<<','#ff5d6c',1.6);
-    else if(ons){ meter=Math.max(meter,90); meterStg=3; meterTop=3; flash('>>> THEY FOUND YOU — RED — THE RUN <<<','#ff5d6c',1.8); }
-    else flash('>>> THE RUN <<<','#ff9d3a',1.4);
-    sfx('run',0.5); }
-  if(mode==='campaign' && runActive){
-    var ramp=clamp((elapsed-runAt)/Math.max(1,levelLen-runAt),0,1);
-    worldSpeed = RUN_WORLD*ease01(clamp((elapsed-runAt)/(RUN_EASE*RK),0,1))*(0.45+0.55*ramp);   // (1123) SLOWER, EASED world move: it rolls in over RUN_EASE s (was a step to 10 px/s, then up to 62)
-    if(!planting && P.stun<=0) P.tx=clamp(P.tx-(14+40*ramp)*dt, W*0.05, W*0.95);   // softer drag toward the back edge
-  }
+  // THE WORLD ROLLS with the heat (it was THE RUN's clock-started drag): still below ORANGE, it eases in across ORANGE and is full at
+  // the top of the meter; beaming anchors you, flying lets it drag you back. Eased (RUN_EASE s) both ways, so it never steps.
+  var worldSpeed = 0;
+  if(mode==='campaign'){ var rollK=clamp((meter-METER_AT[2])/(100-METER_AT[2]),0,1), wT=RUN_WORLD*(rollK>0?0.45+0.55*rollK:0);
+    worldV += (wT-worldV)*Math.min(1, dt/(RUN_EASE*0.5)); if(worldV<0.05 && wT===0) worldV=0;
+    worldSpeed = worldV; rolling = worldV>0.5;
+    if(rolling && !planting && P.stun<=0) P.tx=clamp(P.tx-(14+40*rollK)*(worldV/RUN_WORLD)*dt, W*0.05, W*0.95);   // softer drag toward the back edge
+  } else { worldV=0; rolling=false; }
   // scenery scrolls left (the world comes at you), wrapping
   scrollScenery(worldSpeed*dt);
   // STOP-AND-GO, and the two lanes are out of phase so the road is never uniform. Both keep a floor of
@@ -2662,19 +2675,19 @@ function update(dt){
     if(c.lifting && c.lock>0){ var sh=(c.owner===2&&R)?R:P; c.x += (sh.x-c.x)*Math.min(1,dt*6);          // slide into the OWNER's beam column (player or rival)
       c.y = groundY() - (groundY()-(sh.y+SAUCER_W()*0.18))*c.lock; }
     else if(c.script){ c.y=groundY(); }
-    else { c.y=groundY(); c.x += c.dir*c.def.wander*dt; if((c.x<W*0.05&&c.dir<0&&!runActive)||(c.x>W*0.95&&c.dir>0))c.dir*=-1; }   // (1123) during THE RUN they leave off the left edge (rideGround brings them round)
+    else { c.y=groundY(); c.x += c.dir*c.def.wander*dt; if((c.x<W*0.05&&c.dir<0&&!rolling)||(c.x>W*0.95&&c.dir>0))c.dir*=-1; }   // (1123) during THE RUN they leave off the left edge (rideGround brings them round)
     var _ft=FT(), _dl=c.daveLv;
-    if(c.def.shoots && !c.lifting && (_ft ? (stg>=_ft.potStg && (!c.def.dave || _dl)) : stg>=1)){ c.fireCd-=dt; if(c.fireCd<=0){
-      c.fireCd = _ft ? (c.def.dave ? rnd(_dl.gap[0],_dl.gap[1]) : rnd(_ft.pot[0],_ft.pot[1])) : (c.def.dave?rnd(0.7,1.3):rnd(2.2,3.8));   // (1123) the zone's fire table sets the cadence; Dave by his level
+    if(c.def.shoots && !c.lifting && (_ft ? (stg>=_ft.potStg && (!c.def.dave || _dl)) : stg>=1)){ c.fireCd-=dt*seenK(); if(c.fireCd<=0){
+      c.fireCd = (_ft ? (c.def.dave ? rnd(_dl.gap[0],_dl.gap[1]) : rnd(_ft.pot[0],_ft.pot[1])) : (c.def.dave?rnd(0.7,1.3):rnd(2.2,3.8)))*heatK();   // (1123 HEAT) cadence by heat   // (1123) the zone's fire table sets the cadence; Dave by his level
       var ft=fireTarget(), dx=ft.x-c.x, dy=ft.y-(c.y-20), L2=Math.hypot(dx,dy)||1, sp=c.def.dave?(_dl?_dl.spd:520):380, nn=(c.def.dave&&_dl)?_dl.n:1;   // aim at EITHER invader
       for(var r2=0;r2<nn;r2++){ var a2=(nn>1?(r2-0.5)*0.12:0), ca=Math.cos(a2), sa=Math.sin(a2), ux=dx/L2, uy=dy/L2; shoot(c.x,c.y-30,(ux*ca-uy*sa)*sp,(ux*sa+uy*ca)*sp,'potshot',c.def.dave?'#ffd23f':'#ffe2a0'); }
       addFx(c.x,c.y-30,'spark',c.def.dave?'#ffd23f':'#ffe2a0',0.2); } }
   }
 
   /* jets */
-  var _f=FT(), jetCap = stress?9 : (mode==='base'&&isoKind)?isoKind.jets : mode==='base'?4 : _f?(_f.jets+(defcon&&_f.jets?1:0)) : (defcon?3:2);   // (1123) the zone's fire table: how many planes                       // DEFCON 1 = a 3-jet swarm (normal caps at 2)
+  var _f=FT(), jetCap = stress?9 : (mode==='base'&&isoKind)?isoKind.jets : mode==='base'?4 : _f?((stg>=2?_f.jets:Math.min(1,_f.jets))+(defcon&&_f.jets?1:0)) : (defcon?3:2);   // (1123 HEAT) one plane until ORANGE, the zone's full count from ORANGE   // (1123) the zone's fire table: how many planes                       // DEFCON 1 = a 3-jet swarm (normal caps at 2)
   var jetGap = stress?0.35 : mode==='base'?0.9 : (stg>=3?(defcon?1.25:1.7):(defcon?1.9:2.4));   // DEFCON 1 = tighter jet cadence
-  if((stg>=1 || aaHot) && jetCap>0){ jetTimer-=dt; if(jetTimer<=0 && jets.length<jetCap){ spawnJet(stg, _f ? (_f.strafe==='none') : (!ons || (stg===1 && !aaHot))); jetTimer=jetGap+rnd(0,jetGap); } }   // rural / YELLOW = looms only (no strafing run)
+  if((stg>=1 || (aaHot && !_f)) && jetCap>0){ jetTimer-=dt; if(jetTimer<=0 && jets.length<jetCap){ spawnJet(stg, _f ? (_f.strafe==='none') : (!ons || (stg===1 && !aaHot))); jetTimer=jetGap+rnd(0,jetGap); } }   // rural / YELLOW = looms only (no strafing run)
   for(var j=jets.length-1;j>=0;j--){ var je=jets[j];
     if(je.disabled){ je.spinT+=dt; je.x+=je.vx*dt; je.vy-=70*dt; je.y+=je.vy*dt; je.scale=Math.max(0,je.scale-dt*0.55); je.bank+=dt*16;   // DISABLED: tumble back into the distance + shrink
       if(chance(0.55)) addFx(je.x+rnd(-6,6),je.y+rnd(-4,4),'smoke','#9aa6b0',0.55);   // sputtering smoke trail as it banks away
@@ -2688,9 +2701,9 @@ function update(dt){
     // -> it spins out into the background. The beam is a barrier; this also culls planes.
     if((mode!=='base' && planting && P.stun<=0 && Math.abs(je.x-P.x)<SAUCER_W()*0.45 && je.y>P.y-SAUCER_W()*0.12) ||
        (R && R.beamOn && R.stun<=0 && Math.abs(je.x-R.x)<SAUCER_W()*0.45 && je.y>R.y-SAUCER_W()*0.12)){ disableJet(je); continue; }   // beam shield — NOT in the base gauntlet (beam is OFF there; this was an invisible auto-defense)
-    if(mode==='campaign' && (_f ? _f.strafe!=='none' : ons) && !stress && (stg>=1 || aaHot)){ je.fireCd-=dt;   // (1123) PATTERNED FIRE: YELLOW = a single aimed round · ORANGE+ = a TELEGRAPHED 3-round fan (nose flash first, then a spread with gaps)
+    if(mode==='campaign' && (_f ? _f.strafe!=='none' : ons) && !stress && (stg>=1 || (aaHot && !_f))){ je.fireCd-=dt*seenK();   // (1123) PATTERNED FIRE: YELLOW = a single aimed round · ORANGE+ = a TELEGRAPHED 3-round fan (nose flash first, then a spread with gaps)
       if(je.fireCd<=0 && je.x>W*0.1 && je.x<W*0.9){ var burst=(stg>=2) && (!_f || _f.strafe==='burst');
-        je.fireCd = (burst ? (defcon?rnd(1.3,1.9):rnd(1.7,2.5)) : (defcon?rnd(1.5,2.1):rnd(1.9,2.8))) * ((_f&&_f.jetK)||1);   // (1123) the fire table can thin a zone's strafing
+        je.fireCd = (burst ? (defcon?rnd(1.3,1.9):rnd(1.7,2.5)) : (defcon?rnd(1.5,2.1):rnd(1.9,2.8))) * ((_f&&_f.jetK)||1) * heatK();   // (1123) the fire table can thin a zone's strafing
         if(stg>=3 && (_f ? _f.miss : level>=2) && chance(0.3)){ shoot(je.x,je.y+10,je.vx*0.3,60,'missile','#ff5d6c'); shots[shots.length-1].tgt=fireTarget(); addFx(je.x,je.y,'spark','#ff9d3a',0.2); sfxT('rocket',0.5,0.3); }
         else { var ftj=fireTarget(); fx.push({x:je.x,y:je.y,kind:'jtel',col:'#fff2a0',t:0,life:burst?0.42:(scripted()?0.42:0.30),fire:true,je:je,tgt:ftj,ax:ftj.x,ay:ftj.y,n:burst?3:1}); } } }
     else if(ons && (stg>=2 || aaHot)){ je.fireCd-=dt; if(je.fireCd<=0 && je.x>W*0.1 && je.x<W*0.9){ je.fireCd=stress?rnd(0.25,0.6):(defcon?rnd(0.6,1.15):rnd(0.8,1.6));
@@ -2708,9 +2721,9 @@ function update(dt){
   }
 
   /* ground AA — NO ordnance from nowhere: it launches from an on-field TANK (the AA battery), aimed at either invader */
-  if(_f ? (_f.aa==='hot' || (_f.aa==='red' && stg>=3)) : (ons && (stg>=3 || aaHot))){ aaTimer-=dt; if(aaTimer<=0){
+  if(_f ? (_f.aa==='hot' || (_f.aa==='red' && stg>=3)) : (ons && (stg>=3 || aaHot))){ aaTimer-=dt*seenK(); if(aaTimer<=0){
     var tks=[]; for(var ti=0;ti<targets.length;ti++){ var tc=targets[ti]; if(!tc.gone && !tc.lifting && tc.kind==='tank') tks.push(tc); }
-    if(tks.length){ aaTimer= (FT()&&FT().aaGap)?rnd(FT().aaGap[0],FT().aaGap[1]) : stress?rnd(0.25,0.6) : (mode==='base'&&isoKind)?rnd(2.0,2.8) : mode==='base'?rnd(0.8,1.4) : (defcon?rnd(1.4,2.0):rnd(1.8,2.4));   // DEFCON 1 = hotter ground AA
+    if(tks.length){ aaTimer= (FT()&&FT().aaGap)?rnd(FT().aaGap[0],FT().aaGap[1])*heatK() : stress?rnd(0.25,0.6) : (mode==='base'&&isoKind)?rnd(2.0,2.8) : mode==='base'?rnd(0.8,1.4) : (defcon?rnd(1.4,2.0):rnd(1.8,2.4));   // DEFCON 1 = hotter ground AA
       var tk=tks[(Math.random()*tks.length)|0];
       fx.push({x:tk.x,y:groundY()-sz().tank*0.45,kind:'aatel',col:'#ff5d6c',t:0,life:0.6,fire:true,tgt:fireTarget()}); }
     else { if(!scripted() && countKind('tank')<1 && targets.length<=8) spawnTarget('tank'); aaTimer=0.4; }   // (scripted zones: the batteries are script entries; none on the field = no AA)   // no source at onslaught stage -> a battery rolls in (the heightened response), retry soon
@@ -2830,12 +2843,12 @@ function truckRespawn(t){ t.dir = chance(0.5)?-1:1; t.reverse = chance(0.22);
   t.x = t.dir<0 ? W+W*0.06 : -W*0.06; t.on=true; t.fireCd=rnd(0.8,TRUCK_FIRE); return t; }
 function updateTruck(dt){
   if(!truck || state!=='play') return;
-  if(!truck.on){ truck.gapCd-=dt; if(truck.gapCd<=0){ truckRespawn(truck);
+  if(!truck.on){ truck.gapCd-=dt; if(truck.gapCd<=0 && !(FT() && stageOf()<2)){ truckRespawn(truck);   // (1123 HEAT) Dave's truck is an ORANGE call-in
       if(chance(0.5)) flash(pick(BRENDA_BARKS),'#ffd27a',1.2); } return; }
   truck.x += truck.dir*W*TRUCK_SPEED*dt; truckLanes(dt);
   if(truck.dir<0 ? truck.x < -W*0.06 : truck.x > W+W*0.06){ truck.on=false; truck.gapCd=TRUCK_GAP; return; }
-  truck.fireCd-=dt;
-  if(truck.fireCd<=0 && truck.x>0 && truck.x<W){ var tk2=(FT()&&FT().truckK)||1; truck.fireCd=rnd(TRUCK_FIRE*0.7,TRUCK_FIRE*1.3)*tk2;   // (1123) the fire table can slow Dave's truck
+  truck.fireCd-=dt*seenK();
+  if(truck.fireCd<=0 && truck.x>0 && truck.x<W){ var tk2=(FT()&&FT().truckK)||1; truck.fireCd=rnd(TRUCK_FIRE*0.7,TRUCK_FIRE*1.3)*tk2*heatK();   // (1123) the fire table can slow Dave's truck
     var ft=fireTarget(), ax=clamp(ft.x+rnd(-W*0.03,W*0.03),0,W), by=truckRoad()? (function(b){ return b.base-b.h*0.85; })(truckRoadBox()) : truckBedY()-sz().cow*0.4;
     var dx=ax-truck.x, dy=(ft.y-by), L=Math.hypot(dx,dy)||1;                      // aim up at EITHER saucer (rocket = less warning, lethal at any heat)
     shoot(truck.x, by, dx/L*ROCKET_SPEED, dy/L*ROCKET_SPEED, 'rocket','#ff8a2a'); sfxT('rocket',0.3,0.5);
@@ -2922,8 +2935,8 @@ function updateCopFire(dt,stg){
   if(DEV){ var cq=window.__cops||(window.__cops={tel:0,rounds:0,walls:0}); cq.stg=Math.max(cq.stg||0,stg); cq.spots=Math.max(cq.spots||0,COPSPOT.length); cq.vol=+copVolT.toFixed(2); }
   if(stg<1 || !COPSPOT.length) return;
   var hot=(defcon?0.8:1)*((FT()&&FT().cops)?FT().cops.gapK:1);
-  copT-=dt; if(copT<=0){ var c=COPSPOT[(Math.random()*COPSPOT.length)|0];
-    copT=(stg>=3?rnd(1.3,2.0):stg>=2?rnd(1.7,2.5):rnd(2.6,3.8))*hot;
+  copT-=dt*seenK(); if(copT<=0){ var c=COPSPOT[(Math.random()*COPSPOT.length)|0];
+    copT=(stg>=3?rnd(1.3,2.0):stg>=2?rnd(1.7,2.5):rnd(2.6,3.8))*hot*heatK();
     fx.push({x:c.x,y:c.y,k:c.k,kind:'coptel',col:'#ff5d6c',t:0,life:COPFIRE.tel,fire:true,burst:stg>=2?3:1,tgt:fireTarget()}); }
   if(stg>=3 && !(FT()&&FT().cops&&!FT().cops.wall)){ copVolT-=dt; if(copVolT<=0){ copVolT=rnd(3.2,4.6)*hot;
     var sp=COPSPOT.slice(0,COPFIRE.wallMax);
@@ -4182,7 +4195,7 @@ function drawHUD(){
     ctx.fillStyle = score>=rivalScore?'#39ff14':'#3cc8ff'; ctx.font='800 11px ui-monospace,Menlo,Consolas,monospace';
     ctx.fillText(score>=rivalScore?'▲ LEADING':'▼ BEHIND', 22, 72);
   } else { ctx.fillStyle='#dff7e4'; ctx.font='800 22px system-ui'; ctx.fillText('SCORE  '+score, 22, 36); }
-  if(superT>0){ ctx.textAlign='center'; var spp=clamp(superT/SUPER_SECS,0,1), suy=runActive?96:74;   // SUPER BEAM badge + drain bar -- (HUD 1117) in the row UNDER the clock (was y 30/38: over the zone label and through the clock digits)
+  if(superT>0){ ctx.textAlign='center'; var spp=clamp(superT/SUPER_SECS,0,1), suy=74;   // SUPER BEAM badge + drain bar -- (HUD 1117) in the row UNDER the clock (was y 30/38: over the zone label and through the clock digits)
     ctx.fillStyle=(Math.floor(t*8)%2)?'#ffd23f':'#fff'; ctx.font='800 14px ui-monospace,Menlo,Consolas,monospace'; ctx.fillText('★ SUPER BEAM ★', W/2, suy);
     ctx.fillStyle='rgba(255,210,63,.85)'; ctx.fillRect(W/2-60, suy+6, 120*spp, 4); ctx.textAlign='left'; }
   // HULL (1123, a playtester couldn't find his health): a BIG arcade gauge, ~2x the old 16 px pill. Square-cut frame, the word HULL
@@ -4198,7 +4211,6 @@ function drawHUD(){
   var segLabel = mode==='gunpowder'?'GUNPOWDER':(mode==='base'&&isoKind)?'ISOLATION':mode==='base'?'BASE':mode==='bonus'?'BONUS':('ZONE '+(level+1));
   ctx.fillStyle='#9c89c4'; ctx.font='800 13px system-ui'; ctx.fillText(segLabel+'  ·  '+zoneName, W/2, 22);
   ctx.fillStyle= stageClock<10?'#ff5d6c':'#fff'; ctx.font='800 30px system-ui'; ctx.fillText(Math.max(0,Math.ceil(stageClock))+'', W/2, 52);
-  if(runActive){ ctx.fillStyle='#ff9d3a'; ctx.font='800 14px system-ui'; ctx.globalAlpha=0.6+0.4*Math.sin(clock*9); ctx.fillText('>>> THE RUN <<<', W/2, 74); ctx.globalAlpha=1; }
   // meter — or, in a bonus sweep, the loot-remaining readout (no military response)
   var stg=stageOf(), mw=clamp(W*0.34,260,520), mx=(W-mw)/2, my=H-34;   // (HUD 1117) bottom edge H-20 = the HULL bar's 20 px top inset mirrored (was H-30: 5.5 px off the bezel)
   if(mode==='gunpowder'){ gpDrawHUD(); }
@@ -4236,14 +4248,15 @@ function drawMeter(mx,my,mw,stg){ var bh=18, ons=onslaughtMap(), cap=meterCap();
   ctx.save(); ctx.fillStyle='rgba(4,8,12,0.78)'; ctx.fillRect(mx-3,my-3,mw+6,bh+6); ctx.fillStyle='#0c1a12'; ctx.fillRect(mx,my,mw,bh);
   var grad=ctx.createLinearGradient(mx,0,mx+mw,0); grad.addColorStop(0,'#39ff14'); grad.addColorStop(.45,'#ffe23a'); grad.addColorStop(.75,'#ff9d3a'); grad.addColorStop(1,'#ff5d6c');
   ctx.fillStyle=grad; ctx.fillRect(mx,my,mw*(meter/100),bh);
-  if(!ons){ ctx.fillStyle='rgba(4,8,12,0.75)'; ctx.fillRect(mx+mw*cap/100,my,mw*(1-cap/100),bh); }
+  if(cap<100){ ctx.fillStyle='rgba(4,8,12,0.75)'; ctx.fillRect(mx+mw*cap/100,my,mw*(1-cap/100),bh);   // (1123 HEAT) the zone's CEILING: the meter can't go past it
+    ctx.fillStyle='rgba(255,255,255,0.85)'; ctx.fillRect(mx+mw*cap/100-1,my-2,2,bh+4); }
   var nxt=stg+1<=3?stg+1:0;
-  for(var k=1;k<=3;k++){ var lx=mx+mw*METER_AT[k]/100; if(!ons && METER_AT[k]>cap) continue; var isN=(k===nxt);
+  for(var k=1;k<=3;k++){ var lx=mx+mw*METER_AT[k]/100; if(METER_AT[k]>cap) continue; var isN=(k===nxt);
     ctx.fillStyle=isN?(Math.floor(t*4)%2?'#ffffff':STAGECOL[k]):'rgba(255,255,255,0.55)'; ctx.fillRect(lx-1.5,my-5,3,bh+10); }
   ctx.textAlign='center'; ctx.font='800 '+clamp(W*0.0105,11,14)+'px ui-monospace,Menlo,Consolas,monospace'; ctx.fillStyle=STAGECOL[stg];
-  var head='MILITARY RESPONSE — '+STAGENAME[stg]+(runActive?'  ·  THE RUN':'');
-  if(nxt && (ons || METER_AT[nxt]<=cap)){ var ev=METER_EVENTS[nxt]; head+='   ▸ '+METER_AT[nxt]+' = '+ev.name; }
-  else if(!ons) head+='   ·   COUNTRY: NO RED';
+  var head='MILITARY RESPONSE — '+STAGENAME[stg];
+  if(nxt && METER_AT[nxt]<=cap){ var ev=METER_EVENTS[nxt]; head+='   ▸ '+METER_AT[nxt]+' = '+ev.name; }
+  else if(cap<100) head+='   ·   ZONE CEILING '+STAGENAME[cap<35?0:cap<65?1:cap<90?2:3];
   ctx.fillText(head, W/2, my-9);
   if(meterTag && clock-meterTagT<1.6){ ctx.globalAlpha=clamp(1.6-(clock-meterTagT),0,1); ctx.fillStyle='#ffd23f'; ctx.textAlign='left'; ctx.fillText('▲ '+meterTag, mx+mw+12, my+bh-3); }
   ctx.restore(); }
@@ -4479,9 +4492,10 @@ if(/[?&]soak\b/.test(location.search)){
 //   RIVAL HULL   tracers / jets / AA damage it like P1 · 3 hits = SHIP DOWN (retreats UP, catch released, no foreground crash)
 //                · clean respawn (on screen, full hull, beam off, invulnerable window) · every 3rd ship = CONTINUE −500
 //   2P TUG       a contested catch changes hands only through the tug (no halving, no drop)
-//   METER        no passive fill · beaming / catches / hits raise it · each stage-up fires its named event · RED brings THE RUN
+//   METER        (HEAT DRIVES) the only ratchet: your beam / catches raise it, beam-off / dark / warble cool it, passive heat never crosses RED,
+//                the zone ceiling caps it, the late floor is a backstop, the world rolls from ORANGE · no THE RUN
 //   BONUS        three CLAW sequels open on their card, escalate, give the hull back · ISOLATION has no rival, no beam, a pickup
-//   WORLD        props + units hold still until the world moves; during THE RUN units ride the near ground 1:1
+//   WORLD        props + units hold still until the world moves; while it rolls (heat) units ride the near ground 1:1
 var SELFTEST=/[?&]selftest\b/.test(location.search);
 function runSelftest1123(){ var R0=[], A0=AUDIO_ON; AUDIO_ON=false;
   function ok(name,cond,info){ R0.push({n:name,ok:!!cond,i:info==null?'':String(info)}); }
@@ -4543,14 +4557,22 @@ function runSelftest1123(){ var R0=[], A0=AUDIO_ON; AUDIO_ON=false;
     planting=false; meter=34; meterStg=0; meterTop=0; msg=''; var c3=cow(P.x); planting=true; P.x=P.tx=c3.x; for(var k=0;k<120 && stageOf()<1;k++) stepN(1); stepN(2);
     ok('crossing 35 fires the named event (RECON FLIGHT)', stageOf()>=1 && EVS.indexOf(1)>=0 && /RECON/.test(METER_EVENTS[1].line), 'events '+EVS.join(',')+' meter '+meter.toFixed(2)+' top '+meterTop+' mode '+mode+' st '+state);
     fresh(3); meter=89.9; meterStg=2; meterTop=2; planting=true; stepN(60);
-    ok('RED brings THE RUN (before the clock)', runActive && (levelLen-stageClock)<LEVELS[3].scrollStart*RK, 'run '+runActive+' at '+(levelLen-stageClock).toFixed(1)+'s (zone 4) meter '+meter.toFixed(1)+' state '+state+' stun '+P.stun);
-    fresh(1); planting=false; stageClock=levelLen-LEVELS[1].scrollStart*RK-0.05; var mr=meter; stepN(10);
-    ok('a country zone: the clock brings THE RUN, the meter is not forced to RED', runActive && stageOf()<3, 'meter '+meter.toFixed(1));
+    fresh(3); meter=89.9; meterStg=2; meterTop=2; planting=true; stepN(60);
+    ok('HEAT: your beam carries the meter into RED; the world starts to roll (no THE RUN, no clock)', stageOf()===3 && worldV>0, 'meter '+meter.toFixed(1)+' worldV '+worldV.toFixed(1));
+    planting=false; var mR=meter; stepN(30); var mA=meter; stepN(150); var mB=meter;
+    ok('HEAT: beam off cools it, and lying dark cools it faster', mA<mR && (mA-mB)/150 > (mR-mA)/30*1.2, mR.toFixed(1)+' -> '+mA.toFixed(1)+' -> '+mB.toFixed(1));
+    meter=70; P.warbleCd=-9; P._wb=false; P.warbleU=clock+0.5; stepN(1); var mW=meter; P.warbleU=-9; stepN(2);
+    ok('HEAT: a WARBLE kick cools the meter', mW<=70-METER_WARBLE*0.9/RK, '70 -> '+mW.toFixed(2));
+    fresh(5); planting=false; R.stun=1e9; meter=passiveTop()-1; for(var k=0;k<20;k++){ meterBump(METER_HIT,'FIRE TAKEN'); } var mH=meter;
+    stageClock=1; stepN(55); var mL=meter;
+    ok('HEAT: passive heat (hits, the late floor) never crosses into RED', mH<METER_AT[3] && mL<METER_AT[3] && mL>=passiveTop()-2, 'hits -> '+mH.toFixed(2)+', late floor -> '+mL.toFixed(2));
+    fresh(0); meter=60; planting=true; P.y=P.ty=b.top+40; stepN(60*12);
+    ok('HEAT: the stage ceiling caps it (Dairy Flats tops out under ORANGE)', meter>=FIRE_TABLE[0].ceil-0.5 && meter<=FIRE_TABLE[0].ceil+0.01 && stageOf()<2, 'meter '+meter.toFixed(1)+' ceil '+FIRE_TABLE[0].ceil);
     // ---- WORLD (the floating fix)
     fresh(0); R.stun=1e9; var c4=cow(W*0.5); c4.def.wander=0; var sx=scenery.map(function(p){return p.x;}), rs=roadScroll, cx0=c4.x; stepN(120);
-    var movedP=scenery.filter(function(p,i){return p.x!==sx[i];}).length; ok('before THE RUN nothing slides: props, ground odometer and a standing cow hold still', roadScroll===rs && c4.x===cx0 && !movedP, 'odo '+rs+'->'+roadScroll+' cow '+cx0.toFixed(1)+'->'+c4.x.toFixed(1)+' props moved '+movedP+' gone '+c4.gone);
-    runActive=true; runAt=levelLen-stageClock-RUN_EASE*RK; var o1=roadScroll, x1=c4.x; stepN(60); var dOdo=roadScroll-o1, dCow=x1-c4.x;
-    ok('during THE RUN a standing unit rides the near ground 1:1', dOdo>1 && Math.abs(dOdo-dCow)<0.01, 'ground '+dOdo.toFixed(2)+' cow '+dCow.toFixed(2)+' gone '+c4.gone+' lift '+c4.lifting+' mode '+mode+' st '+state);
+    var movedP=scenery.filter(function(p,i){return p.x!==sx[i];}).length; ok('below ORANGE nothing slides: props, ground odometer and a standing cow hold still', roadScroll===rs && c4.x===cx0 && !movedP, 'odo '+rs+'->'+roadScroll+' cow '+cx0.toFixed(1)+'->'+c4.x.toFixed(1)+' props moved '+movedP+' gone '+c4.gone);
+    fresh(3); R.stun=1e9; c4=cow(W*0.5); c4.def.wander=0; meter=100; worldV=RUN_WORLD; P.stun=9; var o1=roadScroll, x1=c4.x; stepN(60); var dOdo=roadScroll-o1, dCow=x1-c4.x;
+    ok('while the world rolls (top of the meter) a standing unit rides the near ground 1:1', dOdo>1 && Math.abs(dOdo-dCow)<0.01, 'ground '+dOdo.toFixed(2)+' cow '+dCow.toFixed(2)+' gone '+c4.gone+' lift '+c4.lifting+' mode '+mode+' st '+state);
     fresh(0); R.stun=1e9; var c5=cow(W*0.6); c5.def.wander=0; resKind='round'; state='zonemove'; zmT=0.4; var near=null, far=null; for(var i=0;i<scenery.length;i++){ var sp=scenery[i]; if(sp.x>W*0.1&&sp.x<W*0.9){ if(sp.d>=FAR_SPLIT&&!near) near=sp; if(sp.d<FAR_SPLIT&&!far) far=sp; } }
     var o5=roadScroll, x5=c5.x, nx=near?near.x:0, fx0=far?far.x:0; stepN(30); var dO=roadScroll-o5;
     ok('THE ZONE MOVE: the cow and the near props ride the ground 1:1, far props at FAR_PAR', dO>5 && Math.abs((x5-c5.x)-dO)<0.01 && (!near||Math.abs((nx-near.x)-dO)<0.01) && (!far||Math.abs((fx0-far.x)-dO*FAR_PAR)<0.01), 'ground '+dO.toFixed(1)+' cow '+(x5-c5.x).toFixed(1)+' near '+(near?(nx-near.x).toFixed(1):'-')+' far '+(far?(fx0-far.x).toFixed(1):'-'));
@@ -4575,7 +4597,7 @@ function runSelftest1123(){ var R0=[], A0=AUDIO_ON; AUDIO_ON=false;
       while(stageClock>0.6 && state==='play'){ P.x=P.tx=W*0.5; P.y=P.ty=b2.top; if(R) R.stun=1e9; clock+=dt2; update(dt2);
         var cnt={}; for(var i=0;i<targets.length;i++){ var c=targets[i]; if(c.gone||!c.script) continue;
           if(!c.form){ var cl=stageClass(c.sk); cnt[cl]=(cnt[cl]||0)+1; }
-          if(!c.lifting && (Math.abs(c.y-groundY())>0.5 || c.x<-W*0.06 || c.x>W*(c.form?1.4:runActive?1.3:1.06))){ off++; if(!bad) bad=c.sk+' '+c.x.toFixed(0)+','+c.y.toFixed(0)+' W'+W+' run'+runActive+' lock'+c.lock.toFixed(2)+' own'+c.owner+' st'+state; } }
+          if(!c.lifting && (Math.abs(c.y-groundY())>0.5 || c.x<-W*0.06 || c.x>W*(c.form?1.4:rolling?1.3:1.06))){ off++; if(!bad) bad=c.sk+' '+c.x.toFixed(0)+','+c.y.toFixed(0)+' W'+W+' run'+rolling+' lock'+c.lock.toFixed(2)+' own'+c.owner+' st'+state; } }
         for(var i=0;i<targets.length;i++){ var c=targets[i]; if(!c.gone && c.script && !c.form && !c.def.hazardGrab && (levelLen-stageClock)-c.pt0>10*RK && !c.lifting) abduct(c,1); }   // a player who takes what's out there
         for(var k in cnt) peak[k]=Math.max(peak[k]||0,cnt[k]); }
       GOD=false; return { peak:peak, off:off, bad:bad, log:JSON.stringify(scrLog), n:scrLog.length, all:scrList.length }; }
@@ -4698,7 +4720,7 @@ if(DEV){ window.__su1123=(function(){
         if(state==='over'){ st.hits+=0; }
         lastHp=hp; lastLives=lives;
         if(mode==='campaign'){ var sg=stageOf(); if(sg!==lastStg){ if(lastStg>=0 && sg>lastStg) st.stageUps.push([segIdx,sg,+(levelLen-stageClock).toFixed(1)]); if(sg===3) st.red.push([segIdx,+(levelLen-stageClock).toFixed(1)]); lastStg=sg; }
-          if(runActive && !lastRun) st.run.push([segIdx,+(levelLen-stageClock).toFixed(1)]); lastRun=runActive; }
+          if(rolling && !lastRun) st.run.push([segIdx,+(levelLen-stageClock).toFixed(1)]); lastRun=rolling; }
         if(R && !twoP && mode!=='base'){ if(R.lives<rl || (R.lives>rl && rl===1)) { st.rDeaths++; } if(R.lives>rl && rl===1) st.rConts++;
           if(R.hp<rh && R.lives===rl) st.rHits++; else if(R.lives!==rl) st.rHits++;
           rl=R.lives; rh=R.hp;
