@@ -128,7 +128,7 @@
     background:linear-gradient(180deg,#e9e4d2,#b9b29c);color:#141414;box-shadow:0 0 0 1px #000,0 2px 3px rgba(0,0,0,.7)}
   #mix button.off{background:linear-gradient(180deg,#ff6b78,#b8323f);color:#140405}
 </style>
-<!--@BUILD@--><!-- tools/build_editions.py replaces this marker with `<script>window.__SUCKUP_BUILD='mouse'|'stick'</script>` to BAKE a distributable edition (no URL param needed). Left as an inert comment in the master/dev build. -->
+<script>window.__SUCKUP_BUILD='mouse';window.__SUCKUP_MODE='arcade';</script><!-- tools/build_editions.py replaces this marker with `<script>window.__SUCKUP_BUILD='mouse'|'stick'</script>` to BAKE a distributable edition (no URL param needed). Left as an inert comment in the master/dev build. -->
 </head>
 <body>
 <div id="tpanel"><div class="art"><img id="tpimg" alt=""><canvas id="tpfx"></canvas></div></div>
@@ -2270,6 +2270,31 @@ function warbling(){ return warblingS(P); }
 // BEAM CONTEST tuning — how a fought-over catch resolves. DRAG is the fraction of normal lock speed the
 // ESTABLISHED owner keeps while contested (1 = contest does nothing, 0 = the old total denial).
 var CONTEST_DRAG=0.45, CONTEST_BACKOFF=2.2;
+// (1123b, Joe LIVE: "blue ship not only bonk, but then its beam STEALS your beam up") YOUR LIFT IS YOURS, both ways (1P):
+// a catch you are lifting, and anything that falls out of your beam for DROP_GRACE s after (a bonk, a hit, a stun, letting go),
+// can't be locked or lifted by the rival; only you can re-grab it. The same protects the rival's lifts from you.
+// Joe (1123, clarified): "stalling your suck up by trying to beam the same thing, it just sorta hangs in the air … if you take your
+// finger off beam you just lose the battle" + "I dont want it gone completely yet". So STEALING STAYS, but fair:
+//   · a crossed beam on a lift is a CONTEST that resolves in CONTEST_SECS (never hangs): the owner keeps lifting (dragged),
+//     the challenger builds its own progress; at the bell the higher of (progress + FIRST_BONUS for whoever locked first) wins,
+//     ties to the human. The loser can't re-contest that catch for DROP_GRACE s (the CPU peels off to another target).
+//   · LET GO and the catch FALLS (the normal drop), it never snaps to the other ship; the one who dropped it gets DROP_GRACE s
+//     in which only they can re-grab it, and the other has to lock it from scratch afterwards.
+//   · the CPU reacts like a person: 300-450 ms after a new target / a drop / a contest opens (rivalReact), never same-frame.
+var DROP_GRACE=3, CONTEST_SECS=1.2, FIRST_BONUS=0.25, CLK_PER_S=2;   // NB the game `clock` runs 2x wall time (frame() and update() both advance it): clock-based windows below are seconds x CLK_PER_S
+function pMine(c){ return c.pHeld!=null && clock-c.pHeld<DROP_GRACE*CLK_PER_S; }   // you held it within DROP_GRACE (callers exclude the catch you're lifting right now: that one is contestable)   // the rival may not touch it
+function rMine(c){ return c.rHeld!=null && clock-c.rHeld<DROP_GRACE*CLK_PER_S; }   // you may not touch it
+function contest1P(tg,dt){   // both beams on one catch, 1P. Bounded: resolves at CONTEST_SECS.
+  var cs=tg.cst; if(!cs || clock-cs.seen>0.1){ cs=tg.cst={ t:0, first:tg.owner||1, pp:0, rp:0, seen:clock }; if(R) R.contestCd=clock+CONTEST_BACKOFF; }
+  cs.seen=clock; cs.t+=dt; tg.lifting=true;
+  if(tg.owner===2){ tg.lock=clamp(tg.lock+dt/(tg.def.lock*blueLockMul())*CONTEST_DRAG,0,1); cs.pp+=dt/tg.def.lock*(superT>0?2:1); R.lock=tg; tg.rHeld=clock; if(tg.lock>=1){ tg.cst=null; abduct(tg,2); return; } }
+  else { tg.owner=1; tg.pHeld=clock; tg.lock=clamp(tg.lock+dt/tg.def.lock*(tg.lock>0&&cs.first===1?CONTEST_DRAG:1)*(superT>0?2:1),0,1); cs.rp+=dt/(tg.def.lock*blueLockMul()); P.lock=tg; if(tg.lock>=1){ tg.cst=null; abduct(tg,1); return; } }
+  var pS=(tg.owner===1?tg.lock:cs.pp)+(cs.first===1?FIRST_BONUS:0), rS=(tg.owner===2?tg.lock:cs.rp)+(cs.first===2?FIRST_BONUS:0);
+  tg.tugLead=pS>=rS?1:2; tg.tugP=pS/Math.max(0.01,pS+rS);
+  if(cs.t>=CONTEST_SECS){ tg.cst=null;
+    if(pS>=rS){ if(tg.owner===2){ tg.lock=Math.max(0.05,cs.pp); flash('STOLEN BACK!','#39ff14',0.9); sfxT('snatch',0.4,0.4); } tg.owner=1; tg.pHeld=clock; P.lock=tg; if(R) R.lock=null; tg.noR=clock+DROP_GRACE*CLK_PER_S; if(R){ R.ignoreC=tg; R.ignoreUntil=clock+(DROP_GRACE+1)*CLK_PER_S; } }
+    else { if(tg.owner===1){ tg.lock=Math.max(0.05,cs.rp); flash('STOLEN!','#3cc8ff',0.9); sfxT('snatch',0.4,0.4); } tg.owner=2; tg.rHeld=clock; R.lock=tg; P.lock=null; tg.noP=clock+DROP_GRACE*CLK_PER_S; }
+    tg.tugP=null; } }
 // The blue ship's lift handicap. It exists to keep the CPU BEATABLE in a straight race -- it is a
 // difficulty knob, not a property of the colour. In 2-PLAYER the blue ship is a HUMAN, so it must lift
 // exactly as fast as green or P2 is simply playing a worse game. (Was applied unconditionally: a human
@@ -2280,14 +2305,14 @@ function updateRival(dt){
   if(!R || mode==='base') return;
   if(R.invuln>0) R.invuln-=dt;
   if(R.down>0){ rivalDownStep(dt); return; }                                                     // (1123) SHIP DOWN: the retreat beat, then a clean respawn
-  if(R.stun>0){ R.stun-=dt; R.beamOn=false; spring(R,R.x,R.y,dt); return; }   // knocked — coasts, can't act
+  if(R.stun>0){ R.stun-=dt; R.beamOn=false; spring(R,R.x,R.y,dt); if(!twoP && planting && Math.abs(R.x-P.x)<SAUCER_W()*0.62 && Math.abs(R.y-P.y)<SAUCER_W()*0.47){ R.x=R.tx=clamp(P.x+((R.x>=P.x)?1:-1)*SAUCER_W()*0.62,W*0.05,W*0.95); R.vx=0; } return; }   // knocked — coasts, can't act (and never coasts back into a beaming player)
   var b=band(), behind = rivalScore<=score, RANGE=W*0.05;
   var hot = stageOf()>=2;                                                                       // ORANGE/RED = the lethal onslaught is up
   // 1) PICK a target: prizes (Mo/Dave/boss) >> contest the player's lock >> nearest cow/loot (people only when behind)
   var want=null, wbest=1e9;
   for(var i=0;i<targets.length;i++){ var c=targets[i]; if(c.gone||c.hidden||c.protect||c.guarded||c.def.hazardGrab) continue;   // hidden critters, protected townsfolk and CLAW & ORDER's guarded Bull (the player's gamble) are off the rival's list
     if(c.kind==='person' && !behind) continue;
-    if(c.owner===1 && c.lock>0) continue;                                                       // (1123) A LOCKED LIFT IS YOURS: the CPU never goes for a catch you're lifting (or one still falling back off your beam)   // DEATH-SPIRAL FIX: under heat (ORANGE/RED) or during the re-contest cooldown, the rival won't grind on YOUR catch — it grabs elsewhere or bails to dodge, opening your window (greed still punished in the calm GREEN/YELLOW)
+    if(!twoP && ((pMine(c) && c!==P.lock) || (c.noR!=null && clock<c.noR) || (R.ignoreC===c && clock<R.ignoreUntil))) continue;                 // (1123b) a catch you DROPPED is yours alone for DROP_GRACE; a contest it lost, it leaves: the CPU never goes for a catch you're lifting (or one still falling back off your beam)   // DEATH-SPIRAL FIX: under heat (ORANGE/RED) or during the re-contest cooldown, the rival won't grind on YOUR catch — it grabs elsewhere or bails to dodge, opening your window (greed still punished in the calm GREEN/YELLOW)
     var d=Math.abs(c.x-R.x);
     var contest = c===P.lock && (behind || d<W*(defcon?0.20:0.12));                             // DEFCON 1 ALLSTAR contests your catch from farther out
     // PRIZE bias was d-1e5 -- a hundred-thousand-pixel head start, so ANY prize anywhere outranked
@@ -2297,6 +2322,8 @@ function updateRival(dt){
     // the race to her. Still a priority, no longer a guarantee.
     var pr = (c.isMo||c.isBoss||(c.def.val||0)>=2000)? d-PRIZE_BIAS*W : (contest? d-W*0.03 : d);
     if(pr<wbest){ wbest=pr; want=c; } }
+  if(!twoP){ if(want!==R.wantCur){ if(R.wantNext!==want){ R.wantNext=want; R.reactAt=clock+(0.30+0.15*Math.random())*CLK_PER_S; } if(clock>=R.reactAt) R.wantCur=want; }   // (1123b) HUMAN REACTION: 300-450 ms to switch
+    want=(R.wantCur && !R.wantCur.gone && targets.indexOf(R.wantCur)>=0)?R.wantCur:null; }
   // 2) DODGE: nearest jet about to land / live shot in our lane
   var hz=null, hd=1e9;
   for(var j=0;j<jets.length;j++){ var je=jets[j]; if(Math.abs(je.x-R.x)<W*0.06 && Math.abs(je.y-R.y)<H*0.13){ var d=Math.abs(je.x-R.x); if(d<hd){hd=d;hz=je;} } }
@@ -2311,14 +2338,23 @@ function updateRival(dt){
     else { R.beamOn=false; destX=clamp(want.x, W*0.05, W*0.95); destY=clamp(want.y-H*0.17, b.top, b.bot); }
   } else { R.beamOn=false; destX=R.x; destY=(b.top+b.bot)/2; }
   // (1123) give a lifting player room: the rival never parks on top of your beam (no bonk, no barrier shove, no beam fight)
-  var keep=SAUCER_W()*1.05; if(P.lock && P.lock.owner===1 && Math.abs(destX-P.x)<keep){ destX=clamp(P.x+((R.x>=P.x)?1:-1)*keep, W*0.05, W*0.95); if(Math.abs(destX-P.x)<keep*0.9) destX=clamp(P.x-((R.x>=P.x)?1:-1)*keep,W*0.05,W*0.95); R.beamOn=false; }
+  var pBeam=!twoP && planting && P.stun<=0;
+  if(pBeam && !R.force){ var gapY=SAUCER_W()*0.62;   // (1123b) never START a bonk on a beaming player: steer OVER/UNDER while passing, park at least a ship-width away
+    if(Math.abs(R.x-P.x)<SAUCER_W()*1.6 || (destX-P.x)*(R.x-P.x)<0){ if(Math.abs(destY-P.y)<gapY){ var up=P.y-gapY, dn=P.y+gapY; destY=(up>=b.top)?((dn<=b.bot && Math.abs(R.y-dn)<Math.abs(R.y-up))?dn:up):dn; destY=clamp(destY,b.top,b.bot); }
+      if(Math.abs(R.y-P.y)<gapY*0.85){ var sd7=(R.x>=P.x)?1:-1; if(sd7*(destX-P.x)<SAUCER_W()*0.95) destX=clamp(P.x+sd7*SAUCER_W()*0.95,W*0.05,W*0.95); } } }   // not clear vertically yet: hold off in x until it is
+  var contesting = pBeam && want && want===P.lock && (P.y-SAUCER_W()*0.72)>=b.top;   // a contest is fought STACKED: the rival over you, beams in one column
+  if(contesting){ destY=Math.min(destY, P.y-SAUCER_W()*0.68); }
+  var keep=SAUCER_W()*1.05; if(!contesting && ((P.lock && P.lock.owner===1) || pBeam) && Math.abs(destX-P.x)<keep){ destX=clamp(P.x+((R.x>=P.x)?1:-1)*keep, W*0.05, W*0.95); if(Math.abs(destX-P.x)<keep*0.9) destX=clamp(P.x-((R.x>=P.x)?1:-1)*keep,W*0.05,W*0.95); R.beamOn=false; }
   rivalFireStep(dt, !!hz);
   // approach the destination at a CAPPED, human-ish speed — no teleporting across the map (the old "zip")
   var RVX=(defcon?292:270)*dt, RVY=(defcon?360:330)*dt;   // DEFCON 1 ALLSTAR keeps pace with the player (normal rival is a touch slower so it can't out-run you)
   R.tx += clamp(destX-R.tx, -RVX, RVX);
   R.ty += clamp(destY-R.ty, -RVY, RVY);
+  if(pBeam && !R.force && Math.abs(R.tx-P.x)<SAUCER_W()*0.66 && Math.abs(R.ty-P.y)<SAUCER_W()*0.5){ R.tx += clamp((R.tx>=P.x?1:-1)*SAUCER_W()*0.66-(R.tx-P.x), -RVX*2, RVX*2); }   // last guard: never steer INTO a beaming player
   if(R.force){ R.tx=R.x=R.force.x; R.ty=R.y=R.force.y; R.beamOn=true; }   // ?selftest only: pin the CPU beam on a spot to prove the locked-lift rule
   spring(R,R.tx,R.ty,dt); emitBubbles(R,'#3cc8ff',dt);   // blue rival propulsion
+  if(pBeam && !R.force && !warblingS(R)){ var nr=SAUCER_W()*0.62, ny=SAUCER_W()*0.47;   // (1123b) HARD RULE: the CPU never touches a beaming player (its own spring can't carry it in)
+    if(Math.abs(R.x-P.x)<nr && Math.abs(R.y-P.y)<ny){ var sd8=(R.x>=P.x)?1:-1, nx=P.x+sd8*nr; if(nx<W*0.05||nx>W*0.95) nx=P.x-sd8*nr; R.x=R.tx=clamp(nx,W*0.05,W*0.95); R.vx=0; } }
   R.bank += (clamp(R.vx/200,-1,1)-R.bank)*Math.min(1,7*dt);
 }
 
@@ -2546,6 +2582,12 @@ function update(dt){
       if(warbling()){                                  // WARBLE -> whip out the rival's FAR side (phase through)
         var sd2=(P.x<=R.x)?1:-1, wx0=P.x; P.x=clamp(R.x+sd2*near,W*0.05,W*0.95); P.tx=P.x; smearFx('p1',wx0,P.y,P.x,P.y,SAUCER_W());
         R.x=clamp(R.x-sd2*near*0.5,W*0.05,W*0.95); addFx(P.x,P.y,'snatch','#9affc0',0.3);
+      } else if(!twoP && !warblingS(R) && planting && P.stun<=0){   // (1123b) you're BEAMING (lifting or lining up): you don't budge, your beam stays on, the RIVAL takes the spin-out
+        var s5=(P.x<=R.x)?1:-1, r5=R.x; R.x=clamp(P.x+s5*near*1.05,W*0.05,W*0.95); R.tx=R.x; R.vx=0; R.vy=0; R.beamOn=false; R.stun=Math.max(R.stun,1.0); smearFx('p2',r5,R.y,R.x,R.y,SAUCER_W());
+        addFx((P.x+R.x)/2,(P.y+R.y)/2,'spark','#ffd27a',0.25); sfxT('hit',0.4,0.3); if(DEV){ var bq=window.__bonks||(window.__bonks={pBeam:0,rBeam:0,other:0}); bq.pBeam++; }
+      } else if(!twoP && !warbling() && R.beamOn && !planting){   // (1123b) the same both ways: fly into a BEAMING rival and YOU bounce (no stun), its beam stays on
+        var s6=(R.x<=P.x)?1:-1, p6=P.x; P.x=clamp(R.x+s6*near,W*0.05,W*0.95); P.tx=P.x; smearFx('p1',p6,P.y,P.x,P.y,SAUCER_W());
+        addFx((P.x+R.x)/2,(P.y+R.y)/2,'spark','#ffd27a',0.25); sfxT('hit',0.4,0.3); if(DEV){ var bq2=window.__bonks||(window.__bonks={pBeam:0,rBeam:0,other:0}); bq2.rBeam++; }
       } else if(!warblingS(R) && P.lock && P.lock.owner===1 && P.lock.lock>0){   // (1123) you're LIFTING: the rival bounces off you, you don't budge, the catch stays yours
         var s4=(P.x<=R.x)?1:-1; R.x=clamp(P.x+s4*near,W*0.05,W*0.95); R.tx=R.x; addFx((P.x+R.x)/2,(P.y+R.y)/2,'spark','#ffd27a',0.25); sfxT('hit',0.4,0.3);
       } else if(!warblingS(R)){                         // no warble -> rebound apart, NO stun (no-damage bonk)
@@ -2572,16 +2614,16 @@ function update(dt){
   }
 
   /* beam / abduction (no beaming in base) — player (1) vs the blue rival (2): crossed beams cancel, a steal halves the lock */
-  P.lock=null; if(R) R.lock=null;
+  var prevPL=P.lock, prevRL=R?R.lock:null; P.lock=null; if(R) R.lock=null;
   var pT=-1, rT=-1;
   if(planting && P.stun<=0 && mode!=='base'){
     var bestD=(superT>0?W*SUPER_GRAB:W*BEAM_GRAB); for(var i=0;i<targets.length;i++){ var c=targets[i]; if(c.gone||c.hidden||c.protect) continue; var dxp=Math.abs(c.x-P.x);   // SUPER BEAM = wider acquisition; hidden critters + protected defenders aren't lockable
-      if(!twoP && c.owner===2 && c.lock>0) continue;                                              // (1123) 1P: the rival's lift is ITS — no beam fights either way
+      if(!twoP && ((rMine(c) && c!==prevRL) || (c.noP!=null && clock<c.noP))) continue;                                                             // (1123) 1P: the rival's lift is ITS (+ DROP_GRACE) — no beam fights either way
       if(dxp<bestD && P.y<c.y){ bestD=dxp; pT=i; } }
   }
   if(R && R.beamOn && R.stun<=0){
     var bestDr=W*BEAM_GRAB; for(var i=0;i<targets.length;i++){ var c=targets[i]; if(c.gone||c.hidden||c.protect||c.guarded) continue; var dxr=Math.abs(c.x-R.x);
-      if(!twoP && c.owner===1 && c.lock>0) continue;                                              // (1123) 1P: A LOCKED LIFT IS YOURS — the CPU beam can't touch it
+      if(!twoP && ((pMine(c) && i!==pT) || (c.noR!=null && clock<c.noR))) continue;                                                             // (1123) 1P: A LOCKED LIFT IS YOURS (+ DROP_GRACE) — the CPU beam can't touch it
       if(dxr<bestDr && R.y<c.y){ bestDr=dxr; rT=i; } }
   }
   if(pT>=0 && pT===rT){                                              // CROSSED BEAMS
@@ -2590,17 +2632,19 @@ function update(dt){
     // subject both beams land on in the same frame: it goes to YOU and the rival backs off. 2P (two humans): the contest stays,
     // but as a TUG-OF-WAR you can SEE (tugStep: a two-colour bar over the catch fills toward the challenger) instead of a drop.
     var tg=targets[pT]; tg.lifting=true;
-    if(R) R.contestCd=clock+CONTEST_BACKOFF;
-    if(!twoP){ tg.owner=1; tg.lock=clamp(tg.lock+dt/tg.def.lock*(superT>0?2:1),0,1); P.lock=tg; if(tg.lock>=1) abduct(tg,1); }
+    if(twoP && R) R.contestCd=clock+CONTEST_BACKOFF;
+    if(!twoP){ contest1P(tg,dt); }
     else if(tg.owner===1){ tugStep(tg,2,dt); if(tg.owner===1){ tg.lock=clamp(tg.lock+dt/tg.def.lock*CONTEST_DRAG*(superT>0?2:1),0,1); P.lock=tg; if(tg.lock>=1) abduct(tg,1); } else R.lock=tg; }
     else if(tg.owner===2){ tugStep(tg,1,dt); if(tg.owner===2){ tg.lock=clamp(tg.lock+dt/(tg.def.lock*blueLockMul())*CONTEST_DRAG,0,1); R.lock=tg; if(tg.lock>=1) abduct(tg,2); } else P.lock=tg; }
     else tg.owner=0;                                                 // nobody had it yet — a true dead heat, neither gains
   } else {
-    if(pT>=0){ var tg=targets[pT]; if(tg.owner===2 && tg.lock>0){ tugStep(tg,1,dt); }                 // 2P: theirs until the tug says otherwise (it falls back to the ground if they let go)
-      else { tg.owner=1; P.lock=tg; tg.lock=clamp(tg.lock+dt/tg.def.lock*(superT>0?2:1),0,1); tg.lifting=true; if(tg.lock>=1) abduct(tg,1); } }   // SUPER BEAM locks 2x faster
-    if(rT>=0){ var tg=targets[rT]; if(tg.owner===1 && tg.lock>0){ tugStep(tg,2,dt); }
-      else { tg.owner=2; R.lock=tg; tg.lock=clamp(tg.lock+dt/(tg.def.lock*blueLockMul()),0,1); tg.lifting=true; if(tg.lock>=1) abduct(tg,2); } }   // CPU: 1.4x slower (1.1x on DEFCON) so it is beatable. HUMAN P2: parity with P1.
+    if(pT>=0){ var tg=targets[pT]; if(tg.owner===2 && tg.lock>0){ if(twoP) tugStep(tg,1,dt); }                 // 2P: theirs until the tug says otherwise (it falls back to the ground if they let go)
+      else { tg.owner=1; tg.pHeld=clock; P.lock=tg; tg.lock=clamp(tg.lock+dt/tg.def.lock*(superT>0?2:1),0,1); tg.lifting=true; if(tg.lock>=1) abduct(tg,1); } }   // SUPER BEAM locks 2x faster
+    if(rT>=0){ var tg=targets[rT]; if(tg.owner===1 && tg.lock>0){ if(twoP) tugStep(tg,2,dt); }
+      else { tg.owner=2; tg.rHeld=clock; R.lock=tg; tg.lock=clamp(tg.lock+dt/(tg.def.lock*blueLockMul()),0,1); tg.lifting=true; if(tg.lock>=1) abduct(tg,2); } }   // CPU: 1.4x slower (1.1x on DEFCON) so it is beatable. HUMAN P2: parity with P1.
   }
+  if(!twoP){ if(prevPL && prevPL!==P.lock && !prevPL.gone && prevPL.owner===1 && prevPL.lock>0) prevPL.pDropT=clock;   // (1123b) you let go / got knocked off: it FALLS, and is yours alone to re-grab for DROP_GRACE
+    if(R && prevRL && prevRL!==R.lock && !prevRL.gone && prevRL.owner===2 && prevRL.lock>0) prevRL.rDropT=clock; }
   for(var i=0;i<targets.length;i++){ var c=targets[i]; if(c.tug>0 && clock-(c.tugT||0)>0.25) c.tug=Math.max(0,c.tug-dt*0.8); if(c!==P.lock && (!R||c!==R.lock) && c.lock>0){ c.lock=Math.max(0,c.lock-dt*1.5); if(c.lock<=0){ c.lifting=false; c.owner=0; } } }
 
   /* targets move + shoot */
@@ -4204,7 +4248,11 @@ function drawMeter(mx,my,mw,stg){ var bh=18, ons=onslaughtMap(), cap=meterCap();
   if(meterTag && clock-meterTagT<1.6){ ctx.globalAlpha=clamp(1.6-(clock-meterTagT),0,1); ctx.fillStyle='#ffd23f'; ctx.textAlign='left'; ctx.fillText('▲ '+meterTag, mx+mw+12, my+bh-3); }
   ctx.restore(); }
 // (1123) 2P TUG-OF-WAR read: a two-colour bar over the fought-over catch, filling toward the challenger
-function drawTug(){ if(!twoP) return; for(var i=0;i<targets.length;i++){ var c=targets[i]; if(c.gone || !(c.tug>0.02)) continue;
+function drawTug(){ if(!twoP){ for(var i=0;i<targets.length;i++){ var c=targets[i]; if(c.gone || c.tugP==null || !c.cst) continue;   // (1123b) 1P CONTEST: a push-pull bar, green = you, blue = the rival, the knot slides to whoever's winning
+      var bw=SAUCER_W()*1.0, bx=c.x-bw/2, by=c.y-sz().cow*1.35, k=clamp(c.tugP,0,1), u=clamp(c.cst.t/CONTEST_SECS,0,1);
+      ctx.save(); ctx.globalAlpha=0.92; ctx.fillStyle='rgba(0,0,0,.6)'; ctx.fillRect(bx-2,by-2,bw+4,12); ctx.fillStyle='#39ff14'; ctx.fillRect(bx,by,bw*k,8); ctx.fillStyle='#3cc8ff'; ctx.fillRect(bx+bw*k,by,bw*(1-k),8);
+      ctx.fillStyle='#fff'; ctx.fillRect(bx+bw*k-2,by-4,4,16); ctx.fillStyle='rgba(255,255,255,.55)'; ctx.fillRect(bx,by+10,bw*u,2); ctx.restore(); } return; }
+  for(var i=0;i<targets.length;i++){ var c=targets[i]; if(c.gone || !(c.tug>0.02)) continue;
   var bw=SAUCER_W()*0.9, bx=c.x-bw/2, by=c.y-sz().cow*1.3, chal=c.tugBy===1?'#39ff14':'#3cc8ff', own=c.tugBy===1?'#3cc8ff':'#39ff14';
   ctx.save(); ctx.fillStyle='rgba(4,8,12,0.8)'; ctx.fillRect(bx-2,by-2,bw+4,12); ctx.fillStyle=own; ctx.fillRect(bx,by,bw,8); ctx.fillStyle=chal;
   if(c.tugBy===1) ctx.fillRect(bx,by,bw*c.tug,8); else ctx.fillRect(bx+bw*(1-c.tug),by,bw*c.tug,8);
@@ -4448,7 +4496,15 @@ function runSelftest1123(){ var R0=[], A0=AUDIO_ON; AUDIO_ON=false;
     fresh(0); var c=cow(W*0.5), b=band(); P.x=P.tx=c.x; P.y=P.ty=b.top+40; planting=true; R.x=R.tx=W*0.9; R.y=R.ty=b.top+40;
     stepN(25); var lk=c.lock; R.force={x:c.x, y:b.top+20}; R.x=c.x; R.y=b.top+20; var stole=false, rlock=false, s0=score;
     for(var k=0;k<200 && !c.gone;k++){ P.tx=c.x; stepN(1); if(c.owner===2) stole=true; if(R.lock===c) rlock=true; }
-    ok('a CPU beam parked on your catch never takes it', !stole && !rlock && c.gone && score>s0, 'lock@park '+lk.toFixed(2)+', yours='+(score>s0));
+    ok('a CPU beam parked on your catch: a short contest you win, never a theft', !stole && c.gone && score>s0, 'lock@park '+lk.toFixed(2)+', yours='+(score>s0)+' contested '+rlock);
+    // (1123b) Joe LIVE: the stall + "take your finger off beam and you just lose". Contest bounded; letting go = it FALLS, yours to re-grab
+    fresh(0); c=cow(W*0.5); P.x=P.tx=c.x; P.y=P.ty=b.top+SAUCER_W()*0.9; planting=true; stepN(6); R.force={x:c.x,y:b.top}; var hung=0, lk0=c.lock, maxT=0;
+    for(var k=0;k<150 && !c.gone;k++){ var l0=c.lock; stepN(1); if(c.cst) maxT=Math.max(maxT,c.cst.t); if(c.lock<=l0+1e-6) hung++; }
+    ok('a crossed-beam contest never hangs: the lift keeps rising and it resolves inside CONTEST_SECS', hung<3 && maxT<=CONTEST_SECS+0.02 && (c.gone || c.owner===1), 'flat frames '+hung+' contest '+maxT.toFixed(2)+'s owner '+c.owner);
+    fresh(0); c=cow(W*0.5); P.x=P.tx=c.x; P.y=P.ty=b.top+SAUCER_W()*0.9; planting=true; stepN(20); var lkr=c.lock; planting=false; R.force={x:c.x,y:b.top}; var handed=false;
+    var pd0=c.pDropT, hk=-1; for(var k=0;k<170;k++){ stepN(1); if(c.owner===2 && c.lock>0 && !handed){ handed=true; hk=k; } }
+    ok('let go mid-lift: it FALLS (no snap to the rival) and only you may re-grab it for DROP_GRACE', !handed && c.lock<lkr && !c.gone, 'lock '+lkr.toFixed(2)+'->'+c.lock.toFixed(2)+' owner '+c.owner+' handed@'+hk+' drop '+pd0+' now '+c.pDropT+' clk '+clock.toFixed(2));
+    R.force=null;
     fresh(0); c=cow(W*0.5); P.x=P.tx=c.x; P.y=P.ty=b.top+40; planting=true; stepN(20); var px=P.x; R.force=null; R.x=R.tx=P.x+2; R.y=R.ty=P.y; R.beamOn=false; stepN(1);
     ok('a rival bonk never moves you off your catch', Math.abs(P.x-px)<1 && planting && c.owner===1 && c.lock>0, 'dx '+(P.x-px).toFixed(1));
     fresh(0); c=cow(W*0.5); P.x=P.tx=c.x; P.y=P.ty=b.top+SAUCER_W()*1.6; R.force={x:c.x,y:b.top}; R.x=c.x; R.y=b.top; planting=true; stepN(2);
@@ -4544,10 +4600,41 @@ function runSelftest1123(){ var R0=[], A0=AUDIO_ON; AUDIO_ON=false;
       smearFx('p1',10,10,200,10,100); drawFx(); for(var hs in HOWSTYLES) drawHowCard(hs,0,0,W,H*0.6,false); drawHowCard('deck',0,0,400,120,true); }catch(e){ drawErr=e.message; }
     ok('HUD / cards / smears / the three BEAM-WARBLE cards draw', !drawErr, drawErr);
   }catch(e){ ok('selftest ran without throwing', false, e && e.message); }
-  meterEvent=_meOrig; AUDIO_ON=A0; var pass=R0.every(function(r){return r.ok;});
-  window.__suSelftest=JSON.stringify({pass:pass,n:R0.length,results:R0});
-  document.documentElement.setAttribute('data-suckup-selftest', pass?'pass':'fail');
-  state='selftestdone'; window.__suSelftestList=R0; return pass; }
+  function bkGate1123(ok){
+  // ---- THE PAINTED BRISKET (Joe 1123: "filling in those alpha issues with painterly brisket. I think it reverted")
+    var bkSrc=[], _di=CanvasRenderingContext2D.prototype.drawImage; CanvasRenderingContext2D.prototype.drawImage=function(im){ if(im && im.src) bkSrc.push(im.src.split('/').slice(-2).join('/')); else if(im && im.width) bkSrc.push('canvas'); return _di.apply(this,arguments); };
+    var bk3d=/[?&]l3brisket3d=1\b/.test(location.search), bkOk=true, bkInfo=[];
+    try{ fresh(0); var bt={ kind:'brisket', def:TARGETKINDS.brisket, sprite:'brisket', x:W*0.5, y:groundY(), vx:0,vy:0, dir:1, lock:0, lifting:false, gone:false, fireCd:9, isMo:false, zd:0, respawn:1e9 };
+      targets=[bt]; bkSrc=[]; drawTargets(false); var a1=bkSrc.slice(); bt.lifting=true; bt.lock=0.5; bkSrc=[]; drawTargets(false); if(typeof drawLifted==='function') drawLifted(); var a2=bkSrc.slice();
+      [a1,a2].forEach(function(L,j){ var painted=L.some(function(q){ return /art\/brisket\.png$/.test(q); }), three=L.some(function(q){ return /brisket\.webp|u_brisket|loot_brisket/.test(q); });
+        if(!bk3d && (!painted || three)) bkOk=false; bkInfo.push((j?'lifted ':'ground ')+L.slice(0,6).join(',')); }); }
+    finally{ CanvasRenderingContext2D.prototype.drawImage=_di; targets=[]; }
+    ok('every brisket draw (ground + lifted) resolves to the PAINTED sheet (3D only with l3brisket3d=1)', bkOk, bkInfo.join(' | '));
+    var holes=-1, bw0=0, bh0=0; try{ var bi=IMG.brisket; bw0=bi.naturalWidth; bh0=bi.naturalHeight; var cv=document.createElement('canvas'); cv.width=bw0+2; cv.height=bh0+2; var cx=cv.getContext('2d'); cx.drawImage(bi,1,1);
+      var d=cx.getImageData(0,0,cv.width,cv.height).data, Wc=cv.width, Hc=cv.height, seen=new Uint8Array(Wc*Hc), st=[0]; seen[0]=1;
+      while(st.length){ var q=st.pop(), qx=q%Wc, qy=(q/Wc)|0; [[1,0],[-1,0],[0,1],[0,-1]].forEach(function(o){ var nx=qx+o[0], ny=qy+o[1]; if(nx<0||ny<0||nx>=Wc||ny>=Hc) return; var k=ny*Wc+nx; if(seen[k]||d[k*4+3]>=128) return; seen[k]=1; st.push(k); }); }
+      holes=0; for(var k=0;k<Wc*Hc;k++) if(!seen[k] && d[k*4+3]<128) holes++; }catch(e){ bkInfo.push(e.message); }
+    // + see-through gaps that leak to the border (the 1123 bug: the platter well + the meat's underside keyed out, open at one side,
+    //   so a plain flood fill calls them "outside"): close the silhouette by 2 px, flood the CLOSED mask, count original see-through
+    //   pixels the closed silhouette encloses. The keyed sheet scored 97 px (6.5%); a clean matte stays under 3% (edge notches).
+    var gaps=-1, solidN=0; try{ var bi2=IMG.brisket, P2=6, Wg=bi2.naturalWidth+P2*2, Hg=bi2.naturalHeight+P2*2, cv2=document.createElement('canvas'); cv2.width=Wg; cv2.height=Hg; var c2=cv2.getContext('2d'); c2.drawImage(bi2,P2,P2);
+      var dd=c2.getImageData(0,0,Wg,Hg).data, m=new Uint8Array(Wg*Hg), k2; for(k2=0;k2<Wg*Hg;k2++){ m[k2]=dd[k2*4+3]>=128?1:0; solidN+=m[k2]; }
+      function morph(a,dil){ var o=new Uint8Array(Wg*Hg); for(var y=0;y<Hg;y++) for(var x=0;x<Wg;x++){ var v=dil?0:1; for(var oy=-1;oy<=1;oy++) for(var ox=-1;ox<=1;ox++){ var X=x+ox, Y=y+oy, q=(X<0||Y<0||X>=Wg||Y>=Hg)?0:a[Y*Wg+X]; if(dil&&q) v=1; if(!dil&&!q) v=0; } o[y*Wg+x]=v; } return o; }
+      var cm=morph(morph(m,1),1); cm=morph(morph(cm,0),0); var sn=new Uint8Array(Wg*Hg), st2=[0]; sn[0]=1;
+      while(st2.length){ var q2=st2.pop(), x2=q2%Wg, y2=(q2/Wg)|0; [[1,0],[-1,0],[0,1],[0,-1]].forEach(function(o){ var nx=x2+o[0], ny=y2+o[1]; if(nx<0||ny<0||nx>=Wg||ny>=Hg) return; var kk=ny*Wg+nx; if(sn[kk]||cm[kk]) return; sn[kk]=1; st2.push(kk); }); }
+      gaps=0; for(k2=0;k2<Wg*Hg;k2++) if(!sn[k2] && !m[k2]) gaps++; }catch(e){ bkInfo.push(e.message); }
+    ok('the painted brisket has NO interior alpha holes (flood fill from the border) and no see-through gaps in its silhouette', holes===0 && gaps>=0 && gaps<=solidN*0.03, 'holes '+holes+' in '+bw0+'x'+bh0+', gaps '+gaps+' / '+solidN+' solid');
+}
+  meterEvent=_meOrig; AUDIO_ON=A0; state='selftestdone';
+  // the brisket gate reads the sheet's pixels: run it once the image has decoded (the rest of the battery never waits on it)
+  function fin(){ try{ bkGate1123(ok); }catch(e){ ok('brisket gate ran', false, e && e.message); } state='selftestdone';
+    var pass=R0.every(function(r){return r.ok;});
+    window.__suSelftest=JSON.stringify({pass:pass,n:R0.length,results:R0});
+    document.documentElement.setAttribute('data-suckup-selftest', pass?'pass':'fail'); window.__suSelftestList=R0; }
+  var bi=IMG.brisket; if(!bi || (bi.complete && bi.naturalWidth) || (bi.complete && !bi.naturalWidth)) fin();
+  else { bi.addEventListener('load',fin,{once:true}); bi.addEventListener('error',fin,{once:true}); }
+  return true; }
+
 // RUN BATTERY 1123 (dev-only, ?dev): window.__su1123.run({policy, conts}) plays ONE full arcade/home run headless with a
 // scripted dodger (reaction lag + a per-shot miss chance, capped glide speed, never teleports) and returns JSON: clear,
 // segments, play seconds, hull hits, deaths, the CPU rival's hits / deaths / continues / stuck frames, and the rival-vs-
@@ -4653,7 +4740,42 @@ if(DEV){ window.__su1123=(function(){
     while(o.toEnd ? (state==='play'||state==='zonemove') && T<400 : T<(o.t||0)){ if(state==='play'){ if(o.meter!=null) meter=Math.min(o.meter,meterCap()); if(o.policy) step(dt,sk); else { P.tx=W*0.5; P.ty=band().top+40; } }
       clock+=dt; update(dt); T+=dt; if(o.toEnd && state!=='play' && state!=='zonemove') break; }
     GOD=false; return JSON.stringify({state:state, T:+T.toFixed(1), field:fieldYou+'/'+fieldMax, v:scrVar, pop:popPeak}); }
-  return { run:run, zone:zone, ft:ft, dl:dl, pose:pose };
+  // DUEL (1123b, Joe LIVE: the rival bonks you, then its beam steals your lift). tools/rival_duel_1123.mjs drives P1 through the
+  // REAL keyboard path (CDP key events -> the keydown listener -> planting) and the real rAF frame(); these only stage a trial
+  // and watch it. Trial i: a cow under you, the rival across the field with a second cow on YOUR far side (its path crosses you).
+  var DU=null;
+  function duelSetup(i){ AUDIO_ON=false; soloStage=true; twoP=false; defcon=(i%4===0); GOD=true; held={}; planting=false; score=0; rivalScore=0; hp=maxHP; lives=3;
+    startLevel(i%4); state='play'; if(typeof scrIdx!=='undefined'){ scrIdx=1e9; scrPend=[]; } targets=[]; jets=[]; shots=[]; fx=[]; truck=null; jetTimer=1e9; aaTimer=1e9;
+    var b=band(), fr=((i*0.6180339)%1), x0=W*(0.3+0.4*fr), side=(i%2)?1:-1;
+    function mk(x){ var c={ kind:'cow', def:TARGETKINDS.cow, sprite:TARGETKINDS.cow.sprites[0], x:x, y:groundY(), vx:0,vy:0, dir:1, lock:0, lifting:false, gone:false, fireCd:9, isMo:false, zd:0, respawn:1e9 }; targets.push(c); return c; }
+    var mine=mk(x0); mk(clamp(x0-side*W*(0.10+0.06*((i*0.37)%1)),W*0.08,W*0.92));
+    P.x=P.tx=x0; P.y=P.ty=b.top+(b.bot-b.top)*(0.15+0.5*((i*0.29)%1)); P.stun=0; P.warbleU=-9; P.vx=P.vy=0;
+    R.down=0; R.stun=0; R.force=null; R.warbleU=-9; R.warbleCd=clock+1; R.contestCd=0; R.x=R.tx=clamp(x0+side*W*(0.22+0.2*((i*0.71)%1)),W*0.06,W*0.94); R.y=R.ty=clamp(P.y+(((i*0.53)%1)-0.5)*SAUCER_W()*0.8,b.top,b.bot);
+    var forced=(i%5===4); if(forced){ R.x=R.tx=x0+side*SAUCER_W()*0.3; R.y=R.ty=P.y; }   // a bonk staged on you (not rival-initiated): proves the outcome
+    DU={ i:i, mine:mine, forced:forced, px:null, thefts:0, handoff:0, stalls:0, lk:{}, up:{}, stalled:{}, contested:{}, firstLock:null, relT:null, wasKey:false, knocked:0, rBonk:0, contact:0, pHeldT:{}, b0:window.__bonks?JSON.stringify(window.__bonks):'', yours:0, rival:0, t:0 };
+    return JSON.stringify({x0:Math.round(x0), rx:Math.round(R.x)}); }
+  function duelProbe(keyHeld){ if(!DU) return; var near=SAUCER_W()*0.60, d=DU; d.t+=1/60;
+    if(keyHeld && d.wasKey && planting && d.px!=null && Math.abs(P.x-d.px)>2) d.knocked++;
+    if(keyHeld && d.wasKey && !planting && P.stun<=0 && d.wasPlant) d.knocked++;
+    if(keyHeld && planting && Math.abs(P.x-R.x)<near && Math.abs(P.y-R.y)<SAUCER_W()*0.45 && !d.forced){ d.contact++; if(!d.cinfo) d.cinfo={t:+d.t.toFixed(2), stun:+R.stun.toFixed(2), down:R.down||0, warb:clock<R.warbleU, dx:Math.round(R.x-P.x), dy:Math.round(R.y-P.y), Py:Math.round(P.y-band().top), want:(R.wantCur===P.lock), beam:R.beamOn}; }
+    if(!keyHeld && d.wasKey) d.relT=clock;
+    for(var i=0;i<targets.length;i++){ var c=targets[i], k='t'+i; if(c.gone) continue;
+      if(c.owner===1 && c.lock>0){ d.pHeldT[i]=clock; if(d.firstLock==null) d.firstLock=i; }
+      if(d.lk[k]==null || c.lock>d.lk[k]+0.002 || c.lock<=0){ d.lk[k]=c.lock; d.up[k]=clock; }
+      if(c.lock>0 && clock-d.up[k]>2*2 && !d.stalled[k]){ d.stalled[k]=1; d.stalls++; }
+      if(c.cst) d.contested[k]=1;
+      var recent=d.pHeldT[i]!=null && clock-d.pHeldT[i]<3*2;
+      if(recent && c.owner===2 && c.lock>0 && !c._stolen){ c._stolen=1; if(d.relT!=null && clock-d.relT<2.5*2){ d.handoff++; if(!d.hinfo) d.hinfo={sinceRel:+((clock-d.relT)/2).toFixed(2), sinceDrop:c.pDropT!=null?+((clock-c.pDropT)/2).toFixed(2):null, sinceHeld:+((clock-d.pHeldT[i])/2).toFixed(2), noR:c.noR!=null?+((c.noR-clock)/2).toFixed(2):null, idx:i, first:d.firstLock, Plock:P.lock===c, plant:planting}; } else if(keyHeld) d.thefts++; } }
+    d.px=P.x; d.wasPlant=planting; d.wasKey=keyHeld; }
+  function duelEnd(){ var d=DU, bq=window.__bonks?window.__bonks.pBeam:0, b0=d.b0?JSON.parse(d.b0).pBeam:0; GOD=false;
+    var fl=d.firstLock!=null?targets[d.firstLock]:null;
+    return JSON.stringify({ i:d.i, forced:d.forced, thefts:d.thefts, handoff:d.handoff, stalls:d.stalls, knocked:d.knocked, contact:d.contact, contests:Object.keys(d.contested).length, pBeamBonks:bq-b0,
+      cinfo:d.cinfo||null, hinfo:d.hinfo||null, firstLocked:fl!=null, firstLost:!!(fl && (fl._stolen || (fl.gone && fl.owner===2))), released:d.relT!=null, score:score, rival:rivalScore }); }
+  // brisket close-ups (1123): one standing, one rising in your beam; returns their canvas rects for the shot crop
+  function bkStage(z){ duelSetup(z||1); var S=sz(); targets=[]; function mkb(x){ var c={ kind:'brisket', def:TARGETKINDS.brisket, sprite:'brisket', x:x, y:groundY(), vx:0,vy:0, dir:1, lock:0, lifting:false, gone:false, fireCd:9, isMo:false, zd:0, respawn:1e9 }; targets.push(c); return c; }
+    var a=mkb(W*0.30), b=mkb(W*0.62); P.x=P.tx=b.x; R.x=R.tx=W*0.95; R.down=1e9; planting=true; window.__bkT=[a,b]; return true; }
+  function bkRects(){ var S=sz(); return (window.__bkT||[]).map(function(c){ return { x:c.x, y:c.y, lock:c.lock, h:S.cow, lifting:!!c.lifting }; }); }
+  return { bkStage:bkStage, bkRects:bkRects, run:run, zone:zone, ft:ft, dl:dl, pose:pose, duelSetup:duelSetup, duelProbe:duelProbe, duelEnd:duelEnd };
 })(); }
 
 // GUNPOWDER BATTERY (dev-only, ?dev): window.__gp.battery({policies,runs}) plays the whole mission headless under each
