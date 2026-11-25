@@ -958,7 +958,13 @@ try{ document.addEventListener('visibilitychange',function(){ if(document.hidden
 // nothing). Each one shows ONLY to a player who hasn't found the move yet, in this build's own input words:
 //   BEAM   -- 6 s of play time without ever beaming -> "HOLD CLICK TO SUCK UP" (pulsing, under the clock) until they beam
 //   WARBLE -- the first hull hit to a player who has never warbled -> "RIGHT-CLICK = WARBLE ..." for 4.5 s
-var HOW={ beamed:false, warbled:false, playT:0, lastClk:-1, lastHp:-1, warbleT:0, warbleShown:false, pad:false };
+var HOW={ beamed:false, warbled:false, playT:0, lastClk:-1, lastHp:-1, warbleT:0, warbleShown:false, pad:false, copHinted:false };
+// (1124 pc, ORDER 31) ?warblehint=1 -- the WARBLE watch item's one switch (docs/WARBLE-1124.md, no-cut way #1): ALSO show the same
+// WARBLE whisper at the FIRST COP TELEGRAPH (the light-bar strobe before a cop round), to a player who has never warbled.
+// OFF by default: without the flag nothing below runs and the game is byte-for-byte today's. Render-only like the rest of HOW:
+// it only READS fx (kind 'coptel'), writes nothing the sim reads, uses no RNG -- sim_match holds either way.
+var WHINT=/[?&]warblehint=1\b/.test(location.search);
+function howCopTel(){ for(var i=0;i<fx.length;i++){ var e=fx[i]; if(e && e.kind==='coptel' && e.t>=0) return true; } return false; }
 function howDev(){ if(window.__suTouch) return 'touch'; if(STICK||HOW.pad) return 'stick'; if(DESKTOP||moveSrc==='mouse') return 'mouse'; return 'keys'; }
 function howWords(){ var d=howDev(), cab=CABOP;
   if(d==='touch') return { beam:'HOLD BEAM TO SUCK UP', warble:'TAP WARBLE — PHASE THROUGH FIRE', line:'DRAG = FLY   ·   HOLD BEAM = SUCK UP   ·   WARBLE = PHASE THROUGH FIRE' };
@@ -969,6 +975,7 @@ function howTick(){ if(state!=='play'||PAUSED||!P){ HOW.lastClk=clock; HOW.lastH
   var dt=HOW.lastClk<0?0:clamp(clock-HOW.lastClk,0,0.1); HOW.lastClk=clock;
   if(planting) HOW.beamed=true; if(P.warbleCd>0) HOW.warbled=true;
   if(mode!=='base') HOW.playT+=dt;
+  if(WHINT && !HOW.copHinted && !HOW.warbled && mode!=='base' && howCopTel()){ HOW.copHinted=true; HOW.warbleT=Math.max(HOW.warbleT,4.5); }   // (1124 pc) ?warblehint=1 only
   if(HOW.lastHp>=0 && hp<HOW.lastHp && !HOW.warbled && !HOW.warbleShown){ HOW.warbleShown=true; HOW.warbleT=4.5; }
   HOW.lastHp=hp; if(HOW.warbleT>0) HOW.warbleT=HOW.warbled?Math.min(HOW.warbleT-dt,0.5):HOW.warbleT-dt; }
 function drawHow(){ howTick(); if(state!=='play'||PAUSED) return; var w=howWords(), txt='', a=0;
@@ -2478,6 +2485,12 @@ function addFx(x,y,kind,col,n){ if(fx.length>=MAX_FX) fx.shift(); fx.push({x:x,y
 // EMP a strafing plane (caught by a BEAM or a warble RICOCHET): it loses its guns and SPINS OUT,
 // tumbling back into the DISTANCE (recedes up + shrinks) and bursts in a puff — never crashes on the
 // foreground. (Real crash/shoot-down systems belong to PAX GNOMANIA.)
+// (1124 pc, ORDER 31) ?heatcool=1 -- HEAT DRIVES read-back prototype, OFF by default. The Node battery: crossing ORANGE/RED brings a strafer within 10 s
+// ~90% of the time (reads well), but when the heat FALLS the planes stay (strafer count drops within 10 s of a cool-down only 27% of the time).
+// With the flag: strafers above the zone's cap for the CURRENT band are recalled one at a time (one per 2 s) -- the same peel-off as disableJet
+// (UP and away: they RETREAT, never crash), minus the EMP / 'planedown' cue (no kill, no points). Campaign zones with a fire table only.
+var HEATCOOL=/[?&]heatcool=1\b/.test(location.search), heatCoolT=0;
+function recallJet(je){ if(!je || je.disabled || je.horizon) return; je.disabled=true; je.spinT=0; je.scale=1; je.vy=-70; je.vx*=0.45; je.fireCd=1e9; }
 function disableJet(je){ if(!je || je.disabled || je.horizon) return; je.disabled=true; je.spinT=0; je.scale=1;
   smearFx('jet',je.x,je.y,je.x+je.vx*0.12,je.y-H*0.05,sz().tank*2.4);   // (1123) the peel-off snap
   je.vy=-70; je.vx*=0.45; je.fireCd=1e9; addFx(je.x,je.y,'emp','#bfefff',0.5); sfxT('planedown',0.25,0.95); }   // EMP shockwave on the disabled plane
@@ -2801,6 +2814,7 @@ function update(dt){
   /* jets */
   var _f=FT(), jetCap = stress?9 : (mode==='base'&&isoKind)?isoKind.jets : mode==='base'?4 : _f?((stg>=2?_f.jets:Math.min(1,_f.jets))+(defcon&&_f.jets?1:0)) : (defcon?3:2);   // (1123 HEAT) one plane until ORANGE, the zone's full count from ORANGE   // (1123) the zone's fire table: how many planes                       // DEFCON 1 = a 3-jet swarm (normal caps at 2)
   var jetGap = stress?0.35 : mode==='base'?0.9 : (stg>=3?(defcon?1.25:1.7):(defcon?1.9:2.4));   // DEFCON 1 = tighter jet cadence
+  if(HEATCOOL && _f && !stress && mode==='campaign'){ heatCoolT-=dt; if(heatCoolT<=0){ var hcLive=0, hcOld=null; for(var hq=0;hq<jets.length;hq++){ var jq=jets[hq]; if(!jq.disabled && !jq.horizon){ hcLive++; if(!hcOld) hcOld=jq; } } if(hcLive>jetCap){ recallJet(hcOld); heatCoolT=2.0; } } }   // (1124 pc) ?heatcool=1 only
   if((stg>=1 || (aaHot && !_f)) && jetCap>0){ jetTimer-=dt; if(jetTimer<=0 && jets.length<jetCap){ spawnJet(stg, _f ? (_f.strafe==='none') : (!ons || (stg===1 && !aaHot))); jetTimer=jetGap+rnd(0,jetGap); } }   // rural / YELLOW = looms only (no strafing run)
   for(var j=jets.length-1;j>=0;j--){ var je=jets[j];
     if(je.disabled){ je.spinT+=dt; je.x+=je.vx*dt; je.vy-=70*dt; je.y+=je.vy*dt; je.scale=Math.max(0,je.scale-dt*0.55); je.bank+=dt*16;   // DISABLED: tumble back into the distance + shrink
@@ -3258,13 +3272,11 @@ function drawEnding(){
   ctx.fillStyle='#39ff14'; ctx.font='900 '+clamp(W*0.07,40,84)+'px system-ui'; ctx.fillText('SUCK UP', W/2, H*0.30);
   var lines=[
     ['created by','#9fb8d0','600 '+clamp(W*0.017,11,16)+'px ui-monospace,Menlo,Consolas,monospace'],
-    ['JOSEPH COLEMAN   ·   CLAUDE   ·   CHATGPT   ·   BLENDER','#dff7e4','700 '+clamp(W*0.024,15,24)+'px system-ui'],
-    ['for','#9fb8d0','600 '+clamp(W*0.015,10,14)+'px ui-monospace,Menlo,Consolas,monospace'],
-    ['CASTLE KILLSCREEN','#ffd23f','800 '+clamp(W*0.022,14,22)+'px system-ui'],
-    ['ANDERS & PARTNERS LLC','#ffd23f','800 '+clamp(W*0.022,14,22)+'px system-ui'],
+    ['JOSEPH COLEMAN, CLAUDE, CHATGPT, AND BLENDER','#dff7e4','700 '+clamp(W*0.024,15,24)+'px system-ui'],
+    ['CASTLE KILLSCREEN · ANDERS & PARTNERS','#ffd23f','800 '+clamp(W*0.022,14,22)+'px system-ui'],   // house credit line, word for word (PC Order 35, CK-1602)
     ['All rights reserved.','#5f8a70','600 '+clamp(W*0.014,10,14)+'px ui-monospace,Menlo,Consolas,monospace']];
   var y=H*0.44, gap=clamp(W*0.042,26,50);
-  for(var i=0;i<lines.length;i++){ ctx.fillStyle=lines[i][1]; ctx.font=lines[i][2]; ctx.fillText(lines[i][0], W/2, y); y += (i===1)?gap*1.25:(i===2?gap*1.1:gap); }
+  for(var i=0;i<lines.length;i++){ ctx.fillStyle=lines[i][1]; ctx.font=lines[i][2]; ctx.fillText(lines[i][0], W/2, y, W*0.94); y += (i===1)?gap*1.25:(i===2?gap*1.1:gap); }
   ctx.globalAlpha=1;
   if(unlockMsg){ ctx.textAlign='center'; ctx.globalAlpha=clamp(Math.sin(t*4)*0.4+0.6,0,1)*clamp(endT*0.6,0,1);
     ctx.fillStyle='#ffd23f'; ctx.font='900 '+clamp(W*0.03,18,30)+'px system-ui';
